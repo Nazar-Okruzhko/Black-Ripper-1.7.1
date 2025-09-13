@@ -1,3 +1,1 @@
-# Hot-Dog - The Sexy Exploit
-
-//####//[BETA]//####//
+# Hot-Dog - The Sexy Exploit [BETA]
