@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <AssemblyName>NinjaRipper</AssemblyName>
+    <RootNamespace>NinjaRipper</RootNamespace>
+    <Version>1.1.4</Version>
+    <Authors>black_ninja (C# Port: 2025)</Authors>
+    <Company>black_ninja</Company>
+    <Product>Ninja Ripper</Product>
+    <Description>3D Ripper for DirectX Applications - C# Port</Description>
+    <Copyright>Original (c) 2004-2012 black_ninja</Copyright>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <PublishTrimmed>false</PublishTrimmed>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+  </PropertyGroup>
+
+</Project>
