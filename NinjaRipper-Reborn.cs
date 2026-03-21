@@ -1,23 +1,184 @@
-// NinjaRipper_Complete.cs - Complete Single-File Implementation
-// .NET 6.0 WinForms + DLL Injection + DirectX Hooking
-// Original: (c)2004-2012 black_ninja | C# Port: 2025
-// BUILD: csc /target:winexe /out:NinjaRipper.exe NinjaRipper_Complete.cs
-
 using System;
+using System.IO;
 using System.Drawing;
 using System.Windows.Forms;
-using System.IO;
-using System.Runtime.InteropServices;
 using System.Diagnostics;
-using Microsoft.Win32;
-using System.Text;
-
+ 
 namespace NinjaRipper
 {
-    // ========================================
-    // ENTRY POINT
-    // ========================================
-    internal static class Program
+    // =========================================================================
+    //  UI LAYOUT CONSTANTS
+    //  ALL coordinates are CLIENT-SPACE (origin = top-left of client area).
+    //  Edit only this class to fix any pixel mismatches.
+    // =========================================================================
+    static class UI
+    {
+        // -- Form --------------------------------------------------------------
+        public const int FormWidth  = 456;
+        public const int FormHeight = 289;
+ 
+        // -- Target GroupBox ---------------------------------------------------
+        public const int TargetGroupX      = 11;
+        public const int TargetGroupY      = 11;
+        public const int TargetGroupWidth  = 317;   // = RunGroupX - TargetGroupX - 8
+        public const int TargetGroupHeight = 104;
+ 
+        // Exe row
+        public const int ExeLabelX        = 19;
+        public const int ExeLabelY        = 37;
+        public const int ExeBoxX          = 50;
+        public const int ExeBoxY          = 33;
+        public const int ExeBoxWidth      = 238;
+        public const int ExeBoxHeight     = 20;
+
+        // Exe "..." button
+        public const int ExeDotX          = 292;
+        public const int ExeDotY          = 32;
+        public const int ExeDotWidth      = 27;
+        public const int ExeDotHeight     = 22;
+ 
+        // Arg row
+        public const int ArgLabelX        = 19;
+        public const int ArgLabelY        = 63;
+        public const int ArgBoxX          = 50;
+        public const int ArgBoxY          = 59;
+        public const int ArgBoxWidth      = 268;
+        public const int ArgBoxHeight     = 20;
+ 
+        // Dir row ? editable, NOT ReadOnly, NO dot button; auto-filled from Exe
+        public const int DirLabelX        = 19;
+        public const int DirLabelY        = 89;
+        public const int DirBoxX          = 50;
+        public const int DirBoxY          = 85;
+        public const int DirBoxWidth      = 268;
+        public const int DirBoxHeight     = 20;
+ 
+        // -- Run GroupBox (unlabelled border panel) ----------------------------
+        public const int RunGroupX        = 335;
+        public const int RunGroupY        = 11;
+        public const int RunGroupWidth    = 107;
+        public const int RunGroupHeight   = 104;
+ 
+        // Run button (tall, top half of RunGroup)
+        public const int RunButtonX       = 341;
+        public const int RunButtonY       = 24;
+        public const int RunButtonWidth   = 94;
+        public const int RunButtonHeight  = 53;
+ 
+        // Mode selector combo (bottom half of RunGroup, below Run button)
+        public const int ModeComboX       = 342;
+        public const int ModeComboY       = 85;
+        public const int ModeComboWidth   = 92;
+        public const int ModeComboHeight  = 21;
+ 
+        // -- Output Directory GroupBox -----------------------------------------
+        public const int OutputGroupX      = 11;
+        public const int OutputGroupY      = 119;
+        public const int OutputGroupWidth  = 431;
+        public const int OutputGroupHeight = 79;
+ 
+        // Output Dir row
+        public const int OutputDirLabelX   = 23;
+        public const int OutputDirLabelY   = 143;
+        public const int OutputDirBoxX     = 50;
+        public const int OutputDirBoxY     = 142;
+        public const int OutputDirBoxWidth = 238;
+        public const int OutputDirBoxHeight= 20;
+ 
+        // Dir's "..." Button
+        public const int OutputDotX        = 292;
+        public const int OutputDotY        = 141;
+        public const int OutputDotWidth    = 27;
+        public const int OutputDotHeight   = 22;
+ 
+        // Browse button (tall; right side of Output Directory group)
+        public const int BrowseButtonX     = 341;
+        public const int BrowseButtonY     = 141;
+        public const int BrowseButtonWidth = 94;
+        public const int BrowseButtonHeight= 42;
+ 
+        // "Don't change the path" checkbox
+        public const int DontChangeX       = 50;
+        public const int DontChangeY       = 168;
+        public const int DontChangeWidth   = 160;
+        public const int DontChangeHeight  = 17;
+ 
+        // -- Settings GroupBox -------------------------------------------------
+        public const int SettingsGroupX      = 11;
+        public const int SettingsGroupY      = 202;
+        public const int SettingsGroupWidth  = 317;
+        public const int SettingsGroupHeight = 65;
+ 
+        // RIP row (inside Settings group visually)
+        public const int RipLabelX          = 18;
+        public const int RipLabelY          = 233;
+        public const int RipComboX          = 44;
+        public const int RipComboY          = 230;
+        public const int RipComboWidth      = 49;
+        public const int RipComboHeight     = 20;
+ 
+        // -- Forced to Save GroupBox (visually nested inside Settings) ---------
+        public const int ForcedGroupX       = 107;
+        public const int ForcedGroupY       = 210;
+        public const int ForcedGroupWidth   = 125;
+        public const int ForcedGroupHeight  = 50;
+ 
+        // Textures row (inside Forced to Save group visually)
+        public const int TexturesLabelX     = 112;
+        public const int TexturesLabelY     = 233;
+        public const int TexturesComboX     = 168;
+        public const int TexturesComboY     = 230;
+        public const int TexturesComboWidth = 49;
+        public const int TexturesComboHeight= 20;
+ 
+        // -- About / Donate button ---------------------------------------------
+        public const int AboutButtonX       = 341;
+        public const int AboutButtonY       = 207;
+        public const int AboutButtonWidth   = 94;
+        public const int AboutButtonHeight  = 29;
+ 
+        // -- Exit button -------------------------------------------------------
+        public const int ExitButtonX        = 341;
+        public const int ExitButtonY        = 238;
+        public const int ExitButtonWidth    = 94;
+        public const int ExitButtonHeight   = 29;
+    }
+ 
+    // =========================================================================
+    //  Config -- persists Exe and Dir across restarts using a plain text file
+    //  stored next to the executable: NinjaRipper.cfg
+    //  Format: two lines -- Exe path then Dir path.  Missing/corrupt = ignored.
+    // =========================================================================
+    static class Config
+    {
+        private static readonly string FilePath = Path.Combine(
+            Path.GetDirectoryName(Application.ExecutablePath) ?? string.Empty,
+            "NinjaRipper.cfg");
+
+        public static (string Exe, string Dir) Load()
+        {
+            try
+            {
+                if (!File.Exists(FilePath)) return (string.Empty, string.Empty);
+                string[] lines = File.ReadAllLines(FilePath);
+                string exe = lines.Length > 0 ? lines[0] : string.Empty;
+                string dir = lines.Length > 1 ? lines[1] : string.Empty;
+                return (exe, dir);
+            }
+            catch { return (string.Empty, string.Empty); }
+        }
+
+        public static void Save(string exe, string dir)
+        {
+            try { File.WriteAllLines(FilePath, new[] { exe, dir }); }
+            catch { /* best-effort */ }
+        }
+    }
+
+    // =========================================================================
+    //  Entry point
+    // =========================================================================
+    static class Program
     {
         [STAThread]
         static void Main()
@@ -27,615 +188,409 @@ namespace NinjaRipper
             Application.Run(new MainForm());
         }
     }
-
-    // ========================================
-    // SETTINGS CLASS
-    // ========================================
-    public class Settings
+ 
+    // =========================================================================
+    //  About / Donate dialog  ?  ClientSize = 292 ? 210
+    // =========================================================================
+    sealed class AboutForm : Form
     {
-        private const string REGISTRY_PATH = @"SOFTWARE\black_ninja\NinjaRipper";
-        
-        public string PrevEXE { get; set; } = "";
-        public string PrevArg { get; set; } = "";
-        public string PrevDir { get; set; } = "";
-        public string OutDir { get; set; } = "";
-        public string IntruderDir { get; set; } = "";
-        
-        public int RipKey { get; set; } = 0x79;         // F10
-        public int TextureRipKey { get; set; } = 0x78;  // F9
-        public bool DontOverwriteOutDir { get; set; } = false;
-        
-        public Settings()
+        public AboutForm()
         {
-            IntruderDir = AppDomain.CurrentDomain.BaseDirectory;
-        }
-
-        public void Load()
-        {
-            try
+            Text            = "About / Donate";
+            FormBorderStyle = FormBorderStyle.FixedDialog;
+            MaximizeBox     = false;
+            MinimizeBox     = false;
+            ShowInTaskbar   = false;
+            StartPosition   = FormStartPosition.CenterParent;
+            ClientSize      = new Size(292, 210);
+            Font            = new Font("Microsoft Sans Serif", 8);
+ 
+            Controls.Add(new Label
             {
-                using (var key = Registry.CurrentUser.OpenSubKey(REGISTRY_PATH))
-                {
-                    if (key != null)
-                    {
-                        PrevEXE = key.GetValue("PrevEXE", "") as string ?? "";
-                        PrevArg = key.GetValue("PrevArg", "") as string ?? "";
-                        PrevDir = key.GetValue("PrevDir", "") as string ?? "";
-                        OutDir = key.GetValue("OutDir", "") as string ?? "";
-                        IntruderDir = key.GetValue("IntruderDir", IntruderDir) as string ?? IntruderDir;
-                        
-                        RipKey = Convert.ToInt32(key.GetValue("RipKey", 0x79));
-                        TextureRipKey = Convert.ToInt32(key.GetValue("TextureRipKey", 0x78));
-                        
-                        var dontOverwrite = key.GetValue("DontOverwriteOutDir", 0);
-                        DontOverwriteOutDir = Convert.ToInt32(dontOverwrite) != 0;
-                    }
-                }
-            }
-            catch { }
-        }
-
-        public void Save()
-        {
-            try
+                Text      = "Ninja Ripper 1.1.2",
+                Font      = new Font("Microsoft Sans Serif", 9f, FontStyle.Bold),
+                TextAlign = ContentAlignment.MiddleCenter,
+                Bounds    = new Rectangle(0, 10, 292, 18)
+            });
+ 
+            // "black_ninja" is the only hyperlink
+            var authorLabel = new LinkLabel
             {
-                using (var key = Registry.CurrentUser.CreateSubKey(REGISTRY_PATH))
-                {
-                    if (key != null)
-                    {
-                        key.SetValue("PrevEXE", PrevEXE);
-                        key.SetValue("PrevArg", PrevArg);
-                        key.SetValue("PrevDir", PrevDir);
-                        key.SetValue("OutDir", OutDir);
-                        key.SetValue("IntruderDir", IntruderDir);
-                        
-                        key.SetValue("RipKey", RipKey, RegistryValueKind.DWord);
-                        key.SetValue("TextureRipKey", TextureRipKey, RegistryValueKind.DWord);
-                        key.SetValue("DontOverwriteOutDir", DontOverwriteOutDir ? 1 : 0, RegistryValueKind.DWord);
-                    }
-                }
-            }
+                Text      = "Author:  black_ninja  (c) 2004-2012",
+                TextAlign = ContentAlignment.MiddleCenter,
+                Bounds    = new Rectangle(0, 34, 292, 16)
+            };
+            authorLabel.Links.Clear();
+            authorLabel.Links.Add(9, 11, "https://cgig.ru");
+            authorLabel.LinkClicked += OnLinkClicked;
+            Controls.Add(authorLabel);
+ 
+            // "cgig.ru/ninjaripper" is the only hyperlink
+            var homeLabel = new LinkLabel
+            {
+                Text      = "Home:  cgig.ru/ninjaripper",
+                TextAlign = ContentAlignment.MiddleCenter,
+                Bounds    = new Rectangle(0, 54, 292, 16)
+            };
+            homeLabel.Links.Clear();
+            homeLabel.Links.Add(7, 19, "https://cgig.ru/ninjaripper/");
+            homeLabel.LinkClicked += OnLinkClicked;
+            Controls.Add(homeLabel);
+ 
+            // Donation group ? interactive controls added BEFORE GroupBox
+            var paypalButton = new Button
+            {
+                Text      = "PayPal",
+                Font      = new Font("Arial", 11f, FontStyle.Bold | FontStyle.Italic),
+                ForeColor = Color.FromArgb(0, 59, 122),
+                BackColor = Color.FromArgb(255, 196, 57),
+                FlatStyle = FlatStyle.Flat,
+                Bounds    = new Rectangle(86, 90, 120, 30),
+                Cursor    = Cursors.Hand,
+                UseVisualStyleBackColor = false
+            };
+            paypalButton.FlatAppearance.BorderColor = Color.FromArgb(0, 59, 122);
+            paypalButton.Click += (_, _) => OpenUrl(
+                "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=RPNFSGKSUKLM2");
+            Controls.Add(paypalButton);
+ 
+            Controls.Add(new Label  { Text = "WMR:", AutoSize = true, Location = new Point(14, 130) });
+            var wmrBox = new TextBox { Text = "R175496431227", ReadOnly = true, Bounds = new Rectangle(52, 127, 164, 20) };
+            Controls.Add(wmrBox);
+            Controls.Add(new Label  { Text = "WMZ:", AutoSize = true, Location = new Point(14, 150) });
+            var wmzBox = new TextBox { Text = "Z983369561118", ReadOnly = true, Bounds = new Rectangle(52, 147, 164, 20) };
+            Controls.Add(wmzBox);
+ 
+            // OK button
+            var okButton = new Button
+            {
+                Text         = "OK",
+                DialogResult = DialogResult.OK,
+                FlatStyle    = FlatStyle.System,
+                Bounds       = new Rectangle(210, 182, 74, 23)
+            };
+            AcceptButton = okButton;
+            Controls.Add(okButton);
+ 
+            // GroupBox added LAST so it paints BEHIND all controls above
+            // CRITICAL: never set BackColor on GroupBox ? kills the border
+            Controls.Add(new GroupBox
+            {
+                Text   = "Make a donation - support the development",
+                Bounds = new Rectangle(8, 76, 276, 96)
+            });
+        }
+ 
+        private static void OnLinkClicked(object? s, LinkLabelLinkClickedEventArgs e)
+        {
+            if (e.Link?.LinkData is string url) OpenUrl(url);
+        }
+ 
+        internal static void OpenUrl(string url)
+        {
+            try { Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true }); }
             catch { }
         }
     }
-
-    // ========================================
-    // PROCESS INJECTOR
-    // ========================================
-    public class ProcessInjector
+ 
+    // =========================================================================
+    //  Main form  ?  ClientSize = 456 ? 289
+    //
+    //  Z-ORDER RULE (critical for GroupBox borders to be visible AND for
+    //  controls to appear on top of GroupBox backgrounds):
+    //
+    //    In WinForms, Controls.Add() inserts at the FRONT of the paint stack.
+    //    The first control added is painted LAST ? appears on TOP.
+    //    The last control added is painted FIRST ? appears BEHIND.
+    //
+    //    Therefore: add ALL buttons/textboxes/labels/combos FIRST,
+    //               add ALL GroupBoxes LAST.
+    //
+    //    GroupBoxes will then be painted first (behind everything), while
+    //    all interactive controls float visibly on top of them.
+    // =========================================================================
+    sealed class MainForm : Form
     {
-        #region WinAPI
-
-        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        private static extern bool CreateProcess(
-            string? lpApplicationName,
-            StringBuilder? lpCommandLine,
-            IntPtr lpProcessAttributes,
-            IntPtr lpThreadAttributes,
-            bool bInheritHandles,
-            uint dwCreationFlags,
-            IntPtr lpEnvironment,
-            string? lpCurrentDirectory,
-            ref STARTUPINFO lpStartupInfo,
-            out PROCESS_INFORMATION lpProcessInformation);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern IntPtr VirtualAllocEx(IntPtr hProcess, IntPtr lpAddress, uint dwSize, uint flAllocationType, uint flProtect);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, uint nSize, out IntPtr lpNumberOfBytesWritten);
-
-        [DllImport("kernel32.dll", CharSet = CharSet.Ansi, SetLastError = true)]
-        private static extern IntPtr GetProcAddress(IntPtr hModule, string lpProcName);
-
-        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-        private static extern IntPtr GetModuleHandle(string lpModuleName);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern uint ResumeThread(IntPtr hThread);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern bool CloseHandle(IntPtr hObject);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern uint QueueUserAPC(IntPtr pfnAPC, IntPtr hThread, IntPtr dwData);
-
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-        private struct STARTUPINFO
+        private TextBox  _exeBox        = null!;
+        private TextBox  _argBox        = null!;
+        private TextBox  _dirBox        = null!;
+        private TextBox  _outputDirBox  = null!;
+        private ComboBox _modeCombo     = null!;
+        private ComboBox _ripCombo      = null!;
+        private ComboBox _texturesCombo = null!;
+ 
+        public MainForm()
         {
-            public uint cb;
-            public string? lpReserved;
-            public string? lpDesktop;
-            public string? lpTitle;
-            public uint dwX;
-            public uint dwY;
-            public uint dwXSize;
-            public uint dwYSize;
-            public uint dwXCountChars;
-            public uint dwYCountChars;
-            public uint dwFillAttribute;
-            public uint dwFlags;
-            public short wShowWindow;
-            public short cbReserved2;
-            public IntPtr lpReserved2;
-            public IntPtr hStdInput;
-            public IntPtr hStdOutput;
-            public IntPtr hStdError;
+            Text            = "Ninja Ripper 1.1.2";
+            FormBorderStyle = FormBorderStyle.FixedSingle;
+            MaximizeBox     = false;
+            StartPosition   = FormStartPosition.CenterScreen;
+            ClientSize      = new Size(UI.FormWidth, UI.FormHeight);
+            Font            = new Font("Microsoft Sans Serif", 8);
+ 
+            // -- STEP 1: Add all interactive controls first (they paint on top) -
+            AddAllControls();
+ 
+            // -- STEP 2: Add all GroupBoxes last (they paint behind everything) -
+            AddAllGroupBoxes();
         }
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct PROCESS_INFORMATION
+ 
+        // -- All labels, textboxes, combos and buttons -------------------------
+        private void AddAllControls()
         {
-            public IntPtr hProcess;
-            public IntPtr hThread;
-            public uint dwProcessId;
-            public uint dwThreadId;
-        }
+            // --- Target section ---
+ 
+            Controls.Add(MakeLabel("Exe:", UI.ExeLabelX, UI.ExeLabelY));
+            _exeBox          = MakeTextBox(UI.ExeBoxX, UI.ExeBoxY, UI.ExeBoxWidth, UI.ExeBoxHeight);
+            _exeBox.Enabled = false;    // grey ? pick via "..."
+            Controls.Add(_exeBox);
 
-        private const uint CREATE_SUSPENDED = 0x00000004;
-        private const uint MEM_COMMIT = 0x00001000;
-        private const uint MEM_RESERVE = 0x00002000;
-        private const uint PAGE_READWRITE = 0x04;
+            // Restore previously selected paths
+            var (savedExe, savedDir) = Config.Load();
+            if (!string.IsNullOrEmpty(savedExe)) _exeBox.Text = savedExe;
 
-        #endregion
-
-        public bool InjectAndRun(string exePath, string args, string workDir, int wrapperMode)
-        {
-            try
+            var exeDot = MakeDotButton(UI.ExeDotX, UI.ExeDotY, UI.ExeDotWidth, UI.ExeDotHeight);
+            exeDot.Click += (_, _) => PickExecutable();
+            Controls.Add(exeDot);
+ 
+            Controls.Add(MakeLabel("Arg:", UI.ArgLabelX, UI.ArgLabelY));
+            _argBox = MakeTextBox(UI.ArgBoxX, UI.ArgBoxY, UI.ArgBoxWidth, UI.ArgBoxHeight);
+            Controls.Add(_argBox);
+ 
+            Controls.Add(MakeLabel("Dir:", UI.DirLabelX, UI.DirLabelY));
+            _dirBox = MakeTextBox(UI.DirBoxX, UI.DirBoxY, UI.DirBoxWidth, UI.DirBoxHeight);
+            Controls.Add(_dirBox);
+            if (!string.IsNullOrEmpty(savedDir)) _dirBox.Text = savedDir;
+ 
+            // --- Run / mode section ---
+ 
+            var runButton = MakeButton("Run",
+                UI.RunButtonX, UI.RunButtonY, UI.RunButtonWidth, UI.RunButtonHeight);
+            runButton.Click += RunButton_Click;
+            Controls.Add(runButton);
+ 
+            _modeCombo = new ComboBox
             {
-                var intruderDll = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "intruder.dll");
-                
-                // For now, launch without injection if DLL doesn't exist
-                if (!File.Exists(intruderDll))
-                {
-                    return LaunchWithoutInjection(exePath, args, workDir);
-                }
-
-                var commandLine = new StringBuilder($"\"{exePath}\"");
-                if (!string.IsNullOrEmpty(args))
-                    commandLine.Append($" {args}");
-
-                if (string.IsNullOrEmpty(workDir) || !Directory.Exists(workDir))
-                    workDir = Path.GetDirectoryName(exePath) ?? "";
-
-                var si = new STARTUPINFO { cb = (uint)Marshal.SizeOf(typeof(STARTUPINFO)) };
-
-                bool success = CreateProcess(
-                    null, commandLine, IntPtr.Zero, IntPtr.Zero, false,
-                    CREATE_SUSPENDED, IntPtr.Zero, workDir, ref si, out var pi);
-
-                if (!success) return false;
-
-                try
-                {
-                    InjectDllViaAPC(pi.hProcess, pi.hThread, intruderDll);
-                    ResumeThread(pi.hThread);
-                    return true;
-                }
-                finally
-                {
-                    CloseHandle(pi.hThread);
-                    CloseHandle(pi.hProcess);
-                }
-            }
-            catch { return false; }
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                Bounds        = new Rectangle(UI.ModeComboX, UI.ModeComboY,
+                                              UI.ModeComboWidth, UI.ModeComboHeight)
+            };
+            _modeCombo.Items.AddRange(new object[]
+            {
+                "Intruder (Recommended)",
+                "D3D9 Wrapper",
+                "D3D8 Wrapper",
+                "D3D11 Wrapper"
+            });
+            _modeCombo.SelectedIndex = 0;
+            Controls.Add(_modeCombo);
+ 
+            // --- Output Directory section ---
+ 
+            Controls.Add(MakeLabel("Dir:", UI.OutputDirLabelX, UI.OutputDirLabelY));
+ 
+            _outputDirBox      = MakeTextBox(UI.OutputDirBoxX, UI.OutputDirBoxY,
+                                             UI.OutputDirBoxWidth, UI.OutputDirBoxHeight);
+            _outputDirBox.Enabled = false;
+            _outputDirBox.Text = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                "NinjaRipper");
+            Controls.Add(_outputDirBox);
+ 
+            var outputDot = MakeDotButton(UI.OutputDotX, UI.OutputDotY,
+                                          UI.OutputDotWidth, UI.OutputDotHeight);
+            outputDot.Click += (_, _) => PickOutputFolder();
+            Controls.Add(outputDot);
+ 
+            var browseButton = MakeButton("Browse",
+                UI.BrowseButtonX, UI.BrowseButtonY,
+                UI.BrowseButtonWidth, UI.BrowseButtonHeight);
+            browseButton.Click += (_, _) => OpenExplorer(_outputDirBox.Text);
+            Controls.Add(browseButton);
+ 
+            Controls.Add(new CheckBox
+            {
+                Text    = "Don't change the path",
+                Checked = true,
+                Bounds  = new Rectangle(UI.DontChangeX, UI.DontChangeY,
+                                        UI.DontChangeWidth, UI.DontChangeHeight)
+            });
+ 
+            // --- Settings / Forced to save section ---
+ 
+            Controls.Add(MakeLabel("RIP", UI.RipLabelX, UI.RipLabelY));
+            _ripCombo = MakeFKeyCombo(UI.RipComboX, UI.RipComboY, UI.RipComboWidth, "F12");
+            Controls.Add(_ripCombo);
+ 
+            Controls.Add(MakeLabel("Textures", UI.TexturesLabelX, UI.TexturesLabelY));
+            _texturesCombo = MakeFKeyCombo(UI.TexturesComboX, UI.TexturesComboY,
+                                           UI.TexturesComboWidth, "F12");
+            Controls.Add(_texturesCombo);
+ 
+            // --- Action buttons ---
+ 
+            var aboutButton = MakeButton("About / Donate",
+                UI.AboutButtonX, UI.AboutButtonY,
+                UI.AboutButtonWidth, UI.AboutButtonHeight);
+            aboutButton.Click += (_, _) => { using var d = new AboutForm(); d.ShowDialog(this); };
+            Controls.Add(aboutButton);
+ 
+            var exitButton = MakeButton("Exit",
+                UI.ExitButtonX, UI.ExitButtonY,
+                UI.ExitButtonWidth, UI.ExitButtonHeight);
+            exitButton.Click += (_, _) => Application.Exit();
+            Controls.Add(exitButton);
         }
-
-        private void InjectDllViaAPC(IntPtr hProcess, IntPtr hThread, string dllPath)
+ 
+        // -- All GroupBoxes ? added LAST so they render BEHIND everything above -
+        private void AddAllGroupBoxes()
         {
-            IntPtr kernel32 = GetModuleHandle("kernel32.dll");
-            IntPtr loadLibrary = GetProcAddress(kernel32, "LoadLibraryA");
-
-            byte[] dllBytes = Encoding.ASCII.GetBytes(dllPath + "\0");
-            IntPtr allocMem = VirtualAllocEx(hProcess, IntPtr.Zero, (uint)dllBytes.Length,
-                MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-
-            if (allocMem == IntPtr.Zero) throw new Exception("VirtualAllocEx failed");
-
-            if (!WriteProcessMemory(hProcess, allocMem, dllBytes, (uint)dllBytes.Length, out _))
-                throw new Exception("WriteProcessMemory failed");
-
-            QueueUserAPC(loadLibrary, hThread, allocMem);
+            // Target GroupBox
+            Controls.Add(new GroupBox
+            {
+                Text   = "Target ( DX8, DX9, DX11 application )",
+                Bounds = new Rectangle(UI.TargetGroupX, UI.TargetGroupY,
+                                       UI.TargetGroupWidth, UI.TargetGroupHeight)
+            });
+ 
+            // Run GroupBox ? no title text, just a border box
+            Controls.Add(new GroupBox
+            {
+                Text   = string.Empty,
+                Bounds = new Rectangle(UI.RunGroupX, UI.RunGroupY,
+                                       UI.RunGroupWidth, UI.RunGroupHeight)
+            });
+ 
+            // Output Directory GroupBox
+            Controls.Add(new GroupBox
+            {
+                Text   = "Output Directory",
+                Bounds = new Rectangle(UI.OutputGroupX, UI.OutputGroupY,
+                                       UI.OutputGroupWidth, UI.OutputGroupHeight)
+            });
+ 
+            // Forced to Save GroupBox ? added before Settings so Settings
+            // border overlaps it correctly (Settings is the outer box)
+            Controls.Add(new GroupBox
+            {
+                Text   = "Forced to save",
+                Bounds = new Rectangle(UI.ForcedGroupX, UI.ForcedGroupY,
+                                       UI.ForcedGroupWidth, UI.ForcedGroupHeight)
+            });
+ 
+            // Settings GroupBox ? outermost, added last of the GroupBoxes
+            // so it paints furthest back; its border frames the whole bottom row
+            Controls.Add(new GroupBox
+            {
+                Text   = "Settings",
+                Bounds = new Rectangle(UI.SettingsGroupX, UI.SettingsGroupY,
+                                       UI.SettingsGroupWidth, UI.SettingsGroupHeight)
+            });
         }
-
-        private bool LaunchWithoutInjection(string exePath, string args, string workDir)
+ 
+        // -- Control factory helpers -------------------------------------------
+ 
+        private static Label MakeLabel(string text, int x, int y)
+            => new Label { Text = text, Location = new Point(x, y), AutoSize = true };
+ 
+        private static TextBox MakeTextBox(int x, int y, int width, int height)
+            => new TextBox { Bounds = new Rectangle(x, y, width, height) };
+ 
+        private static Button MakeButton(string text, int x, int y, int width, int height)
+            => new Button
+            {
+                Text      = text,
+                Bounds    = new Rectangle(x, y, width, height),
+                FlatStyle = FlatStyle.System   // native Win32 raised button look
+            };
+ 
+        private static Button MakeDotButton(int x, int y, int width, int height)
+            => new Button
+            {
+                Text      = "...",
+                Bounds    = new Rectangle(x, y, width, height),
+                FlatStyle = FlatStyle.System
+            };
+ 
+        private static ComboBox MakeFKeyCombo(int x, int y, int width, string defaultKey)
         {
+            var combo = new ComboBox
+            {
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                Bounds        = new Rectangle(x, y, width, 21)
+            };
+            for (int i = 1; i <= 12; i++) combo.Items.Add($"F{i}");
+            combo.SelectedItem = defaultKey;
+            return combo;
+        }
+ 
+        // -- Actions -----------------------------------------------------------
+ 
+        private void PickExecutable()
+        {
+            using var d = new OpenFileDialog
+            {
+                Title  = "Select target executable",
+                Filter = "EXE Files (*.exe)|*.exe|All Files (*.*)|*.*"
+            };
+            if (d.ShowDialog(this) != DialogResult.OK) return;
+            _exeBox.Text = d.FileName;
+            _dirBox.Text = Path.GetDirectoryName(d.FileName) ?? string.Empty;
+            Config.Save(_exeBox.Text, _dirBox.Text);
+        }
+ 
+        private void PickOutputFolder()
+        {
+            using var d = new FolderBrowserDialog
+            {
+                Description        = "Select output directory",
+                SelectedPath       = _outputDirBox.Text,
+                AutoUpgradeEnabled = false   // classic dialog with "Make New Folder"
+            };
+            if (d.ShowDialog(this) == DialogResult.OK)
+                _outputDirBox.Text = d.SelectedPath;
+        }
+ 
+        private static void OpenExplorer(string path)
+        {
+            string target = Directory.Exists(path) ? path
+                : Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
             try
             {
                 Process.Start(new ProcessStartInfo
                 {
-                    FileName = exePath,
-                    Arguments = args,
-                    WorkingDirectory = string.IsNullOrEmpty(workDir) ? Path.GetDirectoryName(exePath) : workDir,
-                    UseShellExecute = false
+                    FileName        = "explorer.exe",
+                    Arguments       = $"\"{target}\"",
+                    UseShellExecute = true
                 });
-                return true;
             }
-            catch { return false; }
+            catch { }
         }
-    }
-
-    // ========================================
-    // ABOUT FORM
-    // ========================================
-    public class AboutForm : Form
-    {
-        public AboutForm()
+ 
+        private void RunButton_Click(object? sender, EventArgs e)
         {
-            Text = "About / Donate";
-            ClientSize = new Size(458, 316);
-            FormBorderStyle = FormBorderStyle.FixedDialog;
-            MaximizeBox = false;
-            MinimizeBox = false;
-            StartPosition = FormStartPosition.CenterParent;
-
-            var mainGroup = new GroupBox { Location = new Point(7, 7), Size = new Size(286, 178) };
-            
-            var titleLabel = new Label
+            if (string.IsNullOrWhiteSpace(_exeBox.Text))
             {
-                Text = "NinjaRipper - Reborn (Prototype)",
-                Location = new Point(60, 25),
-                Size = new Size(180, 25),
-                Font = new Font("Arial", 12, FontStyle.Bold),
-                TextAlign = ContentAlignment.MiddleCenter
-            };
-
-            var authorLabel = new Label { Text = "Original Author:", Location = new Point(40, 51), Size = new Size(80, 12), TextAlign = ContentAlignment.MiddleRight };
-            var authorName = new Label { Text = "black_ninja", Location = new Point(125, 51), Size = new Size(70, 12) };
-            var copyright = new Label { Text = "(c) 2004-2012", Location = new Point(200, 51), Size = new Size(80, 12) };
-
-            var portLabel = new Label { Text = "C# Port: 2026", Location = new Point(100, 68), Size = new Size(100, 12), TextAlign = ContentAlignment.MiddleCenter };
-
-            var homepage = new LinkLabel { Text = "cgig.ru/ninjaripper", Location = new Point(90, 85), Size = new Size(120, 12), TextAlign = ContentAlignment.MiddleCenter };
-            homepage.LinkClicked += (s, e) =>
-            {
-                try { Process.Start(new ProcessStartInfo { FileName = "http://cgig.ru/ninjaripper/", UseShellExecute = true }); }
-                catch { }
-            };
-
-            var infoLabel = new Label
-            {
-                Text = "This is a C# educational port.\nFor full functionality, use the original C++ version.",
-                Location = new Point(20, 110),
-                Size = new Size(260, 30),
-                TextAlign = ContentAlignment.MiddleCenter
-            };
-
-            var okBtn = new Button { Text = "OK", Location = new Point(200, 192), Size = new Size(86, 22), DialogResult = DialogResult.OK };
-            
-            mainGroup.Controls.AddRange(new Control[] { titleLabel, authorLabel, authorName, copyright, portLabel, homepage, infoLabel });
-            Controls.AddRange(new Control[] { mainGroup, okBtn });
-            AcceptButton = okBtn;
-        }
-    }
-
-    // ========================================
-    // MAIN FORM
-    // ========================================
-    public partial class MainForm : Form
-    {
-        private Settings _settings;
-        private const string WINDOW_TITLE = "NinjaRipper - Reborn (Prototype)";
-
-        // Controls
-        private GroupBox targetGroup;
-        private Label exeLabel, argLabel, dirLabel;
-        private TextBox exeField, argField, dirField;
-        private Button exeBrowseBtn;
-        
-        private Button runBtn;
-        private ComboBox wrapperCombo;
-        
-        private GroupBox outputGroup;
-        private Label outdirLabel;
-        private TextBox outdirField;
-        private Button outdirBrowseBtn, browseBtn;
-        private CheckBox dontOverwriteCheck;
-        
-        private GroupBox settingsGroup, forcedSaveGroup;
-        private Label ripLabel, texturesLabel;
-        private ComboBox ripCombo, texturesCombo;
-        
-        private Button aboutBtn, exitBtn;
-
-        public MainForm()
-        {
-            _settings = new Settings();
-            InitializeComponent();
-            InitializeSettings();
-            LoadSettings();
-        }
-
-        private void InitializeComponent()
-        {
-            SuspendLayout();
-
-            Text = WINDOW_TITLE;
-            ClientSize = new Size(298, 238);
-            FormBorderStyle = FormBorderStyle.FixedDialog;
-            MaximizeBox = false;
-            StartPosition = FormStartPosition.CenterScreen;
-
-            // ===== Target Group =====
-            targetGroup = new GroupBox 
-            { 
-                Text = "Target ( DX8, DX9, DX11 application )", 
-                Location = new Point(7, 7), 
-                Size = new Size(212, 85) 
-            };
-            
-            exeLabel = new Label 
-            { 
-                Text = "Exe:", 
-                Location = new Point(6, 19), 
-                Size = new Size(24, 13),
-                TextAlign = ContentAlignment.MiddleRight
-            };
-            // EDITABLE - removed ReadOnly and gray background
-            exeField = new TextBox 
-            { 
-                Location = new Point(32, 17), 
-                Size = new Size(143, 20)
-            };
-            exeBrowseBtn = new Button 
-            { 
-                Text = "...", 
-                Location = new Point(178, 17), 
-                Size = new Size(27, 20) 
-            };
-            exeBrowseBtn.Click += ExeBrowseBtn_Click;
-            
-            argLabel = new Label 
-            { 
-                Text = "Arg:", 
-                Location = new Point(5, 43), 
-                Size = new Size(25, 13),
-                TextAlign = ContentAlignment.MiddleRight
-            };
-            argField = new TextBox 
-            { 
-                Location = new Point(32, 41), 
-                Size = new Size(173, 20) 
-            };
-            
-            dirLabel = new Label 
-            { 
-                Text = "Dir:", 
-                Location = new Point(7, 65), 
-                Size = new Size(23, 13),
-                TextAlign = ContentAlignment.MiddleRight
-            };
-            dirField = new TextBox 
-            { 
-                Location = new Point(32, 63), 
-                Size = new Size(173, 20) 
-            };
-
-            targetGroup.Controls.AddRange(new Control[] { exeLabel, exeField, exeBrowseBtn, argLabel, argField, dirLabel, dirField });
-
-            // ===== Run Button & Wrapper =====
-            runBtn = new Button 
-            { 
-                Text = "Run", 
-                Location = new Point(228, 16), 
-                Size = new Size(62, 32), 
-                Font = new Font(Font.FontFamily, 9F, FontStyle.Bold) 
-            };
-            runBtn.Click += RunBtn_Click;
-
-            wrapperCombo = new ComboBox 
-            { 
-                Location = new Point(228, 52), 
-                Size = new Size(62, 21), 
-                DropDownStyle = ComboBoxStyle.DropDownList 
-            };
-            wrapperCombo.Items.AddRange(new object[] { "Intruder (Rec.)", "D3D9 Wrapper", "D3D8 Wrapper", "D3D11 Wrapper" });
-            wrapperCombo.SelectedIndex = 0;
-
-            // ===== Output Directory Group =====
-            outputGroup = new GroupBox 
-            { 
-                Text = "Output Directory", 
-                Location = new Point(7, 97), 
-                Size = new Size(212, 66) 
-            };
-            
-            outdirLabel = new Label 
-            { 
-                Text = "Dir:", 
-                Location = new Point(7, 22), 
-                Size = new Size(23, 13),
-                TextAlign = ContentAlignment.MiddleRight
-            };
-            // EDITABLE - removed ReadOnly and gray background
-            outdirField = new TextBox 
-            { 
-                Location = new Point(32, 20), 
-                Size = new Size(143, 20)
-            };
-            outdirBrowseBtn = new Button 
-            { 
-                Text = "...", 
-                Location = new Point(178, 20), 
-                Size = new Size(27, 20) 
-            };
-            outdirBrowseBtn.Click += OutdirBrowseBtn_Click;
-            
-            dontOverwriteCheck = new CheckBox 
-            { 
-                Text = "Don't change the path", 
-                Location = new Point(32, 44), 
-                Size = new Size(140, 17) 
-            };
-
-            outputGroup.Controls.AddRange(new Control[] { outdirLabel, outdirField, outdirBrowseBtn, dontOverwriteCheck });
-
-            // ===== Browse Button (on form, not in group) =====
-            browseBtn = new Button 
-            { 
-                Text = "Browse", 
-                Location = new Point(228, 117), 
-                Size = new Size(62, 25) 
-            };
-            browseBtn.Click += BrowseBtn_Click;
-
-            // ===== Settings Group =====
-            settingsGroup = new GroupBox 
-            { 
-                Text = "Settings", 
-                Location = new Point(7, 168), 
-                Size = new Size(212, 63) 
-            };
-            
-            forcedSaveGroup = new GroupBox 
-            { 
-                Text = "Forced to save", 
-                Location = new Point(13, 19), 
-                Size = new Size(190, 37) 
-            };
-            
-            ripLabel = new Label 
-            { 
-                Text = "RIP", 
-                Location = new Point(7, 16), 
-                Size = new Size(23, 13),
-                TextAlign = ContentAlignment.MiddleRight
-            };
-            ripCombo = new ComboBox 
-            { 
-                Location = new Point(32, 14), 
-                Size = new Size(44, 21), 
-                DropDownStyle = ComboBoxStyle.DropDownList 
-            };
-            for (int i = 1; i <= 12; i++) ripCombo.Items.Add($"F{i}");
-            ripCombo.SelectedIndex = 9; // F10
-            
-            texturesLabel = new Label 
-            { 
-                Text = "Textures", 
-                Location = new Point(96, 16), 
-                Size = new Size(46, 13),
-                TextAlign = ContentAlignment.MiddleRight
-            };
-            texturesCombo = new ComboBox 
-            { 
-                Location = new Point(144, 14), 
-                Size = new Size(40, 21), 
-                DropDownStyle = ComboBoxStyle.DropDownList 
-            };
-            for (int i = 1; i <= 12; i++) texturesCombo.Items.Add($"F{i}");
-            texturesCombo.SelectedIndex = 8; // F9
-
-            forcedSaveGroup.Controls.AddRange(new Control[] { ripLabel, ripCombo, texturesLabel, texturesCombo });
-            settingsGroup.Controls.Add(forcedSaveGroup);
-
-            // ===== About & Exit Buttons =====
-            aboutBtn = new Button 
-            { 
-                Text = "About / Donate", 
-                Location = new Point(228, 175), 
-                Size = new Size(62, 23) 
-            };
-            aboutBtn.Click += (s, e) => new AboutForm().ShowDialog(this);
-            
-            exitBtn = new Button 
-            { 
-                Text = "Exit", 
-                Location = new Point(228, 204), 
-                Size = new Size(62, 23) 
-            };
-            exitBtn.Click += (s, e) => Close();
-
-            // ===== Add all controls to form =====
-            Controls.AddRange(new Control[] 
-            { 
-                targetGroup, 
-                runBtn, 
-                wrapperCombo, 
-                outputGroup, 
-                browseBtn, 
-                settingsGroup, 
-                aboutBtn, 
-                exitBtn 
-            });
-            
-            ResumeLayout(false);
-        }
-
-        private void ExeBrowseBtn_Click(object? sender, EventArgs e)
-        {
-            using var ofd = new OpenFileDialog { Filter = "Executable Files (*.exe)|*.exe|All Files (*.*)|*.*", Title = "Select Target Executable" };
-            if (ofd.ShowDialog() == DialogResult.OK)
-            {
-                exeField.Text = ofd.FileName;
-                var dir = Path.GetDirectoryName(ofd.FileName) ?? "";
-                dirField.Text = dir;
-                if (!dontOverwriteCheck.Checked) outdirField.Text = dir;
-            }
-        }
-
-        private void OutdirBrowseBtn_Click(object? sender, EventArgs e)
-        {
-            using var fbd = new FolderBrowserDialog { Description = "Select Output Directory", SelectedPath = outdirField.Text };
-            if (fbd.ShowDialog() == DialogResult.OK) outdirField.Text = fbd.SelectedPath;
-        }
-
-        private void BrowseBtn_Click(object? sender, EventArgs e)
-        {
-            var outDir = outdirField.Text;
-            if (!string.IsNullOrEmpty(outDir) && Directory.Exists(outDir))
-                Process.Start("explorer.exe", outDir);
-        }
-
-        private void RunBtn_Click(object? sender, EventArgs e)
-        {
-            if (string.IsNullOrEmpty(exeField.Text))
-            {
-                MessageBox.Show("Please select an executable file first.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Please select a target executable.", Text,
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
-
-            SaveSettings();
-
-            var injector = new ProcessInjector();
-            bool success = injector.InjectAndRun(
-                exeField.Text,
-                argField.Text,
-                dirField.Text,
-                wrapperCombo.SelectedIndex
-            );
-
-            if (!success)
+            try
             {
-                MessageBox.Show("Failed to launch target process.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName         = _exeBox.Text,
+                    Arguments        = _argBox.Text,
+                    WorkingDirectory = _dirBox.Text,
+                    UseShellExecute  = true
+                });
             }
-        }
-
-        private void InitializeSettings()
-        {
-            _settings.Load();
-        }
-
-        private void LoadSettings()
-        {
-            exeField.Text = _settings.PrevEXE;
-            argField.Text = _settings.PrevArg;
-            dirField.Text = _settings.PrevDir;
-            outdirField.Text = _settings.OutDir;
-            dontOverwriteCheck.Checked = _settings.DontOverwriteOutDir;
-        }
-
-        private void SaveSettings()
-        {
-            _settings.PrevEXE = exeField.Text;
-            _settings.PrevArg = argField.Text;
-            _settings.PrevDir = dirField.Text;
-            _settings.OutDir = outdirField.Text;
-            _settings.DontOverwriteOutDir = dontOverwriteCheck.Checked;
-            _settings.RipKey = 0x79 + ripCombo.SelectedIndex;
-            _settings.TextureRipKey = 0x79 + texturesCombo.SelectedIndex;
-            
-            _settings.Save();
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to launch:\n{ex.Message}", Text,
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
     }
 }
+ 
