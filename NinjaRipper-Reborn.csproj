@@ -1,13 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>NinjaRipper</AssemblyName>
     <RootNamespace>NinjaRipper</RootNamespace>
     <StartupObject>NinjaRipper.Program</StartupObject>
+    <Version>1.1.2</Version>
+    <Authors>black_ninja</Authors>
+    <Company>black_ninja</Company>
+    <Product>Ninja Ripper - DirectX 9 Focus</Product>
+    <Description>3D Model and Texture Ripper for DirectX Applications</Description>
+    <Copyright>Original (c) 2004-2012 black_ninja</Copyright>
   </PropertyGroup>
 </Project>
  
