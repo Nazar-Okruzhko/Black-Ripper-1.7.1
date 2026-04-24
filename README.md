@@ -940,3 +940,11 @@
                           ├── XAPOFX.lib
                           └── XInput.lib
     
+# History
+I've took a look once again on what made the Original NinjaRipper 1.7.1 so good. I've tried analyzing it, inspecting it step by step and even decompiling, eventually I've got very lucky and got the Original Source Code from the Author I've started analyzing it hardly and with help and soon became recreating my own Open Source Version of the NinjaRipper 1.7.1 called Black Exploit.
+
+# Why not C# or Python?
+C# cannot do APC injection, vtable hooks, or LdrLoadDll interception at the native level.
+[Despite being my most beloved languages there was this one major problem]
+
+# How does the Ripper works?
