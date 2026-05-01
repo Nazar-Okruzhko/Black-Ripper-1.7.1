@@ -1,0 +1,74 @@
+<Project Sdk="Microsoft.NET.Sdk">
+ 
+  <PropertyGroup>
+    <AssemblyName>BlackExploit_171</AssemblyName>
+    <RootNamespace>BlackExploit</RootNamespace>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <ApplicationIcon>1.ico</ApplicationIcon>
+    <PlatformTarget>x64</PlatformTarget>
+    <Nullable>disable</Nullable>
+    <LangVersion>9.0</LangVersion>
+    <Optimize>true</Optimize>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <!-- net48 targets full .NET Framework; no runtime identifier needed.
+         Use PlatformTarget above to control x86 vs x64. -->
+    <UseWindowsForms>true</UseWindowsForms>
+  </PropertyGroup>
+ 
+  <!-- net48: System.Windows.Forms and System.Drawing are in the GAC.
+       Microsoft.Win32.Registry is also part of the full framework GAC,
+       so NO explicit reference is needed - adding one causes MSB3245. -->
+  <ItemGroup>
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Drawing" />
+  </ItemGroup>
+ 
+  <!-- Exclude injhelper.cs so the SDK glob does not pick it up.
+       Both .csproj files share the same directory; without this,
+       the compiler finds two Main() methods and throws CS0017. -->
+  <ItemGroup>
+    <Compile Remove="injhelper.cs" />
+  </ItemGroup>
+
+  <!-- After building, copy injhelper.exe binaries (built first via injhelper.csproj)
+       into the x86\ and x64\ subdirs next to BlackRipper_171.exe.
+       Build commands (run these before building this project):
+         dotnet build injhelper.csproj -c Release -p:PlatformTarget=x86
+         dotnet build injhelper.csproj -c Release -p:PlatformTarget=x64        -->
+  <Target Name="CopyInjHelper" AfterTargets="Build">
+    <Message Text="Copying injhelper.exe (x64)..." Importance="high" />
+    <Copy
+      SourceFiles="$(MSBuildThisFileDirectory)bin\Release\net48\x64\net48\injhelper.exe"
+      DestinationFolder="$(OutDir)"
+      SkipUnchangedFiles="true"
+      ContinueOnError="true" />
+
+    <Message Text="Copying injhelper.exe (x86)..." Importance="high" />
+    <Copy
+      SourceFiles="$(MSBuildThisFileDirectory)bin\Release\net48\x86\net48\injhelper.exe"
+      DestinationFolder="$(OutDir)"
+      SkipUnchangedFiles="true"
+      ContinueOnError="true" />
+
+    <Message Text="Copying d3dwrap.dll (x64/x86)..." Importance="high" />
+    <Copy
+      SourceFiles="$(MSBuildThisFileDirectory)Intruder and Wrapper (Compiled)\d3dwrap.dll"
+      DestinationFolder="$(OutDir)"
+      SkipUnchangedFiles="true"
+      ContinueOnError="true" />
+
+    <Message Text="Copying intruder.dll (x64/x86)..." Importance="high" />
+    <Copy
+      SourceFiles="$(MSBuildThisFileDirectory)Intruder and Wrapper (Compiled)\intruder.dll"
+      DestinationFolder="$(OutDir)"
+      SkipUnchangedFiles="true"
+      ContinueOnError="true" />
+
+   <RemoveDir Directories="$(OutDir)x64" />
+   <Exec Command="del /f /q &quot;$(OutDir)$(AssemblyName).exe.config&quot;" />
+
+  </Target>
+</Project>
+ 

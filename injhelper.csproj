@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+ 
+  <PropertyGroup>
+    <AssemblyName>injhelper</AssemblyName>
+    <RootNamespace>InjHelper</RootNamespace>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <Nullable>disable</Nullable>
+    <LangVersion>9.0</LangVersion>
+    <Optimize>true</Optimize>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <GenerateAppConfigFile>false</GenerateAppConfigFile>
+ 
+    <!-- IMPORTANT: disable the SDK glob entirely so it does NOT pick up
+         BlackExploit_171.cs (which lives in the same directory).
+         We include only injhelper.cs explicitly below. -->
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+ 
+    <!-- Route output into bin\Release\net48\x86\ or x64\ depending on which
+         PlatformTarget is passed on the CLI. BlackRipper_171.csproj's
+         CopyInjHelper target reads from exactly these paths. -->
+    <OutputPath>bin\$(Configuration)\net48\$(PlatformTarget)\</OutputPath>
+  </PropertyGroup>
+ 
+  <!-- Only compile injhelper.cs - nothing else -->
+  <ItemGroup>
+    <Compile Include="injhelper.cs" />
+  </ItemGroup>
+ 
+</Project>
+ 
