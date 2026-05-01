@@ -1,6 +1,6 @@
-# Project NinjaRipper: Reborn - Black Exploit
+# Project NinjaRipper: Reborn - Black Ripper 1.7.1
 
-# W.I.P. => Project is under a lot of the digging....
+# W.I.P. Project => Project is under a lot of the digging....
 
 ### Original NinjaRipper 1.7.1 Source Folder:
 
@@ -8,6 +8,47 @@
 
 ### Original NinjaRipper 1.7.1 Structure:
       └── NinjaRipperSrc_x64/
+          ├── common/
+          │   ├── constants.cpp
+          │   ├── constants.h
+          │   ├── crashdump.cpp
+          │   ├── crashdump.h
+          │   ├── kinject.cpp
+          │   ├── kinject.h
+          │   ├── ksettings.cpp
+          │   ├── ksettings.h
+          │   ├── pathtools.cpp
+          │   ├── pathtools.h
+          │   ├── registry.cpp
+          │   ├── registry.h
+          │   └── tinylogger.h
+          ├── injector/
+          │   ├── aboutdlg.cpp
+          │   ├── aboutdlg.h
+          │   ├── dxrip_.ico
+          │   ├── Hyperlinks.cpp
+          │   ├── Hyperlinks.h
+          │   ├── Hyperlinks__.cpp
+          │   ├── injector.cpp
+          │   ├── injector.h
+          │   ├── injector.rc
+          │   ├── injector.sln
+          │   ├── injector.suo
+          │   ├── injector.v12.suo
+          │   ├── injector.vcproj
+          │   ├── injector.vcxproj
+          │   ├── injector.vcxproj.filters
+          │   ├── injector.vcxproj.user
+          │   ├── Main.ico
+          │   ├── paypal.bmp
+          │   ├── paypal10.bmp
+          │   ├── paypal5.bmp
+          │   ├── RCa20616
+          │   ├── resource.h
+          │   ├── settingsdlg.cpp
+          │   ├── stdafx.h
+          │   ├── UpgradeLog.htm
+          │   └── UpgradeLog.XML
           ├── intruder/
           │   ├── intruder.aps
           │   ├── intruder.cpp
@@ -386,47 +427,6 @@
           │       ├── vertexprocess.h
           │       ├── vert_indx_dump.cpp
           │       └── vert_indx_dump.h
-          ├── injector/
-          │   ├── aboutdlg.cpp
-          │   ├── aboutdlg.h
-          │   ├── dxrip_.ico
-          │   ├── Hyperlinks.cpp
-          │   ├── Hyperlinks.h
-          │   ├── Hyperlinks__.cpp
-          │   ├── injector.cpp
-          │   ├── injector.h
-          │   ├── injector.rc
-          │   ├── injector.sln
-          │   ├── injector.suo
-          │   ├── injector.v12.suo
-          │   ├── injector.vcproj
-          │   ├── injector.vcxproj
-          │   ├── injector.vcxproj.filters
-          │   ├── injector.vcxproj.user
-          │   ├── Main.ico
-          │   ├── paypal.bmp
-          │   ├── paypal10.bmp
-          │   ├── paypal5.bmp
-          │   ├── RCa20616
-          │   ├── resource.h
-          │   ├── settingsdlg.cpp
-          │   ├── stdafx.h
-          │   ├── UpgradeLog.htm
-          │   └── UpgradeLog.XML
-          ├── common/
-          │   ├── constants.cpp
-          │   ├── constants.h
-          │   ├── crashdump.cpp
-          │   ├── crashdump.h
-          │   ├── kinject.cpp
-          │   ├── kinject.h
-          │   ├── ksettings.cpp
-          │   ├── ksettings.h
-          │   ├── pathtools.cpp
-          │   ├── pathtools.h
-          │   ├── registry.cpp
-          │   ├── registry.h
-          │   └── tinylogger.h
           └── DXSDK/
               ├── DXSDK9/
               │   ├── Include/
@@ -941,10 +941,18 @@
                           └── XInput.lib
     
 # History
-I've took a look once again on what made the Original NinjaRipper 1.7.1 so good. I've tried analyzing it, inspecting it step by step and even decompiling, eventually I've got very lucky and got the Original Source Code from the Author I've started analyzing it hardly and with help and soon became recreating my own Open Source Version of the NinjaRipper 1.7.1 called Black Exploit.
+I've took a look once again on what made the Original NinjaRipper 1.7.1 so good. I've tried analyzing it, inspecting it step by step and even decompiling, eventually I've got very lucky and got the Original Source Code from the Author I've started analyzing it hardly and with help and soon became recreating my own Open Source Version of the NinjaRipper 1.7.1 called Black Exploit.\
 
 # Why not C# or Python?
-C# cannot do APC injection, vtable hooks, or LdrLoadDll interception at the native level.
-[Despite being my most beloved languages there was this one major problem]
+C# cannot do APC injection, vtable hooks, or LdrLoadDll interception at the native level. So Both intruder.dll & d3dwrap.dll must be in C++\
+And intruder.dll is loaded by LoadLibraryW from inside the game process via APC. That means it must be a native Win32 DLL — a .NET assembly simply cannot be loaded this way.\
+[Despite being my most beloved languages there was this one major problem, so I decided to only Make launcher and helper on C#]\
 
 # How does the Ripper works?
+[W.I.P.]
+
+# The Files:
+• NinjaRipper.exe (C++ or C#) = thin launcher. It just shows UI, calls CreateProcess(target, suspended) and injects intruder.dll via APC.C#.\
+• injhelper.exe is a tiny ~150-line (C++ or C#) EXE. Its only job: receive pid tid dllpath on the command line, open the target process, and do the APC injection. It exists solely to handle the cross-arch case (64-bit launcher injecting into 32-bit game or vice versa). It's essentially just the KInject.InjectApc() method from BlackRipper.cs wrapped in a Main(). Could be written in any language like C#.\
+• intruder.dll = the entire ripping engine. Compiled separately, runs inside the target game process. Completely self-contained. Never needs to talk back to the launcher. That one is native C++ only.\
+• d3dwrap.dll = is a full DX wrapper — it exports d3d9.dll's actual API (Direct3DCreate9 etc.), forwards calls to the real system DLL, and loads intruder.dll via LoadLibrary from its own DllMain. It's an alternative injection path for games that can't be APC-injected. That one is native C++ only.
