@@ -62,7 +62,7 @@ extern void         hookEx(const char* name, LPVOID target, LPVOID hook,
 #define SAFE_DELETE(p) { delete (p); (p) = nullptr; }
 #endif
  
-// Ripper factories — filled when dx*/ddraw/dxgi files arrive:
+// Ripper factories ï¿½ filled when dx*/ddraw/dxgi files arrive:
 extern KRipper9*  create_KRipper9(HINSTANCE);
 extern void       delete_KRipper9(KRipper9*&);
 extern KRipper8*  create_KRipper8(HINSTANCE);
@@ -86,10 +86,10 @@ extern const wchar_t* isWrapperDllPresentInExeDirectory(const wchar_t*);
  
  
 // =============================================================================
-//  SECTION 1 — intruder.h  (types and declarations)
+//  SECTION 1 ï¿½ intruder.h  (types and declarations)
 // =============================================================================
  
-// KUNICODE_STRING — NT internal Unicode string (used for LdrLoadDll hook)
+// KUNICODE_STRING ï¿½ NT internal Unicode string (used for LdrLoadDll hook)
 #pragma pack(push,1)
 struct KUNICODE_STRING
 {
@@ -99,7 +99,7 @@ struct KUNICODE_STRING
 };
 #pragma pack(pop)
  
-// LdrLoadDll / LdrUnloadDll — NT loader functions we hook to watch DX DLL loads
+// LdrLoadDll / LdrUnloadDll ï¿½ NT loader functions we hook to watch DX DLL loads
 typedef LONG (__stdcall *PFN_LdrLoadDll)(
     PWCHAR PathToFile, ULONG* Flags,
     KUNICODE_STRING* ModuleFileName, HMODULE* ModuleHandle);
@@ -117,7 +117,7 @@ typedef DWORD (__stdcall *PFN_GetModuleFileNameExA)
 typedef BOOL  (__stdcall *PFN_GetModuleInformation)
     (HANDLE, HMODULE, LPMODULEINFO, DWORD);
  
-// NtMapViewOfSection — not currently hooked but declared for completeness
+// NtMapViewOfSection ï¿½ not currently hooked but declared for completeness
 typedef NTSTATUS(NTAPI *PFN_NtMapViewOfSection)(
     HANDLE, HANDLE, PVOID*, ULONG_PTR, SIZE_T,
     PLARGE_INTEGER, PSIZE_T, DWORD, ULONG, ULONG);
@@ -134,7 +134,7 @@ LONG __stdcall _LdrUnloadDll(HINSTANCE);
  
  
 // =============================================================================
-//  SECTION 2 — process.h  (child-process injection hook declarations)
+//  SECTION 2 ï¿½ process.h  (child-process injection hook declarations)
 // =============================================================================
  
 // Hook trampolines (defined in Section 5):
@@ -167,7 +167,7 @@ void setProcessCreateHooks();
  
  
 // =============================================================================
-//  SECTION 3 — Global state
+//  SECTION 3 ï¿½ Global state
 // =============================================================================
  
 // Version string built at startup
@@ -205,7 +205,7 @@ static const wchar_t* PSAPI_DLL   = L"psapi.dll";
  
  
 // =============================================================================
-//  SECTION 4 — intruder.cpp  (DllMain, install, uninstall, LdrLoad hooks)
+//  SECTION 4 ï¿½ intruder.cpp  (DllMain, install, uninstall, LdrLoad hooks)
 // =============================================================================
  
 // ---- Helpers ----------------------------------------------------------------
@@ -247,7 +247,7 @@ static std::string getInjectMode()
 }
  
  
-// Check all DX DLLs on startup — some may already be loaded before our hook.
+// Check all DX DLLs on startup ï¿½ some may already be loaded before our hook.
 static void tryInitRippers()
 {
     HINSTANCE h;
@@ -326,7 +326,7 @@ static void install(HINSTANCE hIntruder)
     }
  
     g_pLog->log(NINJA_RIPPER_VER);
-    g_pLog->log("\xc2\xa9 black_ninja, 2017\n\n");  // © black_ninja (UTF-8)
+    g_pLog->log("\xc2\xa9 black_ninja, 2017\n\n");  // ï¿½ black_ninja (UTF-8)
     g_pLog->log("LOG START\n\n");
     g_pLog->log("Executable: %s\n",        getExecutablePath().c_str());
     g_pLog->log("Output directory: %s\n",
@@ -344,7 +344,7 @@ static void install(HINSTANCE hIntruder)
         g_pLog->logWarning("Crash dumper initialization error\n\n");
  
     // Hook ntdll.LdrLoadDll and ntdll.LdrUnloadDll
-    // These fire for EVERY DLL load in the process — we watch for DX DLLs.
+    // These fire for EVERY DLL load in the process ï¿½ we watch for DX DLLs.
     HMODULE hntdll = GetModuleHandleW(L"ntdll.dll");
  
     hookEx("LdrLoadDll",
@@ -419,7 +419,7 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD ul_reason_for_call, LPVOID)
 }
  
  
-// ---- LdrLoadDll hook — fires on EVERY DLL load in the target process --------
+// ---- LdrLoadDll hook ï¿½ fires on EVERY DLL load in the target process --------
 //
 //  This is the core detection mechanism. When a game loads d3d9.dll (for
 //  example) Windows calls ntdll.LdrLoadDll internally. Our hook sees it
@@ -523,7 +523,7 @@ LONG __stdcall _LdrLoadDll(PWCHAR PathToFile, ULONG* Flags,
 }
  
  
-// ---- LdrUnloadDll hook — fires when a DLL is freed --------------------------
+// ---- LdrUnloadDll hook ï¿½ fires when a DLL is freed --------------------------
 //
 //  Cleans up ripper instances when the game unloads a DX DLL
 //  (e.g. switching graphics back-end at runtime).
@@ -609,7 +609,7 @@ void printLoadedModules()
  
     if (!_GetModuleInformation || !_EnumProcessModules || !_GetModuleFileNameExW)
     {
-        g_pLog->logError("\n\nPSAPI error — cannot enumerate modules\n\n");
+        g_pLog->logError("\n\nPSAPI error ï¿½ cannot enumerate modules\n\n");
         return;
     }
  
@@ -701,7 +701,7 @@ std::string getExecutablePath()
  
  
 // =============================================================================
-//  SECTION 5 — process.cpp  (child-process injection hooks)
+//  SECTION 5 ï¿½ process.cpp  (child-process injection hooks)
 //
 //  PURPOSE: When the target game spawns a child process, these hooks
 //  intercept every CreateProcess* variant, force CREATE_SUSPENDED,
@@ -785,9 +785,9 @@ static void injectToChild(const wchar_t*       targetDir,
         DWORD wrapType = 0;
         GetBinaryTypeW(full.c_str(), &wrapType);
         if (targetBinaryType == wrapType)
-            g_pLog->logError("Inject to child skipped — wrapper dll found (delete manually): %s\n", utf8.c_str());
+            g_pLog->logError("Inject to child skipped ï¿½ wrapper dll found (delete manually): %s\n", utf8.c_str());
         else
-            g_pLog->logError("Inject to child skipped — arch mismatch 32<->64, wrapper: %s\n", utf8.c_str());
+            g_pLog->logError("Inject to child skipped ï¿½ arch mismatch 32<->64, wrapper: %s\n", utf8.c_str());
  
         if (!wasSuspended) ResumeThread(pi->hThread);
         return;
@@ -874,7 +874,7 @@ BOOL __stdcall _CreateProcessAsUserW(
     BOOL  wasSusp;
     suspendFlag(&wasSusp, &dwFlags);
  
-    // Strip flags that require elevated token — fall back to plain CreateProcessW
+    // Strip flags that require elevated token ï¿½ fall back to plain CreateProcessW
     // (mirrors original behaviour: avoids ACCESS_DENIED from UAC job objects)
     DWORD fff = dwFlags;
     fff &= ~CREATE_PROTECTED_PROCESS;
@@ -959,7 +959,7 @@ BOOL __stdcall _SetTokenInformation(
     PFN_SetTokenInformation orig =
         (PFN_SetTokenInformation)pHook_SetTokenInformation->getOriginalAddress();
  
-    // Block integrity-level downgrades — they prevent injection into children
+    // Block integrity-level downgrades ï¿½ they prevent injection into children
     if (cls == TokenIntegrityLevel)
     {
         g_pLog->log("SetTokenInformation TIL==INTEGRITY. Call disabled\n");
@@ -997,7 +997,7 @@ void setProcessCreateHooks()
     hookEx("SetTokenInformation",     GetProcAddress(hAdv32,"SetTokenInformation"),
            _SetTokenInformation,      KHookMgr::EHOOK_ADVAPI32, &pHook_SetTokenInformation);
  
-    // SetInformationJobObject hook is commented out in original source —
+    // SetInformationJobObject hook is commented out in original source ï¿½
     // preserved as-is (some games use job objects to prevent external injection)
     /*
     hookEx("SetInformationJobObject", GetProcAddress(hK32, "SetInformationJobObject"),
@@ -1007,7 +1007,7 @@ void setProcessCreateHooks()
  
  
 // =============================================================================
-//  SECTION 6 — IRipper interface + ERIP_ERR  (iripper.h)
+//  SECTION 6 ï¿½ IRipper interface + ERIP_ERR  (iripper.h)
 // =============================================================================
  
 enum ERIP_ERR
@@ -1045,7 +1045,7 @@ public:
  
  
 // =============================================================================
-//  SECTION 7 — commontypes.h  (IUnknown helper)
+//  SECTION 7 ï¿½ commontypes.h  (IUnknown helper)
 // =============================================================================
  
 #include <Unknwn.h>
@@ -1057,7 +1057,7 @@ typedef HRESULT(__stdcall* PFN_IUnk_QueryInterface)(
  
  
 // =============================================================================
-//  SECTION 8 — datatypes.h  (vertex element type system)
+//  SECTION 8 ï¿½ datatypes.h  (vertex element type system)
 // =============================================================================
  
 const DWORD MAX_UNPACKED_LEN = 64;
@@ -1108,7 +1108,7 @@ extern const char* EOutputType2Str(EOutputType::Type t);
  
  
 // =============================================================================
-//  SECTION 9 — KLog  (klog.h — thread-safe timestamped logger)
+//  SECTION 9 ï¿½ KLog  (klog.h ï¿½ thread-safe timestamped logger)
 // =============================================================================
  
 class KLog
@@ -1178,7 +1178,7 @@ private:
  
  
 // =============================================================================
-//  SECTION 10 — KHook + HooksGroup  (khook.h/cpp)
+//  SECTION 10 ï¿½ KHook + HooksGroup  (khook.h/cpp)
 // =============================================================================
  
 class KHook
@@ -1247,7 +1247,7 @@ private:
  
  
 // =============================================================================
-//  SECTION 11 — KHookMgr  (khookmgr.h/cpp)
+//  SECTION 11 ï¿½ KHookMgr  (khookmgr.h/cpp)
 //  Wraps MinHook with pool-based lifecycle management.
 //  MinHook header included from intruder/MinHook/include/MinHook.h
 // =============================================================================
@@ -1400,12 +1400,12 @@ private:
  
  
 // =============================================================================
-//  SECTION 12 — tools.h stubs + hookEx()
+//  SECTION 12 ï¿½ tools.h stubs + hookEx()
 //  Full implementation arrives in intruder/common/tools.h (part 2).
 //  hookEx() is used by every hook-install call site throughout the DLL.
 // =============================================================================
  
-// String utilities — implemented in tools.cpp (part 2)
+// String utilities ï¿½ implemented in tools.cpp (part 2)
 std::string  wideStringToMultiByte(const wchar_t* ws);
 std::wstring multiByteStringAcpToWideString(const char* s);
 std::string  multiByteStringAcpToMultiByte(const char* s);
@@ -1429,7 +1429,7 @@ inline void hookEx(const char* name, LPVOID targ, LPVOID detour,
  
  
 // =============================================================================
-//  SECTION 13 — KIntruder  (kintruder.h/cpp)
+//  SECTION 13 ï¿½ KIntruder  (kintruder.h/cpp)
 //  Manages output directories, hotkey state, frame/texture/shader counters.
 // =============================================================================
  
@@ -1717,7 +1717,7 @@ private:
     LARGE_INTEGER timerFreq, frameStartTime, forcedMeshRipStartTime;
 };
  
-// Uses SHCreateDirectoryExW — needs shlobj.h (already included above)
+// Uses SHCreateDirectoryExW ï¿½ needs shlobj.h (already included above)
 int createDirectoryRecursively(const wchar_t* path)
 {
     return SHCreateDirectoryExW(nullptr, path, nullptr);
@@ -1725,7 +1725,7 @@ int createDirectoryRecursively(const wchar_t* path)
  
  
 // =============================================================================
-//  SECTION 14 — macro.h
+//  SECTION 14 ï¿½ macro.h
 // =============================================================================
  
 #undef SAFE_DELETE
@@ -1756,7 +1756,7 @@ int createDirectoryRecursively(const wchar_t* path)
  
  
 // =============================================================================
-//  SECTION 15 — tools.h / tools.cpp  (string utils, vtable hooks, dir helpers)
+//  SECTION 15 ï¿½ tools.h / tools.cpp  (string utils, vtable hooks, dir helpers)
 // =============================================================================
  
 #include <Unknwn.h>
@@ -1873,7 +1873,7 @@ int createDirectoryWithErrorCheck(const wchar_t* path)
     createDirectoryWithErrorCheck(std::wstring(path)); return 0;
 }
  
-// Load a DLL from System32 — try GetModuleHandle first to avoid double-load
+// Load a DLL from System32 ï¿½ try GetModuleHandle first to avoid double-load
 HMODULE loadSysDll(const wchar_t* dll)
 {
     wchar_t buf[MAX_PATH]; GetSystemDirectoryW(buf,MAX_PATH);
@@ -1948,7 +1948,7 @@ bool hookEx(const char* name, DWORD idx, LPVOID pInterface,
     return (entry->hk != nullptr);
 }
  
-// Fix up Section 12 stub — replace the inline hookEx() there with a call here
+// Fix up Section 12 stub ï¿½ replace the inline hookEx() there with a call here
 // (Re-define the inline so it dispatches to hookEx_full)
 // This must appear after the definition above.
 #define hookEx(name,targ,detour,pool,outHook) \
@@ -1956,7 +1956,7 @@ bool hookEx(const char* name, DWORD idx, LPVOID pInterface,
  
  
 // =============================================================================
-//  SECTION 16 — topology.h / topology.cpp
+//  SECTION 16 ï¿½ topology.h / topology.cpp
 // =============================================================================
  
 struct EPrimitiveTopology
@@ -2012,13 +2012,13 @@ DWORD vertexCountFromPrimitiveCount(DWORD n, EPrimitiveTopology::Type t)
  
  
 // =============================================================================
-//  SECTION 17 — vertexprocess.h / vertexprocess.cpp  (vertex buffer engine)
+//  SECTION 17 ï¿½ vertexprocess.h / vertexprocess.cpp  (vertex buffer engine)
 // =============================================================================
  
 const DWORD SEMANTIC_LEN     = 64;
 const DWORD MAX_TYPEMAP_SIZE = 8;
  
-// Vertex buffer container — owns a flat byte array of (vertexCount × vertexSize)
+// Vertex buffer container ï¿½ owns a flat byte array of (vertexCount ï¿½ vertexSize)
 class KVERTICES
 {
 public:
@@ -2167,7 +2167,7 @@ void dumpVertSemantic(EInputType::Type SrcType,
  
  
 // =============================================================================
-//  SECTION 18 — indexprocess  (face/index processing engine)
+//  SECTION 18 ï¿½ indexprocess  (face/index processing engine)
 //  Full implementations of processIndexes*() arrive with the dx* folders.
 //  Forward declarations allow the intruder root layer to compile now.
 // =============================================================================
@@ -2195,7 +2195,7 @@ private:
     std::vector<KFace> faces;
 };
  
-// These implementations live in dx*/ddraw files — forward-declared here:
+// These implementations live in dx*/ddraw files ï¿½ forward-declared here:
 extern bool processIndexes16_PrimitiveCount(const WORD*, EPrimitiveTopology::Type, DWORD, KFACES*, OptimizedIndexToMeshIndex*);
 extern bool processIndexes32_PrimitiveCount(const DWORD*, EPrimitiveTopology::Type, DWORD, KFACES*, OptimizedIndexToMeshIndex*);
 extern bool processIndexes16_IndexCount(const WORD*, EPrimitiveTopology::Type, DWORD, KFACES*, OptimizedIndexToMeshIndex*);
@@ -2217,7 +2217,7 @@ DWORD getOptIdx(MeshIndexToOptimizedIndex* opt, DWORD* idx,
  
  
 // =============================================================================
-//  SECTION 19 — EIndexFormat + vert_indx_dump  (UP draw-path helpers)
+//  SECTION 19 ï¿½ EIndexFormat + vert_indx_dump  (UP draw-path helpers)
 // =============================================================================
  
 struct EIndexFormat { typedef int Type; enum{ UNKNOWN, INDEX_16, INDEX_32 }; };
@@ -2254,7 +2254,7 @@ HRESULT dumpIndexesUP(EPrimitiveTopology::Type topo, UINT primCnt,
  
  
 // =============================================================================
-//  SECTION 20 — ripout.h / ripout.cpp  (.rip file format and writer)
+//  SECTION 20 ï¿½ ripout.h / ripout.cpp  (.rip file format and writer)
 // =============================================================================
  
 const DWORD RIP_SIGNATURE = 0xDEADC0DE;
@@ -2279,11 +2279,11 @@ struct KRipHeader
  
 // File layout:
 //   KRipHeader
-//   [vertexAttributesCnt × attribute records]  (semantic string + metadata)
-//   [textureFilesCnt × null-terminated strings]
-//   [shaderFilesCnt  × null-terminated strings]
-//   [dwFacesCnt × KFace]
-//   [dwVertexesCnt × vertexSize bytes]
+//   [vertexAttributesCnt ï¿½ attribute records]  (semantic string + metadata)
+//   [textureFilesCnt ï¿½ null-terminated strings]
+//   [shaderFilesCnt  ï¿½ null-terminated strings]
+//   [dwFacesCnt ï¿½ KFace]
+//   [dwVertexesCnt ï¿½ vertexSize bytes]
 HRESULT saveRipFile(const wchar_t* File,
                     const KInputVertexDeclaration& inpDecl,
                     const KOutputVertexDeclaration& outDecl,
@@ -2333,7 +2333,7 @@ HRESULT saveRipFile(const wchar_t* File,
  
  
 // =============================================================================
-//  SECTION 21 — TDXRef / TDXRefVec  (RAII COM pointer wrappers)
+//  SECTION 21 ï¿½ TDXRef / TDXRefVec  (RAII COM pointer wrappers)
 // =============================================================================
  
 template<class T>
@@ -2372,7 +2372,7 @@ private:
  
  
 // =============================================================================
-//  SECTION 22 — TInitedVal  (lazy initialisation wrapper)
+//  SECTION 22 ï¿½ TInitedVal  (lazy initialisation wrapper)
 // =============================================================================
  
 template<class T>
@@ -2390,7 +2390,7 @@ private:
  
  
 // =============================================================================
-//  SECTION 23 — outtypes__.h  (legacy .rip v2 structs — kept for reference)
+//  SECTION 23 ï¿½ outtypes__.h  (legacy .rip v2 structs ï¿½ kept for reference)
 // =============================================================================
  
 struct TCOLOR   { float r,g,b,a; };
@@ -2411,7 +2411,7 @@ struct TRIPFILE2{
  
  
 // =============================================================================
-//  SECTION 24 — shadercompile.h / shadercompile.cpp
+//  SECTION 24 ï¿½ shadercompile.h / shadercompile.cpp
 //  D3DDisassemble-based shader save system (used by dx9, dx11 rippers)
 // =============================================================================
  
@@ -2497,7 +2497,7 @@ bool saveShader(EShaderExt::Type type, const void* code, SIZE_T codeLen,
  
  
 // =============================================================================
-//  SECTION 25 — ddraw/  (DirectDraw DX1-DX7 ripper)
+//  SECTION 25 ï¿½ ddraw/  (DirectDraw DX1-DX7 ripper)
 //
 //  Hooks: DirectDrawCreate, DirectDrawCreateEx,
 //         IDirectDraw::CreateSurface, IDirectDraw::QueryInterface,
@@ -2513,7 +2513,7 @@ bool saveShader(EShaderExt::Type type, const void* code, SIZE_T codeLen,
 typedef enum __DXGI_FORMAT {
     __DXGI_FORMAT_UNKNOWN=0,
     __DXGI_FORMAT_R8G8B8A8_UNORM=28,
-    // (full enum in surfacesave.h — abbreviated here, add values as needed)
+    // (full enum in surfacesave.h ï¿½ abbreviated here, add values as needed)
     __DXGI_FORMAT_FORCE_UINT=0xffffffff
 } __DXGI_FORMAT;
  
@@ -2535,7 +2535,7 @@ struct ImageRGB8
 };
 struct ImgMetaData{};
  
-// saveImg uses DirectXTex — forward declared; implemented when DirectXTex
+// saveImg uses DirectXTex ï¿½ forward declared; implemented when DirectXTex
 // source is linked in. For now the stub calls the real library via header.
 // #include "DirectXTex.h"
 extern HRESULT saveImg(const wchar_t* fileName, ImageRGB8* imgs,
@@ -2552,7 +2552,7 @@ enum {
 };
  
 // ---- ddraw/ddrawtypes.h (function pointer types) ---------------------------
-// Requires DXSDK7 ddraw.h — include path set in project
+// Requires DXSDK7 ddraw.h ï¿½ include path set in project
 // These are declared here as void-based to avoid DXSDK7 dependency.
 // Replace with proper types when DXSDK7 is available.
 typedef HRESULT(__stdcall* PFN_DirectDrawCreateEx)(void*, void**, REFIID, IUnknown*);
@@ -2579,10 +2579,10 @@ struct ConvertPaletteData
     PALETTEENTRY palette[256];
 };
  
-// SurfaceData — tracks which surfaces we've already saved (CRC dedup)
+// SurfaceData ï¿½ tracks which surfaces we've already saved (CRC dedup)
 struct SurfaceData { SurfaceData():dataCrc32(0){} DWORD dataCrc32; };
  
-// ---- ddraw/macro.h — stub generators ---------------------------------------
+// ---- ddraw/macro.h ï¿½ stub generators ---------------------------------------
 // Each macro expands to 8 static trampoline stubs (one per HooksGroup slot).
 // The trampoline dispatches through the correct KHook slot to the helper.
  
@@ -2646,7 +2646,7 @@ public:
     HRESULT save_IDirectDrawSurface(const wchar_t* fileName, void* pSurface);
     void    hook_IDirectDrawSurface(void* surf);
  
-    // HooksGroups — public so STUB macros can access them
+    // HooksGroups ï¿½ public so STUB macros can access them
     HooksGroup hooks_IUnk_QueryInterface;
     HooksGroup hooks_IDirectDraw_CreateSurface;
     HooksGroup hooks_IDirectDrawSurface_Blt;
@@ -2655,7 +2655,7 @@ public:
     HooksGroup hooks_IDirectDrawSurface_SetPalette;
     HooksGroup hooks_IDirectDrawSurface_ReleaseDC;
  
-    // Helpers — public so STUB macros can call them
+    // Helpers ï¿½ public so STUB macros can call them
     HRESULT helper_IDirectDrawSurface_Blt(KHook*,void*,RECT*,void*,RECT*,DWORD,void*);
     HRESULT helper_IDirectDrawSurface_Flip(KHook*,void*,void*,DWORD);
     HRESULT helper_IDirectDraw_CreateSurface(KHook*,void*,void*,void**,IUnknown*);
@@ -2891,7 +2891,7 @@ HRESULT KDdraw::rip_IDirectDrawSurface(void* pSurface)
 HRESULT KDdraw::save_IDirectDrawSurface(const wchar_t* fileName, void* pSurface)
 {
     // Full implementation requires DXSDK7 lock/unlock + DirectXTex SaveToDDSFile.
-    // Placeholder — returns S_OK to keep flow intact until DXSDK7 is linked.
+    // Placeholder ï¿½ returns S_OK to keep flow intact until DXSDK7 is linked.
     (void)fileName; (void)pSurface;
     return S_OK;
 }
@@ -2902,7 +2902,7 @@ void    delete_KDdraw(KDdraw*& p)    { KDdraw::destroy(p); }
  
  
 // =============================================================================
-//  SECTION 26 — dxgi/  (DXGI swap-chain ripper)
+//  SECTION 26 ï¿½ dxgi/  (DXGI swap-chain ripper)
 //
 //  Hooks: CreateDXGIFactory, CreateDXGIFactory1,
 //         IDXGIFactory::CreateSwapChain (and Factory2 variants),
@@ -2910,7 +2910,7 @@ void    delete_KDdraw(KDdraw*& p)    { KDdraw::destroy(p); }
 //         IDXGIFactory::QueryInterface  (detects Factory2 upgrades)
 //  Frame trigger: IDXGISwapChain::Present ? g_pIntruder->frameHandler(ripper)
 //  The 'ripper' pointer is set externally via setIRipper(g_pDxgi, g_pRipper11)
-//  once D3D11 initialises — decouples DXGI from D3D11 at startup.
+//  once D3D11 initialises ï¿½ decouples DXGI from D3D11 at startup.
 // =============================================================================
  
 // ---- dxgi/enums.h ----------------------------------------------------------
@@ -3148,7 +3148,7 @@ void   setIRipper(KDxgi* p, IRipper* r) { if(p) p->setIRipper(r); }
  
  
 // =============================================================================
-//  SECTION 27 — dx9/  (Direct3D 9 ripper — KRipper9)
+//  SECTION 27 ï¿½ dx9/  (Direct3D 9 ripper ï¿½ KRipper9)
 //
 //  Hook chain:
 //    Direct3DCreate9 / Direct3DCreate9Ex
@@ -3222,7 +3222,7 @@ typedef HRESULT      (__stdcall *PFN_IDirect3DDevice9_SetDepthStencilSurface)(ID
 typedef void         (__stdcall *PFN_IDirect3DDevice9_SetGammaRamp)(IDirect3DDevice9*,UINT,DWORD,const D3DGAMMARAMP*);
 typedef HRESULT      (__stdcall *PFN_D3DXSaveTextureToFileW)(LPCTSTR,D3DXIMAGE_FILEFORMAT,LPDIRECT3DBASETEXTURE9,CONST PALETTEENTRY*);
  
-// ---- dx9/macro.h — stub generators -----------------------------------------
+// ---- dx9/macro.h ï¿½ stub generators -----------------------------------------
 // Each generates 8 static trampolines for a HooksGroup slot.
 #define STUB_IDirect3DDevice9_SetTexture(IDX) \
 static HRESULT __stdcall _IDirect3DDevice9_SetTexture_##IDX(IDirect3DDevice9* d,DWORD s,IDirect3DBaseTexture9* t) \
@@ -3323,7 +3323,7 @@ private:
  
     CRITICAL_SECTION cs;
  
-    // Pixel shader / depth stencil / gamma — tracked for texture render restore
+    // Pixel shader / depth stencil / gamma ï¿½ tracked for texture render restore
     TInitedVal<IDirect3DPixelShader9*>  LastPS;
     TInitedVal<IDirect3DSurface9*>      LastDepthStencilSurface;
     struct GammaHelper{ UINT swapChain; DWORD flags; D3DGAMMARAMP gammaRamp; };
@@ -4127,7 +4127,7 @@ void      delete_KRipper9(KRipper9*& p)   { KRipper9::destroy(p); }
  
  
 // =============================================================================
-//  SECTIONS 28+ — filled as dx8 / dx11 / dx7 / dx6 / MinHook arrive
+//  SECTIONS 28+ ï¿½ filled as dx8 / dx11 / dx7 / dx6 / MinHook arrive
 //
 //  intruder/dx8/    ? KRipper8
 //  intruder/dx11/   ? KRipper11
@@ -4137,4 +4137,8552 @@ void      delete_KRipper9(KRipper9*& p)   { KRipper9::destroy(p); }
 //  intruder/common/ ? dataconvert.cpp, fvf.cpp, guidtoname.cpp,
 //                     indexprocess.cpp, datatypes.cpp
 // =============================================================================
+
+// =============================================================================
+// =============================================================================
+//  SECTION 28 ï¿½ DirectX 8 / KRipper8
+//
+//  Merged from:
+//    dx8/kripper8.h / kripper8.cpp
+//    dx8/drawindexedprimitive8.cpp
+//    dx8/drawindexedprimitiveup8.cpp
+//    dx8/drawprimitive8.cpp
+//    dx8/drawprimitiveup8.cpp
+//    dx8/dump8.cpp
+//    dx8/savemeshtextures8.cpp
+//    dx8/texture8.cpp
+//    dx8/sm1_vertdecl.cpp
+//    dx8/sm1_disasm.cpp
+//    dx8/pre8.cpp
+//
+//  HOW TO USE:
+//    Append this entire file after line 4140 of intruder.cpp.
+//
+//  INCLUDE ORDER REQUIREMENT:
+//    d3d8.h reuses the same D3DFORMAT / D3DPRIMITIVETYPE enum names as d3d9.h.
+//    In the DirectX SDK (Feb 2010 and older) both headers share a common
+//    __D3DTYPES_H guard, so the file included *first* wins. You must add:
+//
+//        #include <d3d8.h>
+//        #include <d3dx8tex.h>
+//        #pragma comment(lib, "d3d8.lib")
+//
+//    to the INCLUDES BLOCK at the very top of intruder.cpp, *before* any
+//    d3d9.h pull-in. If d3d9.h was already listed first, swap the order.
+//    The IDirect3DDevice8/9 COM interfaces are distinct and do not conflict.
+// =============================================================================
  
+// ---------------------------------------------------------------------------
+//  Guard: only compile this block if d3d8.h provided the DX8 interfaces.
+//  (Lets the build degrade gracefully when the DX8 SDK is absent.)
+// ---------------------------------------------------------------------------
+#ifdef __d3d8_h__
+ 
+ 
+// =============================================================================
+//  DX8 function-pointer typedefs  (from dx8types.h)
+// =============================================================================
+ 
+typedef IDirect3D8* (__stdcall *PFN_Direct3DCreate8)(UINT);
+ 
+typedef HRESULT (__stdcall *PFN_IDirect3D8_CreateDevice)(
+    IDirect3D8*,
+    UINT Adapter,
+    D3DDEVTYPE DeviceType,
+    HWND hFocusWindow,
+    DWORD BehaviorFlags,
+    D3DPRESENT_PARAMETERS* pPresentationParameters,
+    IDirect3DDevice8** ppReturnedDeviceInterface);
+ 
+typedef HRESULT (__stdcall *PFN_D3DXSaveTextureToFileW)(
+    LPCTSTR, DWORD, LPDIRECT3DBASETEXTURE8, void*);
+ 
+typedef UINT  (__stdcall *PFN_D3DXGetFVFVertexSize)(DWORD);
+typedef HRESULT (__stdcall *PFN_D3DXDeclaratorFromFVF)(DWORD FVF, DWORD* Declaration);
+ 
+typedef UINT (__stdcall *PFN_IDirect3D8_Release)(IDirect3D8*);
+typedef UINT (__stdcall *PFN_IDirect3DDevice8_Release)(IDirect3DDevice8*);
+ 
+typedef HRESULT (__stdcall *PFN_IDirect3DDevice8_SetTexture)(
+    IDirect3DDevice8*, DWORD Stage, IDirect3DBaseTexture8* pTexture);
+ 
+typedef HRESULT (__stdcall *PFN_IDirect3DDevice8_DrawPrimitive)(
+    IDirect3DDevice8*, D3DPRIMITIVETYPE PrimitiveType,
+    UINT StartVertex, UINT PrimitiveCount);
+ 
+typedef HRESULT (__stdcall *PFN_IDirect3DDevice8_DrawIndexedPrimitive)(
+    IDirect3DDevice8*, D3DPRIMITIVETYPE,
+    UINT minIndex, UINT NumVertices,
+    UINT startIndex, UINT primCount);
+ 
+typedef HRESULT (__stdcall *PFN_IDirect3DDevice8_DrawPrimitiveUP)(
+    IDirect3DDevice8*, D3DPRIMITIVETYPE PrimitiveType,
+    UINT PrimitiveCount,
+    CONST void* pVertexStreamZeroData,
+    UINT VertexStreamZeroStride);
+ 
+typedef HRESULT (__stdcall *PFN_IDirect3DDevice8_DrawIndexedPrimitiveUP)(
+    IDirect3DDevice8*, D3DPRIMITIVETYPE PrimitiveType,
+    UINT MinVertexIndex, UINT NumVertexIndices, UINT PrimitiveCount,
+    CONST void* pIndexData, D3DFORMAT IndexDataFormat,
+    CONST void* pVertexStreamZeroData, UINT VertexStreamZeroStride);
+ 
+typedef HRESULT (__stdcall *PFN_IDirect3DDevice8_Present)(
+    IDirect3DDevice8*, CONST RECT*, CONST RECT*, HWND, CONST RGNDATA*);
+ 
+typedef HRESULT (__stdcall *PFN_IDirect3DDevice8_CreateVertexBuffer)(
+    IDirect3DDevice8*, UINT Length, DWORD Usage, DWORD FVF,
+    D3DPOOL Pool, IDirect3DVertexBuffer8** ppVertexBuffer);
+ 
+typedef HRESULT (__stdcall *PFN_IDirect3DDevice8_CreateIndexBuffer)(
+    IDirect3DDevice8*, UINT Length, DWORD Usage,
+    D3DFORMAT Format, D3DPOOL Pool,
+    IDirect3DIndexBuffer8** ppIndexBuffer);
+ 
+typedef HRESULT (__stdcall *PFN_IDirect3DDevice8_CreateVertexShader)(
+    IDirect3DDevice8*, CONST DWORD* pDeclaration,
+    CONST DWORD* pFunction, DWORD* pHandle, DWORD Usage);
+ 
+typedef HRESULT (__stdcall *PFN_IDirect3DDevice8_CreatePixelShader)(
+    IDirect3DDevice8*, CONST DWORD* pFunction, DWORD* pHandle);
+ 
+typedef HRESULT (__stdcall *PFN_IDirect3DDevice8_DeleteVertexShader)(
+    IDirect3DDevice8*, DWORD Handle);
+ 
+typedef HRESULT (__stdcall *PFN_IDirect3DDevice8_DeletePixelShader)(
+    IDirect3DDevice8*, DWORD Handle);
+ 
+typedef HRESULT (__stdcall *PFN_IDirect3DDevice8_SetVertexShader)(
+    IDirect3DDevice8*, DWORD Handle);
+ 
+typedef HRESULT (__stdcall *PFN_IDirect3DDevice8_CreateAdditionalSwapChain)(
+    IDirect3DDevice8*, D3DPRESENT_PARAMETERS* pPresentationParameters,
+    IDirect3DSwapChain8** ppSwapChain);
+ 
+typedef HRESULT (__stdcall *PFN_IDirect3DSwapChain8_Present)(
+    IDirect3DSwapChain8*, CONST RECT*, CONST RECT*, HWND, CONST RGNDATA*);
+ 
+ 
+// =============================================================================
+//  VTable slot indices for DX8  (from enums.h)
+// =============================================================================
+ 
+enum
+{
+    IDX8_IDirect3D8_CreateDevice                 = 15,
+    IDX8_IDirect3DDevice8_SetTexture             = 61,
+    IDX8_IDirect3DDevice8_Present                = 15,
+    IDX8_IDirect3DDevice8_DrawPrimitive          = 70,
+    IDX8_IDirect3DDevice8_DrawIndexedPrimitive   = 71,
+    IDX8_IDirect3DDevice8_DrawPrimitiveUP        = 72,
+    IDX8_IDirect3DDevice8_DrawIndexedPrimitiveUP = 73,
+    IDX8_IDirect3DDevice8_CreateVertexBuffer     = 23,
+    IDX8_IDirect3DDevice8_CreateIndexBuffer      = 24,
+    IDX8_IDirect3DDevice8_CreateVertexShader     = 75,
+    IDX8_IDirect3DDevice8_CreatePixelShader      = 87,
+    IDX8_IDirect3DDevice8_SetVertexShader        = 76,
+    IDX8_IDirect3DDevice8_CreateAdditionalSwapChain = 13,
+    IDX8_IDirect3DSwapChain8_Present             = 3
+};
+ 
+ 
+// =============================================================================
+//  SM1 vertex-declaration decoder  (from sm1_vertdecl.cpp)
+// =============================================================================
+ 
+static std::string sm1_dataTypeToString(DWORD e)
+{
+    switch (e)
+    {
+    case D3DVSDT_FLOAT1:   return "FLOAT1";
+    case D3DVSDT_FLOAT2:   return "FLOAT2";
+    case D3DVSDT_FLOAT3:   return "FLOAT3";
+    case D3DVSDT_FLOAT4:   return "FLOAT4";
+    case D3DVSDT_D3DCOLOR: return "D3DCOLOR";
+    case D3DVSDT_UBYTE4:   return "UBYTE4";
+    case D3DVSDT_SHORT2:   return "SHORT2";
+    case D3DVSDT_SHORT4:   return "SHORT4";
+    default:               return "UNKNOWN";
+    }
+}
+ 
+static const char* sm1_getRegSemantic(DWORD reg)
+{
+    switch (reg)
+    {
+    case D3DVSDE_POSITION:     return "POSITION";
+    case D3DVSDE_BLENDWEIGHT:  return "BLENDWEIGHT";
+    case D3DVSDE_BLENDINDICES: return "BLENDINDICES";
+    case D3DVSDE_NORMAL:       return "NORMAL";
+    case D3DVSDE_PSIZE:        return "PSIZE";
+    case D3DVSDE_DIFFUSE:      return "DIFFUSE";
+    case D3DVSDE_SPECULAR:     return "SPECULAR";
+    case D3DVSDE_TEXCOORD0:    return "TEXCOORD0";
+    case D3DVSDE_TEXCOORD1:    return "TEXCOORD1";
+    case D3DVSDE_TEXCOORD2:    return "TEXCOORD2";
+    case D3DVSDE_TEXCOORD3:    return "TEXCOORD3";
+    case D3DVSDE_TEXCOORD4:    return "TEXCOORD4";
+    case D3DVSDE_TEXCOORD5:    return "TEXCOORD5";
+    case D3DVSDE_TEXCOORD6:    return "TEXCOORD6";
+    case D3DVSDE_TEXCOORD7:    return "TEXCOORD7";
+    case D3DVSDE_POSITION2:    return "POSITION2";
+    case D3DVSDE_NORMAL2:      return "NORMAL2";
+    default:                   return "unrecognized";
+    }
+}
+ 
+static std::string sm1_TOKEN_STREAM(DWORD token)
+{
+    std::stringstream ss;
+    DWORD tess = token & D3DVSD_STREAMTESSMASK;
+    DWORD strm = (token & D3DVSD_STREAMNUMBERMASK) >> D3DVSD_STREAMNUMBERSHIFT;
+    if (tess) ss << "STREAM_TESS()";
+    else      ss << "STREAM(" << strm << ")";
+    return ss.str();
+}
+ 
+static std::string sm1_TOKEN_STREAMDATA(DWORD token)
+{
+    std::stringstream ss;
+    if (!(token & 0x10000000))
+    {
+        DWORD type = ((token & D3DVSD_DATATYPEMASK)  >> D3DVSD_DATATYPESHIFT);
+        DWORD reg  = ((token & D3DVSD_VERTEXREGMASK) >> D3DVSD_VERTEXREGSHIFT);
+        ss << "REG(v" << reg << " " << sm1_getRegSemantic(reg)
+           << ", " << sm1_dataTypeToString(type) << ")";
+    }
+    else
+    {
+        DWORD cnt = ((token & D3DVSD_SKIPCOUNTMASK) >> D3DVSD_SKIPCOUNTSHIFT);
+        ss << "SKIP(" << cnt << ")";
+    }
+    return ss.str();
+}
+ 
+static std::string sm1_TOKEN_TESSELLATOR(DWORD token)
+{
+    std::stringstream ss;
+    if (token & 0x10000000)
+    {
+        DWORD type = ((token & D3DVSD_DATATYPEMASK)  >> D3DVSD_DATATYPESHIFT);
+        DWORD reg  = ((token & D3DVSD_VERTEXREGMASK) >> D3DVSD_VERTEXREGSHIFT);
+        ss << "TESSUV(" << sm1_getRegSemantic(reg) << ") as "
+           << sm1_dataTypeToString(type);
+    }
+    else
+    {
+        DWORD type   = ((token & D3DVSD_DATATYPEMASK)    >> D3DVSD_DATATYPESHIFT);
+        DWORD regout = ((token & D3DVSD_VERTEXREGMASK)   >> D3DVSD_VERTEXREGSHIFT);
+        DWORD regin  = ((token & D3DVSD_VERTEXREGINMASK) >> D3DVSD_VERTEXREGINSHIFT);
+        ss << "TESSNORMAL(" << sm1_getRegSemantic(regin)
+           << ", " << sm1_getRegSemantic(regout)
+           << ") as " << sm1_dataTypeToString(type);
+    }
+    return ss.str();
+}
+ 
+static std::string sm1_TOKEN_CONSTMEM(const DWORD* decl, DWORD* len)
+{
+    union { float f; DWORD d; } cc;
+    std::stringstream ss;
+    DWORD cnt          = (((*decl) & D3DVSD_CONSTCOUNTMASK) >> D3DVSD_CONSTCOUNTSHIFT);
+    DWORD constMemAddr = (*decl) & 0x7F;
+    ss << "CONSTMEM() CNT:" << cnt << " ADDR:" << constMemAddr << " ";
+    decl++;
+    if (cnt > 1) ss << "\n";
+    ss << std::setprecision(5);
+    for (DWORD i = 0; i < cnt; ++i)
+    {
+        ss << "(";
+        for (int ch = 0; ch < 4; ++ch) { cc.d = *decl++; ss << cc.f << " "; }
+        ss << ")";
+        if (cnt > 1) ss << "\n";
+    }
+    *len = 4 * cnt;
+    return ss.str();
+}
+ 
+static std::string sm1_TOKEN_EXT(DWORD token, DWORD* len)
+{
+    DWORD cnt = ((token & D3DVSD_CONSTCOUNTMASK) >> D3DVSD_CONSTCOUNTSHIFT);
+    *len = cnt;
+    return "EXT()";
+}
+ 
+// Returns the number of DWORD tokens consumed.
+static DWORD sm1_decodeVS1Declaration(const DWORD* decl, std::string* decoded)
+{
+    DWORD token     = *decl;
+    DWORD tokenType = (token & D3DVSD_TOKENTYPEMASK) >> D3DVSD_TOKENTYPESHIFT;
+    std::string out;
+    DWORD res = 1;
+ 
+    switch (tokenType)
+    {
+    case D3DVSD_TOKEN_NOP:        out = "NOP";  break;
+    case D3DVSD_TOKEN_STREAM:     out = sm1_TOKEN_STREAM(token); break;
+    case D3DVSD_TOKEN_STREAMDATA: out = sm1_TOKEN_STREAMDATA(token); break;
+    case D3DVSD_TOKEN_TESSELLATOR:out = sm1_TOKEN_TESSELLATOR(token); break;
+    case D3DVSD_TOKEN_CONSTMEM:   out = sm1_TOKEN_CONSTMEM(decl, &res); res++; break;
+    case D3DVSD_TOKEN_EXT:        out = sm1_TOKEN_EXT(token, &res); res++; break;
+    case D3DVSD_TOKEN_END:        out = "END"; break;
+    default:                      out = "RESERVED"; break;
+    }
+    *decoded = out;
+    return res;
+}
+ 
+ 
+// =============================================================================
+//  SM1 shader disassembler  (from sm1_disasm.cpp)
+// =============================================================================
+namespace sm1 {
+ 
+#define SM1_VERSION_MAJOR(v) (((v) >> 8) & 0xFFu)
+#define SM1_VERSION_MINOR(v) (((v) >> 0) & 0xFFu)
+#define SM1_VS  0xFFFEu
+#define SM1_PS  0xFFFFu
+#define SM1_COMMENTSIZE_SHIFT 16
+#define SM1_COMMENTSIZE_MASK  (0x7FFFu << SM1_COMMENTSIZE_SHIFT)
+ 
+const DWORD LAST_OPCODE = 0xFFFFFFFFu;
+ 
+struct ShaderType  { typedef int Type; enum { VS, PS }; };
+struct RegisterType {
+    typedef DWORD Type;
+    enum {
+        TEMP=0,INPUT=1,CONSTREG=2,ADDR=3,TEXTURE=3,
+        RASTOUT=4,ATTROUT=5,TEXCRDOUT=6,OUTPUT=6,
+        CONSTINT=7,COLOROUT=8,DEPTHOUT=9,SAMPLER=10,
+        IMMCONST=20,
+    };
+};
+struct SrcModifier { enum {
+    NONE=0,NEG=1,BIAS=2,BIASNEG=3,SIGN=4,SIGNNEG=5,
+    COMP=6,X2=7,X2NEG=8,DZ=9,DW=10,ABS=11,ABSNEG=12,NOT=13
+}; };
+ 
+struct Version {
+    ShaderType::Type type;
+    DWORD major, minor, version;
+    void setVersion(DWORD maj, DWORD min) {
+        major=maj; minor=min; version=256*maj+min;
+    }
+    bool isInRange(DWORD maj0,DWORD min0,DWORD maj1,DWORD min1) const {
+        DWORD v1=256*maj1+min1;
+        return (version <= v1);
+    }
+};
+ 
+struct OpcodeInfo { DWORD opcode; const char* mnemonic; DWORD dstCount; DWORD paramCount; };
+struct SrcParam {
+    DWORD offsetInRegisterFile, channelSwizzle, sourceModifier, imm;
+    RegisterType::Type registerType;
+};
+struct DstParam {
+    DWORD registerNumber, writeMask, resultModifiers, psResultShiftScale;
+    RegisterType::Type registerType;
+};
+struct Instruction {
+    DWORD opcode, srcParamsCount, dstParamsCount;
+    const char* mnemonic;
+    SrcParam srcParams[8];
+    DstParam dstParams[8];
+};
+ 
+const DWORD DST_REG_NUM_MASK  = 0x7FF;
+const DWORD REGTYPE_SHIFT     = 28;
+const DWORD REGTYPE_MASK      = (0x7u << REGTYPE_SHIFT);
+const DWORD REGTYPE_SHIFT2    = 8;
+const DWORD REGTYPE_MASK2     = (0x18u << REGTYPE_SHIFT2);
+const DWORD SM1_WRITEMASK_SHIFT= 16;
+const DWORD SM1_WRITEMASK_MASK = (0xFu << SM1_WRITEMASK_SHIFT);
+const DWORD DSTMOD_SHIFT      = 20;
+const DWORD DSTMOD_MASK       = (0xFu << DSTMOD_SHIFT);
+const DWORD DSTSHIFT_SHIFT    = 24;
+const DWORD DSTSHIFT_MASK     = (0xFu << DSTSHIFT_SHIFT);
+const DWORD SWIZZLE_SHIFT     = 16;
+const DWORD SWIZZLE_MASK      = (0xFFu << SWIZZLE_SHIFT);
+const DWORD REGNUM_MASK       = 0x000007FF;
+const DWORD SRCMOD_SHIFT      = 24;
+const DWORD SRCMOD_MASK       = (0xFu << SRCMOD_SHIFT);
+const DWORD NOSWIZZLE         = (0|(1<<2)|(2<<4)|(3<<6));
+const DWORD WRITEMASK_0=1,WRITEMASK_1=2,WRITEMASK_2=4,WRITEMASK_3=8,WRITEMASK_ALL=0xF;
+ 
+const OpcodeInfo g_sm1Opcodes[] =
+{
+    {D3DSIO_NOP,"nop",0,0},{D3DSIO_MOV,"mov",1,2},{D3DSIO_ADD,"add",1,3},
+    {D3DSIO_SUB,"sub",1,3},{D3DSIO_MAD,"mad",1,4},{D3DSIO_MUL,"mul",1,3},
+    {D3DSIO_RCP,"rcp",1,2},{D3DSIO_RSQ,"rsq",1,2},{D3DSIO_DP3,"dp3",1,3},
+    {D3DSIO_DP4,"dp4",1,3},{D3DSIO_MIN,"min",1,3},{D3DSIO_MAX,"max",1,3},
+    {D3DSIO_SLT,"slt",1,3},{D3DSIO_SGE,"sge",1,3},{D3DSIO_EXP,"exp",1,2},
+    {D3DSIO_LOG,"log",1,2},{D3DSIO_LIT,"lit",1,2},{D3DSIO_DST,"dst",1,3},
+    {D3DSIO_LRP,"lrp",1,4},{D3DSIO_FRC,"frc",1,2},{D3DSIO_M4x4,"m4x4",1,3},
+    {D3DSIO_M4x3,"m4x3",1,3},{D3DSIO_M3x4,"m3x4",1,3},{D3DSIO_M3x3,"m3x3",1,3},
+    {D3DSIO_M3x2,"m3x2",1,3},{D3DSIO_TEXKILL,"texkill",1,1},
+    {D3DSIO_TEXBEM,"texbem",1,2},{D3DSIO_TEXBEML,"texbeml",1,2},
+    {D3DSIO_TEXREG2AR,"texreg2ar",1,2},{D3DSIO_TEXREG2GB,"texreg2gb",1,2},
+    {D3DSIO_TEXM3x2PAD,"texm3x2pad",1,2},{D3DSIO_TEXM3x2TEX,"texm3x2tex",1,2},
+    {D3DSIO_TEXM3x3PAD,"texm3x3pad",1,2},{D3DSIO_TEXM3x3TEX,"texm3x3tex",1,2},
+    {D3DSIO_TEXM3x3DIFF,"texm3x3diff",1,2},{D3DSIO_TEXM3x3SPEC,"texm3x3spec",1,3},
+    {D3DSIO_TEXM3x3VSPEC,"texm3x3vspec",1,2},{D3DSIO_EXPP,"expp",1,2},
+    {D3DSIO_LOGP,"logp",1,2},{D3DSIO_CND,"cnd",1,4},
+    {D3DSIO_TEXREG2RGB,"texreg2rgb",1,2},{D3DSIO_TEXDP3TEX,"texdp3tex",1,2},
+    {D3DSIO_TEXM3x2DEPTH,"texm3x2depth",1,2},{D3DSIO_TEXDP3,"texdp3",1,2},
+    {D3DSIO_TEXM3x3,"texm3x3",1,2},{D3DSIO_TEXDEPTH,"texdepth",1,1},
+    {D3DSIO_CMP,"cmp",1,4},{D3DSIO_BEM,"bem",1,3},
+    {LAST_OPCODE,"",0,0}
+};
+const OpcodeInfo g_texcoord1_3  = {D3DSIO_TEXCOORD,"texcoord",1,1};
+const OpcodeInfo g_texcoord1_4  = {D3DSIO_TEXCOORD,"texcoord",1,2};
+const OpcodeInfo g_tex1_3       = {D3DSIO_TEX,     "tex",     1,1};
+const OpcodeInfo g_tex1_4       = {D3DSIO_TEX,     "tex",     1,2};
+const OpcodeInfo g_def_instr    = {D3DSIO_DEF,     "def",     1,5};
+ 
+static const OpcodeInfo* sm1_getOpcodeInfo(DWORD opcode)
+{
+    for (int i = 0; g_sm1Opcodes[i].opcode != LAST_OPCODE; ++i)
+        if (g_sm1Opcodes[i].opcode == opcode) return &g_sm1Opcodes[i];
+    return nullptr;
+}
+ 
+static void sm1_readDstToken(DWORD token, const Version& ver, DstParam* dst)
+{
+    dst->registerNumber    = token & DST_REG_NUM_MASK;
+    dst->registerType      = (RegisterType::Type)(
+                                ((token & REGTYPE_MASK)  >> REGTYPE_SHIFT) |
+                                ((token & REGTYPE_MASK2) >> REGTYPE_SHIFT2));
+    dst->writeMask         = (token & SM1_WRITEMASK_MASK) >> SM1_WRITEMASK_SHIFT;
+    dst->resultModifiers   = (token & DSTMOD_MASK)  >> DSTMOD_SHIFT;
+    dst->psResultShiftScale= (token & DSTSHIFT_MASK) >> DSTSHIFT_SHIFT;
+}
+ 
+static void sm1_readSrcToken(DWORD param, const Version& ver, SrcParam* src)
+{
+    src->registerType          = (RegisterType::Type)(
+                                    ((param & REGTYPE_MASK)  >> REGTYPE_SHIFT) |
+                                    ((param & REGTYPE_MASK2) >> REGTYPE_SHIFT2));
+    src->offsetInRegisterFile  = param & REGNUM_MASK;
+    src->channelSwizzle        = (param & SWIZZLE_MASK) >> SWIZZLE_SHIFT;
+    src->sourceModifier        = (param & SRCMOD_MASK)  >> SRCMOD_SHIFT;
+}
+ 
+static void sm1_readImmConst(const DWORD* bc, DWORD cnt, SrcParam* p)
+{
+    p->registerType           = (RegisterType::Type)RegisterType::IMMCONST;
+    p->offsetInRegisterFile   = 0;
+    memcpy(&p->imm, bc, cnt * sizeof(DWORD));
+    p->channelSwizzle         = NOSWIZZLE;
+    p->sourceModifier         = 0;
+}
+ 
+static void sm1_getInstrParams(const DWORD* bc, const OpcodeInfo* op,
+                                Instruction* instr, const Version& ver)
+{
+    instr->mnemonic       = op->mnemonic;
+    instr->dstParamsCount = op->dstCount;
+    instr->srcParamsCount = op->paramCount - op->dstCount;
+    for (DWORD i=0; i<op->dstCount; ++i)  sm1_readDstToken(*bc++, ver, &instr->dstParams[i]);
+    for (DWORD i=0; i<instr->srcParamsCount; ++i) sm1_readSrcToken(*bc++, ver, &instr->srcParams[i]);
+}
+ 
+static std::string sm1_readComment(const DWORD** ptr)
+{
+    std::stringstream ss;
+    DWORD token = **ptr;
+    while ((token & D3DSI_OPCODE_MASK) == D3DSIO_COMMENT)
+    {
+        UINT size = (token & SM1_COMMENTSIZE_MASK) >> SM1_COMMENTSIZE_SHIFT;
+        const char* c = (const char*)++(*ptr);
+        *ptr += size;
+        // Emit non-null comment text
+        std::string cs(c, 4*size);
+        cs.erase(cs.find_last_not_of('\0')+1);
+        ss << "; " << cs << "\n";
+        token = **ptr;
+    }
+    std::string s = ss.str();
+    if (!s.empty() && s.back()=='\n') s.pop_back();
+    return s;
+}
+ 
+static const char* sm1_regTypeToStr(RegisterType::Type t, DWORD offs, const Version& ver)
+{
+    static char buf[32];
+    switch (t)
+    {
+    case RegisterType::TEMP:     return "r";
+    case RegisterType::INPUT:    return "v";
+    case RegisterType::CONSTREG: return "c";
+    case RegisterType::TEXCRDOUT:return "oT";
+    case RegisterType::ATTROUT:  return "oD";
+    case RegisterType::RASTOUT:
+        if (offs==0) return "oPos";
+        if (offs==1) return "oFog";
+        return "oPts";
+    case RegisterType::TEXTURE:
+        return (ver.type == ShaderType::PS) ? "t" : "a";
+    default:
+        sprintf_s(buf, 32, "unk%d", (int)t);
+        return buf;
+    }
+}
+ 
+static std::string sm1_getChannelSwizzle(DWORD idx)
+{
+    switch (idx) { case 0:return "x"; case 1:return "y"; case 2:return "z"; }
+    return "w";
+}
+ 
+static std::string sm1_optimizeSwizzle(const std::string& s)
+{
+    if (s.size()<=1) return s;
+    char last = s.back();
+    size_t trim = 0;
+    for (int i=(int)s.size()-2; i>=0 && s[i]==last; --i) ++trim;
+    return s.substr(0, s.size()-trim);
+}
+ 
+static std::string sm1_dstToStr(const DstParam& p, const Version& ver)
+{
+    std::stringstream ss;
+    ss << sm1_regTypeToStr(p.registerType, p.registerNumber, ver);
+    if (p.registerType != RegisterType::RASTOUT) ss << p.registerNumber;
+    if (p.writeMask != WRITEMASK_ALL)
+    {
+        ss << ".";
+        if (p.writeMask & WRITEMASK_0) ss << "x";
+        if (p.writeMask & WRITEMASK_1) ss << "y";
+        if (p.writeMask & WRITEMASK_2) ss << "z";
+        if (p.writeMask & WRITEMASK_3) ss << "w";
+    }
+    return ss.str();
+}
+ 
+static const char* sm1_modToStr(DWORD m)
+{
+    switch (m)
+    {
+    case SrcModifier::NEG:    return "-";
+    case SrcModifier::BIAS:   return "(bias)";
+    case SrcModifier::BIASNEG:return "(biasneg)";
+    case SrcModifier::SIGN:   return "(sign)";
+    case SrcModifier::SIGNNEG:return "(signneg)";
+    case SrcModifier::COMP:   return "(comp)";
+    case SrcModifier::X2:     return "(x2)";
+    case SrcModifier::X2NEG:  return "(x2neg)";
+    case SrcModifier::DZ:     return "(dz)";
+    case SrcModifier::DW:     return "(dw)";
+    case SrcModifier::ABS:    return "(abs)";
+    case SrcModifier::ABSNEG: return "(absneg)";
+    case SrcModifier::NOT:    return "(not)";
+    default:                  return "";
+    }
+}
+ 
+static std::string sm1_srcToStr(const SrcParam& p, const Version& ver)
+{
+    std::stringstream ss;
+    if ((int)p.registerType == RegisterType::IMMCONST)
+    {
+        union { float f; DWORD d; } cc; cc.d = p.imm;
+        ss << std::setprecision(5) << cc.f;
+    }
+    else
+    {
+        ss << sm1_modToStr(p.sourceModifier)
+           << sm1_regTypeToStr(p.registerType, p.offsetInRegisterFile, ver)
+           << p.offsetInRegisterFile;
+        std::string swzl;
+        for (int ch=0; ch<4; ++ch)
+            swzl += sm1_getChannelSwizzle((p.channelSwizzle >> (ch*2)) & 0x3);
+        swzl = sm1_optimizeSwizzle(swzl);
+        if (swzl != "xyzw") ss << "." << swzl;
+    }
+    return ss.str();
+}
+ 
+static std::string sm1_instrToStr(const Instruction& instr, const Version& ver)
+{
+    std::stringstream ss;
+    ss << instr.mnemonic << " ";
+    for (DWORD i=0; i<instr.dstParamsCount; ++i)
+    {
+        ss << sm1_dstToStr(instr.dstParams[i], ver);
+        if (i != instr.dstParamsCount-1) ss << ", ";
+    }
+    if (instr.srcParamsCount) { ss << ", ";
+        for (DWORD i=0; i<instr.srcParamsCount; ++i)
+        {
+            ss << sm1_srcToStr(instr.srcParams[i], ver);
+            if (i != instr.srcParamsCount-1) ss << ", ";
+        }
+    }
+    return ss.str();
+}
+ 
+static bool sm1_readInstruction(const DWORD** ppBC, Instruction* instr,
+                                 const Version& ver, std::string* err)
+{
+    const DWORD* bc = *ppBC;
+    DWORD opcode = (*bc) & D3DSI_OPCODE_MASK;
+    const OpcodeInfo* op = sm1_getOpcodeInfo(opcode);
+    if (op)
+    {
+        instr->opcode = opcode;
+        bc++;
+        sm1_getInstrParams(bc, op, instr, ver);
+        bc += op->paramCount;
+        *ppBC = bc;
+        return true;
+    }
+    if (opcode == D3DSIO_TEXCOORD)
+    {
+        bc++;
+        op = ver.isInRange(0,0,1,3) ? &g_texcoord1_3 : &g_texcoord1_4;
+        if (!op) { *err = "texcoord version error"; return false; }
+        sm1_getInstrParams(bc, op, instr, ver);
+        bc += op->paramCount; *ppBC = bc; return true;
+    }
+    if (opcode == D3DSIO_TEX)
+    {
+        bc++;
+        op = ver.isInRange(0,0,1,3) ? &g_tex1_3 : &g_tex1_4;
+        if (!op) { *err = "tex version error"; return false; }
+        sm1_getInstrParams(bc, op, instr, ver);
+        bc += op->paramCount; *ppBC = bc; return true;
+    }
+    if (opcode == D3DSIO_DEF)
+    {
+        bc++;
+        instr->opcode = g_def_instr.opcode;
+        instr->mnemonic = g_def_instr.mnemonic;
+        instr->dstParamsCount = 1; instr->srcParamsCount = 4;
+        sm1_readDstToken(*bc++, ver, &instr->dstParams[0]);
+        for (int i=0;i<4;++i) { sm1_readImmConst(bc,1,&instr->srcParams[i]); bc++; }
+        *ppBC = bc; return true;
+    }
+    std::stringstream ss;
+    ss << "Unknown opcode 0x" << std::hex << opcode;
+    *err = ss.str();
+    return false;
+}
+ 
+static std::string sm1_disassemble(const DWORD* bc)
+{
+    std::stringstream ss;
+    ss << "; SM1 disassembler (c)black_ninja\n\n";
+    DWORD major = SM1_VERSION_MAJOR(*bc);
+    DWORD minor = SM1_VERSION_MINOR(*bc);
+    Version ver; ver.setVersion(major, minor);
+    if (!ver.isInRange(0,0,1,9))
+        return "Shader bytecode not SM1. Use another disassembler.";
+    switch (*bc >> 16)
+    {
+    case SM1_VS: ver.type=ShaderType::VS; ss<<"vs."<<major<<"."<<minor<<"\n"; break;
+    case SM1_PS: ver.type=ShaderType::PS; ss<<"ps."<<major<<"."<<minor<<"\n"; break;
+    }
+    bc++;
+    for (;;)
+    {
+        DWORD opcode = (*bc) & D3DSI_OPCODE_MASK;
+        if (opcode == D3DSIO_END) { ss << "\n; end\n"; break; }
+        if (opcode == D3DSIO_COMMENT)
+        { ss << sm1_readComment(&bc) << "\n"; continue; }
+        Instruction instr{}; std::string err;
+        if (!sm1_readInstruction(&bc, &instr, ver, &err))
+        { ss << "ERROR: " << err; break; }
+        ss << sm1_instrToStr(instr, ver) << "\n\n";
+    }
+    return ss.str();
+}
+ 
+HRESULT disassembleShaderToFile(const wchar_t* fileName, const DWORD* byteCode)
+{
+    if (!byteCode) return E_INVALIDARG;
+    std::string dis = sm1_disassemble(byteCode);
+    FILE* fp = nullptr;
+    if (_wfopen_s(&fp, fileName, L"w") || !fp) return E_FAIL;
+    fwrite(dis.c_str(), 1, dis.size(), fp);
+    fclose(fp);
+    return S_OK;
+}
+ 
+#undef SM1_VERSION_MAJOR
+#undef SM1_VERSION_MINOR
+#undef SM1_VS
+#undef SM1_PS
+#undef SM1_COMMENTSIZE_SHIFT
+#undef SM1_COMMENTSIZE_MASK
+ 
+} // namespace sm1
+ 
+ 
+// =============================================================================
+//  KRipper8 ï¿½ class definition
+// =============================================================================
+ 
+class KRipper8 : public IRipper
+{
+public:
+    static KRipper8* create(HINSTANCE hD3D8);
+    static void destroy(KRipper8*& p);
+ 
+    // IRipper
+    virtual void frameStart()      override;
+    virtual void frameEnd()        override;
+    virtual void textureRipStart() override;
+    virtual void textureRipEnd()   override;
+ 
+protected:
+    virtual ~KRipper8();
+    explicit KRipper8(HINSTANCE hD3D8_);
+ 
+private:
+    // ---- inner types -------------------------------------------------------
+    struct KTexture8 {
+        IDirect3DBaseTexture8* pTexture = nullptr;
+        std::string  name;
+        std::wstring fullPath;
+    };
+    typedef std::vector<KTexture8> KFrameTextureVec;
+ 
+    struct KVertexDeclaration8 {
+        DWORD Declaration[256];
+        KVertexDeclaration8() { memset(Declaration, 0, sizeof(Declaration)); }
+    };
+    typedef std::map<DWORD, KVertexDeclaration8> KVertexShaderMap;
+    typedef std::map<DWORD, ShaderFiles>         Shaders8Db;
+ 
+    // ---- static "this" pointer (singleton pattern used by static hooks) ---
+    static KRipper8* this_;
+ 
+    // ---- D3D8 module handles and D3DX function pointers -------------------
+    HINSTANCE hD3D8;
+    HINSTANCE hD3DX;
+    PFN_D3DXSaveTextureToFileW D3DXSaveTextureToFileW_;
+    PFN_D3DXGetFVFVertexSize   D3DXGetFVFVertexSize_;
+    PFN_D3DXDeclaratorFromFVF  D3DXDeclaratorFromFVF_;
+ 
+    // ---- hook handles ------------------------------------------------------
+    KHook* pHook_Direct3DCreate8;
+    KHook* pHook_IDirect3D8_CreateDevice;
+    KHook* pHook_IDirect3DDevice8_SetTexture;
+    KHook* pHook_IDirect3DDevice8_Present;
+    KHook* pHook_IDirect3DDevice8_DrawPrimitive;
+    KHook* pHook_IDirect3DDevice8_DrawIndexedPrimitive;
+    KHook* pHook_IDirect3DDevice8_DrawPrimitiveUP;
+    KHook* pHook_IDirect3DDevice8_DrawIndexedPrimitiveUP;
+    KHook* pHook_IDirect3DDevice8_SetVertexShader;
+    KHook* pHook_IDirect3DDevice8_CreateVertexBuffer;
+    KHook* pHook_IDirect3DDevice8_CreateIndexBuffer;
+    KHook* pHook_IDirect3DDevice8_CreateVertexShader;
+    KHook* pHook_IDirect3DDevice8_CreatePixelShader;
+    KHook* pHook_IDirect3DDevice8_CreateAdditionalSwapChain;
+    KHook* pHook_IDirect3DSwapChain8_Present;
+ 
+    // ---- state databases ---------------------------------------------------
+    KVertexShaderMap  VSDb;       // handle ? declaration token array
+    Shaders8Db        vsShadersDb;// handle ? saved file info
+    Shaders8Db        psShadersDb;
+    DWORD             LastShader; // most recently set vertex shader handle
+    D3DCompileHelper  d3dCompileHelper;
+ 
+    // ---- texture DBs -------------------------------------------------------
+    std::vector<IDirect3DBaseTexture8*> forcedTexturesDb; // standalone rip
+    KFrameTextureVec                    meshTexturesDb;   // per-draw-call
+ 
+    // ---- critical section (protects all Draw* hooks) ----------------------
+    CRITICAL_SECTION cs;
+ 
+    // ---- lifecycle ---------------------------------------------------------
+    void zeroHooks();
+    static void initialize();
+    static void cleanup();
+ 
+    // ---- Direct3DCreate8 hook -------------------------------------------
+    static IDirect3D8* __stdcall _Direct3DCreate8(UINT SDKVER);
+    IDirect3D8* helper_Direct3DCreate8(UINT SDKVER);
+ 
+    // ---- IDirect3D8::CreateDevice hook ------------------------------------
+    static HRESULT __stdcall _IDirect3D8_CreateDevice(
+        IDirect3D8*, UINT, D3DDEVTYPE, HWND, DWORD,
+        D3DPRESENT_PARAMETERS*, IDirect3DDevice8**);
+    HRESULT helper_IDirect3D8_CreateDevice(KHook*, IDirect3D8*, UINT,
+        D3DDEVTYPE, HWND, DWORD, D3DPRESENT_PARAMETERS*, IDirect3DDevice8**);
+ 
+    // ---- IDirect3DDevice8 hooks -------------------------------------------
+#define DECL_HOOK8_STATIC_HELPER(Name, ...) \
+    static HRESULT __stdcall _##Name(__VA_ARGS__); \
+    HRESULT helper_##Name(KHook*, __VA_ARGS__);
+ 
+    DECL_HOOK8_STATIC_HELPER(IDirect3DDevice8_SetTexture,
+        IDirect3DDevice8*, DWORD, IDirect3DBaseTexture8*)
+    DECL_HOOK8_STATIC_HELPER(IDirect3DDevice8_Present,
+        IDirect3DDevice8*, CONST RECT*, CONST RECT*, HWND, CONST RGNDATA*)
+    DECL_HOOK8_STATIC_HELPER(IDirect3DDevice8_DrawPrimitive,
+        IDirect3DDevice8*, D3DPRIMITIVETYPE, UINT, UINT)
+    DECL_HOOK8_STATIC_HELPER(IDirect3DDevice8_DrawIndexedPrimitive,
+        IDirect3DDevice8*, D3DPRIMITIVETYPE, UINT, UINT, UINT, UINT)
+    DECL_HOOK8_STATIC_HELPER(IDirect3DDevice8_DrawPrimitiveUP,
+        IDirect3DDevice8*, D3DPRIMITIVETYPE, UINT, CONST void*, UINT)
+    DECL_HOOK8_STATIC_HELPER(IDirect3DDevice8_DrawIndexedPrimitiveUP,
+        IDirect3DDevice8*, D3DPRIMITIVETYPE, UINT, UINT, UINT,
+        CONST void*, D3DFORMAT, CONST void*, UINT)
+    DECL_HOOK8_STATIC_HELPER(IDirect3DDevice8_SetVertexShader,
+        IDirect3DDevice8*, DWORD)
+    DECL_HOOK8_STATIC_HELPER(IDirect3DDevice8_CreateVertexBuffer,
+        IDirect3DDevice8*, UINT, DWORD, DWORD, D3DPOOL, IDirect3DVertexBuffer8**)
+    DECL_HOOK8_STATIC_HELPER(IDirect3DDevice8_CreateIndexBuffer,
+        IDirect3DDevice8*, UINT, DWORD, D3DFORMAT, D3DPOOL, IDirect3DIndexBuffer8**)
+    DECL_HOOK8_STATIC_HELPER(IDirect3DDevice8_CreateVertexShader,
+        IDirect3DDevice8*, CONST DWORD*, CONST DWORD*, DWORD*, DWORD)
+    DECL_HOOK8_STATIC_HELPER(IDirect3DDevice8_CreatePixelShader,
+        IDirect3DDevice8*, CONST DWORD*, DWORD*)
+    DECL_HOOK8_STATIC_HELPER(IDirect3DDevice8_CreateAdditionalSwapChain,
+        IDirect3DDevice8*, D3DPRESENT_PARAMETERS*, IDirect3DSwapChain8**)
+    DECL_HOOK8_STATIC_HELPER(IDirect3DSwapChain8_Present,
+        IDirect3DSwapChain8*, CONST RECT*, CONST RECT*, HWND, CONST RGNDATA*)
+#undef DECL_HOOK8_STATIC_HELPER
+ 
+    // ---- ripper helpers ---------------------------------------------------
+    EPrimitiveTopology::Type D3DPRIMITIVETYPE_to_EPrimitiveTopology(D3DPRIMITIVETYPE);
+    EInputType::Type         convD3D8TypeToInputType(DWORD d3dtype);
+ 
+    HRESULT getVertexDeclarations(IDirect3DDevice8*,
+                                   KInputVertexDeclaration&,
+                                   KOutputVertexDeclaration&);
+    HRESULT createDeclaration(const DWORD*, KInputVertexDeclaration&);
+    void    dumpVertexDeclarationToLog(const DWORD*);
+ 
+    HRESULT dumpIndexBuffer(IDirect3DDevice8*, EPrimitiveTopology::Type,
+                            UINT StartIndex, UINT PrimitiveCount,
+                            KFACES*, OptimizedIndexToMeshIndex*, UINT* pBaseVtx);
+    HRESULT dumpVertexBuffer(IDirect3DDevice8*,
+                             const KInputVertexDeclaration&,
+                             const KOutputVertexDeclaration&,
+                             UINT BaseVertexIndex,
+                             const OptimizedIndexToMeshIndex&,
+                             KVERTICES*);
+ 
+    void ripDP(IDirect3DDevice8*, D3DPRIMITIVETYPE, UINT StartVertex, UINT PrimCount);
+    void ripDIP(IDirect3DDevice8*, D3DPRIMITIVETYPE, UINT MinIndex,
+                UINT NumVertices, UINT StartIndex, UINT PrimCount);
+    void ripDrawPrimitiveUP(IDirect3DDevice8*, D3DPRIMITIVETYPE,
+                            UINT PrimCount, CONST void* pData, UINT Stride);
+    void ripDrawIndexedPrimitiveUP(IDirect3DDevice8*, D3DPRIMITIVETYPE,
+                                   UINT MinVtxIdx, UINT NumVtxIndices,
+                                   UINT PrimCount, CONST void* pIdxData,
+                                   D3DFORMAT, CONST void* pVtxData, UINT Stride);
+ 
+    // ---- texture helpers --------------------------------------------------
+    DWORD   isTextureSaved(IDirect3DBaseTexture8*);
+    HRESULT saveTexture2File(LPCTSTR, IDirect3DDevice8*, IDirect3DBaseTexture8*);
+    void    handleTextureSave(IDirect3DDevice8*, DWORD Stage, IDirect3DBaseTexture8*);
+ 
+    void    addMeshTexture(const KTexture8&);
+    bool    isMeshTextureSaved(IDirect3DBaseTexture8*, KTexture8*);
+    void    saveMeshTextures(IDirect3DDevice8*, KMeshTextures*);
+ 
+    // ---- shader helpers ---------------------------------------------------
+    bool    getShaderFromDb(DWORD, Shaders8Db*, std::string* name, std::string* path);
+    void    saveMeshShaders(IDirect3DDevice8*, KMeshShaders*);
+ 
+    // ---- debug helpers (from dump8.cpp) -----------------------------------
+    const char* D3DFORMAT_2Str(D3DFORMAT);
+    const char* D3DRESOURCETYPE_2Str(D3DRESOURCETYPE);
+    const char* D3DMULTISAMPLE_2Str(D3DMULTISAMPLE_TYPE);
+    const char* D3DPOOL_2Str(D3DPOOL);
+    const char* D3DUSAGE_2Str(DWORD);
+    void        dump_TextureDesc2Log(IDirect3DBaseTexture8*);
+};
+ 
+// Static member
+KRipper8* KRipper8::this_ = nullptr;
+ 
+ 
+// =============================================================================
+//  KRipper8 ï¿½ lifecycle  (from kripper8.cpp)
+// =============================================================================
+ 
+KRipper8* KRipper8::create(HINSTANCE hD3D8)
+{
+    g_pLog->log("D3D8 ripper init\n");
+    KRipper8* p = new KRipper8(hD3D8);
+    p->initialize();
+    return p;
+}
+ 
+void KRipper8::destroy(KRipper8*& p)
+{
+    if (!p) return;
+    g_pLog->log("D3D8 ripper uninit\n\n");
+    p->cleanup();
+    SAFE_DELETE(p);
+}
+ 
+KRipper8::KRipper8(HINSTANCE hD3D8_)
+    : hD3D8(hD3D8_), hD3DX(nullptr),
+      D3DXSaveTextureToFileW_(nullptr),
+      D3DXGetFVFVertexSize_(nullptr),
+      D3DXDeclaratorFromFVF_(nullptr),
+      LastShader(0)
+{
+    this_ = this;
+    InitializeCriticalSection(&cs);
+    zeroHooks();
+}
+ 
+KRipper8::~KRipper8()
+{
+    this_ = nullptr;
+    DeleteCriticalSection(&cs);
+}
+ 
+void KRipper8::zeroHooks()
+{
+    pHook_Direct3DCreate8                         = nullptr;
+    pHook_IDirect3D8_CreateDevice                 = nullptr;
+    pHook_IDirect3DDevice8_SetTexture             = nullptr;
+    pHook_IDirect3DDevice8_Present                = nullptr;
+    pHook_IDirect3DDevice8_DrawPrimitive          = nullptr;
+    pHook_IDirect3DDevice8_DrawIndexedPrimitive   = nullptr;
+    pHook_IDirect3DDevice8_DrawPrimitiveUP        = nullptr;
+    pHook_IDirect3DDevice8_DrawIndexedPrimitiveUP = nullptr;
+    pHook_IDirect3DDevice8_SetVertexShader        = nullptr;
+    pHook_IDirect3DDevice8_CreateVertexBuffer     = nullptr;
+    pHook_IDirect3DDevice8_CreateIndexBuffer      = nullptr;
+    pHook_IDirect3DDevice8_CreateVertexShader     = nullptr;
+    pHook_IDirect3DDevice8_CreatePixelShader      = nullptr;
+    pHook_IDirect3DDevice8_CreateAdditionalSwapChain = nullptr;
+    pHook_IDirect3DSwapChain8_Present             = nullptr;
+}
+ 
+void KRipper8::frameStart()   { meshTexturesDb.clear(); }
+void KRipper8::frameEnd()     {}
+void KRipper8::textureRipStart() { forcedTexturesDb.clear(); }
+void KRipper8::textureRipEnd() {}
+ 
+void KRipper8::initialize()
+{
+    hookEx("Direct3DCreate8",
+           GetProcAddress(this_->hD3D8, "Direct3DCreate8"),
+           _Direct3DCreate8,
+           KHookMgr::EHOOK_POOL_DX8,
+           &this_->pHook_Direct3DCreate8);
+}
+ 
+void KRipper8::cleanup()
+{
+    g_pHookMgr->unhookPool(KHookMgr::EHOOK_POOL_DX8);
+    this_->zeroHooks();
+}
+ 
+ 
+// =============================================================================
+//  Direct3DCreate8 hook
+// =============================================================================
+ 
+IDirect3D8* __stdcall KRipper8::_Direct3DCreate8(UINT SDKVER)
+{
+    return this_->helper_Direct3DCreate8(SDKVER);
+}
+ 
+IDirect3D8* KRipper8::helper_Direct3DCreate8(UINT SDKVER)
+{
+    loadD3DCompile(&d3dCompileHelper);
+ 
+    PFN_Direct3DCreate8 e = (PFN_Direct3DCreate8)
+                            pHook_Direct3DCreate8->getOriginalAddress();
+ 
+    // Lazy-load D3DX8 (try debug DLL first, then release)
+    if (!hD3DX)
+    {
+        HMODULE hMod = GetModuleHandleW(L"d3dx8d.dll");
+        if (!hMod) hMod = GetModuleHandleW(L"d3dx8.dll");
+        if (hMod)
+        {
+            hD3DX = (HINSTANCE)hMod;
+        }
+        else
+        {
+            std::wstring dir = g_pIntruder->getIntruderDir();
+            hD3DX = LoadLibraryW((dir + L"d3dx8d.dll").c_str());
+            if (!hD3DX)
+                hD3DX = LoadLibraryW((dir + L"d3dx8.dll").c_str());
+            if (!hD3DX)
+                fatalErrorMsgW(L"d3dx8d.dll / d3dx8.dll load error");
+        }
+ 
+        D3DXSaveTextureToFileW_ = (PFN_D3DXSaveTextureToFileW)
+            GetProcAddress(hD3DX, "D3DXSaveTextureToFileW");
+        D3DXGetFVFVertexSize_   = (PFN_D3DXGetFVFVertexSize)
+            GetProcAddress(hD3DX, "D3DXGetFVFVertexSize");
+        D3DXDeclaratorFromFVF_  = (PFN_D3DXDeclaratorFromFVF)
+            GetProcAddress(hD3DX, "D3DXDeclaratorFromFVF");
+ 
+        if (!D3DXSaveTextureToFileW_ || !D3DXGetFVFVertexSize_ || !D3DXDeclaratorFromFVF_)
+            fatalErrorMsgW(L"Missing D3DX8 export(s).");
+    }
+ 
+    IDirect3D8* pid3d8 = e(SDKVER);
+    g_pLog->log("Direct3DCreate8(%u) = 0x%p\n", SDKVER, pid3d8);
+    if (!pid3d8) return pid3d8;
+ 
+    hookEx("IDirect3D8_CreateDevice",
+           IDX8_IDirect3D8_CreateDevice, pid3d8,
+           KHookMgr::EHOOK_POOL_DX8,
+           _IDirect3D8_CreateDevice,
+           &pHook_IDirect3D8_CreateDevice);
+ 
+    return pid3d8;
+}
+ 
+ 
+// =============================================================================
+//  IDirect3D8::CreateDevice hook
+// =============================================================================
+ 
+HRESULT __stdcall KRipper8::_IDirect3D8_CreateDevice(
+    IDirect3D8* pD3D8, UINT Adapter, D3DDEVTYPE DeviceType,
+    HWND hFocusWindow, DWORD BehaviorFlags,
+    D3DPRESENT_PARAMETERS* pPP, IDirect3DDevice8** ppDev)
+{
+    return this_->helper_IDirect3D8_CreateDevice(
+        this_->pHook_IDirect3D8_CreateDevice,
+        pD3D8, Adapter, DeviceType, hFocusWindow, BehaviorFlags, pPP, ppDev);
+}
+ 
+HRESULT KRipper8::helper_IDirect3D8_CreateDevice(
+    KHook* pHook,
+    IDirect3D8* pD3D8, UINT Adapter, D3DDEVTYPE DeviceType,
+    HWND hFocusWindow, DWORD BehaviorFlags,
+    D3DPRESENT_PARAMETERS* pPP, IDirect3DDevice8** ppDev)
+{
+    PFN_IDirect3D8_CreateDevice e =
+        (PFN_IDirect3D8_CreateDevice)pHook->getOriginalAddress();
+ 
+    HRESULT res = e(pD3D8, Adapter, DeviceType, hFocusWindow,
+                    BehaviorFlags, pPP, ppDev);
+    if (FAILED(res)) return res;
+ 
+    g_pLog->log("IDirect3D8::CreateDevice(0x%p) = 0x%08X\n", pD3D8, res);
+ 
+#define HOOK8(name, idx, fn, ppHook) \
+    hookEx(name, idx, *ppDev, KHookMgr::EHOOK_POOL_DX8, fn, ppHook)
+ 
+    HOOK8("IDirect3DDevice8_SetTexture",
+          IDX8_IDirect3DDevice8_SetTexture,
+          _IDirect3DDevice8_SetTexture,
+          &pHook_IDirect3DDevice8_SetTexture);
+ 
+    HOOK8("IDirect3DDevice8_Present",
+          IDX8_IDirect3DDevice8_Present,
+          _IDirect3DDevice8_Present,
+          &pHook_IDirect3DDevice8_Present);
+ 
+    HOOK8("IDirect3DDevice8_DrawPrimitive",
+          IDX8_IDirect3DDevice8_DrawPrimitive,
+          _IDirect3DDevice8_DrawPrimitive,
+          &pHook_IDirect3DDevice8_DrawPrimitive);
+ 
+    HOOK8("IDirect3DDevice8_DrawIndexedPrimitive",
+          IDX8_IDirect3DDevice8_DrawIndexedPrimitive,
+          _IDirect3DDevice8_DrawIndexedPrimitive,
+          &pHook_IDirect3DDevice8_DrawIndexedPrimitive);
+ 
+    HOOK8("IDirect3DDevice8_DrawPrimitiveUP",
+          IDX8_IDirect3DDevice8_DrawPrimitiveUP,
+          _IDirect3DDevice8_DrawPrimitiveUP,
+          &pHook_IDirect3DDevice8_DrawPrimitiveUP);
+ 
+    HOOK8("IDirect3DDevice8_DrawIndexedPrimitiveUP",
+          IDX8_IDirect3DDevice8_DrawIndexedPrimitiveUP,
+          _IDirect3DDevice8_DrawIndexedPrimitiveUP,
+          &pHook_IDirect3DDevice8_DrawIndexedPrimitiveUP);
+ 
+    HOOK8("IDirect3DDevice8_CreateVertexBuffer",
+          IDX8_IDirect3DDevice8_CreateVertexBuffer,
+          _IDirect3DDevice8_CreateVertexBuffer,
+          &pHook_IDirect3DDevice8_CreateVertexBuffer);
+ 
+    HOOK8("IDirect3DDevice8_CreateIndexBuffer",
+          IDX8_IDirect3DDevice8_CreateIndexBuffer,
+          _IDirect3DDevice8_CreateIndexBuffer,
+          &pHook_IDirect3DDevice8_CreateIndexBuffer);
+ 
+    HOOK8("IDirect3DDevice8_CreateVertexShader",
+          IDX8_IDirect3DDevice8_CreateVertexShader,
+          _IDirect3DDevice8_CreateVertexShader,
+          &pHook_IDirect3DDevice8_CreateVertexShader);
+ 
+    HOOK8("IDirect3DDevice8_CreatePixelShader",
+          IDX8_IDirect3DDevice8_CreatePixelShader,
+          _IDirect3DDevice8_CreatePixelShader,
+          &pHook_IDirect3DDevice8_CreatePixelShader);
+ 
+    HOOK8("IDirect3DDevice8_SetVertexShader",
+          IDX8_IDirect3DDevice8_SetVertexShader,
+          _IDirect3DDevice8_SetVertexShader,
+          &pHook_IDirect3DDevice8_SetVertexShader);
+ 
+    HOOK8("IDirect3DDevice8_CreateAdditionalSwapChain",
+          IDX8_IDirect3DDevice8_CreateAdditionalSwapChain,
+          _IDirect3DDevice8_CreateAdditionalSwapChain,
+          &pHook_IDirect3DDevice8_CreateAdditionalSwapChain);
+#undef HOOK8
+ 
+    return res;
+}
+ 
+ 
+// =============================================================================
+//  Present / frame boundary hooks
+// =============================================================================
+ 
+HRESULT __stdcall KRipper8::_IDirect3DDevice8_Present(
+    IDirect3DDevice8* pDev, CONST RECT* pSrc, CONST RECT* pDst,
+    HWND hWnd, CONST RGNDATA* pRgn)
+{
+    return this_->helper_IDirect3DDevice8_Present(
+        this_->pHook_IDirect3DDevice8_Present, pDev, pSrc, pDst, hWnd, pRgn);
+}
+HRESULT KRipper8::helper_IDirect3DDevice8_Present(
+    KHook* pHook, IDirect3DDevice8* pDev,
+    CONST RECT* pSrc, CONST RECT* pDst, HWND hWnd, CONST RGNDATA* pRgn)
+{
+    auto e = (PFN_IDirect3DDevice8_Present)pHook->getOriginalAddress();
+    g_pIntruder->frameHandler(this);
+    return e(pDev, pSrc, pDst, hWnd, pRgn);
+}
+ 
+HRESULT __stdcall KRipper8::_IDirect3DDevice8_CreateAdditionalSwapChain(
+    IDirect3DDevice8* pDev, D3DPRESENT_PARAMETERS* pPP,
+    IDirect3DSwapChain8** ppSC)
+{
+    return this_->helper_IDirect3DDevice8_CreateAdditionalSwapChain(
+        this_->pHook_IDirect3DDevice8_CreateAdditionalSwapChain, pDev, pPP, ppSC);
+}
+HRESULT KRipper8::helper_IDirect3DDevice8_CreateAdditionalSwapChain(
+    KHook* pHook, IDirect3DDevice8* pDev,
+    D3DPRESENT_PARAMETERS* pPP, IDirect3DSwapChain8** ppSC)
+{
+    auto e = (PFN_IDirect3DDevice8_CreateAdditionalSwapChain)pHook->getOriginalAddress();
+    g_pLog->log("IDirect3DDevice8_CreateAdditionalSwapChain\n");
+    HRESULT hr = e(pDev, pPP, ppSC);
+    if (SUCCEEDED(hr))
+        hookEx("IDirect3DSwapChain8_Present",
+               IDX8_IDirect3DSwapChain8_Present, *ppSC,
+               KHookMgr::EHOOK_POOL_DX8,
+               _IDirect3DSwapChain8_Present,
+               &pHook_IDirect3DSwapChain8_Present);
+    return hr;
+}
+ 
+HRESULT __stdcall KRipper8::_IDirect3DSwapChain8_Present(
+    IDirect3DSwapChain8* pSC, CONST RECT* pSrc, CONST RECT* pDst,
+    HWND hWnd, CONST RGNDATA* pRgn)
+{
+    return this_->helper_IDirect3DSwapChain8_Present(
+        this_->pHook_IDirect3DSwapChain8_Present, pSC, pSrc, pDst, hWnd, pRgn);
+}
+HRESULT KRipper8::helper_IDirect3DSwapChain8_Present(
+    KHook* pHook, IDirect3DSwapChain8* pSC,
+    CONST RECT* pSrc, CONST RECT* pDst, HWND hWnd, CONST RGNDATA* pRgn)
+{
+    auto e = (PFN_IDirect3DSwapChain8_Present)pHook->getOriginalAddress();
+    g_pIntruder->frameHandler(this);
+    return e(pSC, pSrc, pDst, hWnd, pRgn);
+}
+ 
+ 
+// =============================================================================
+//  Buffer creation hooks (strip D3DUSAGE_WRITEONLY so we can lock them)
+// =============================================================================
+ 
+HRESULT __stdcall KRipper8::_IDirect3DDevice8_CreateVertexBuffer(
+    IDirect3DDevice8* pDev, UINT Length, DWORD Usage, DWORD FVF,
+    D3DPOOL Pool, IDirect3DVertexBuffer8** ppVB)
+{
+    return this_->helper_IDirect3DDevice8_CreateVertexBuffer(
+        this_->pHook_IDirect3DDevice8_CreateVertexBuffer,
+        pDev, Length, Usage, FVF, Pool, ppVB);
+}
+HRESULT KRipper8::helper_IDirect3DDevice8_CreateVertexBuffer(
+    KHook* pHook, IDirect3DDevice8* pDev, UINT Length, DWORD Usage,
+    DWORD FVF, D3DPOOL Pool, IDirect3DVertexBuffer8** ppVB)
+{
+    auto e = (PFN_IDirect3DDevice8_CreateVertexBuffer)pHook->getOriginalAddress();
+    Usage &= ~(DWORD)D3DUSAGE_WRITEONLY;
+    return e(pDev, Length, Usage, FVF, Pool, ppVB);
+}
+ 
+HRESULT __stdcall KRipper8::_IDirect3DDevice8_CreateIndexBuffer(
+    IDirect3DDevice8* pDev, UINT Length, DWORD Usage,
+    D3DFORMAT Format, D3DPOOL Pool, IDirect3DIndexBuffer8** ppIB)
+{
+    return this_->helper_IDirect3DDevice8_CreateIndexBuffer(
+        this_->pHook_IDirect3DDevice8_CreateIndexBuffer,
+        pDev, Length, Usage, Format, Pool, ppIB);
+}
+HRESULT KRipper8::helper_IDirect3DDevice8_CreateIndexBuffer(
+    KHook* pHook, IDirect3DDevice8* pDev, UINT Length, DWORD Usage,
+    D3DFORMAT Format, D3DPOOL Pool, IDirect3DIndexBuffer8** ppIB)
+{
+    auto e = (PFN_IDirect3DDevice8_CreateIndexBuffer)pHook->getOriginalAddress();
+    Usage &= ~(DWORD)D3DUSAGE_WRITEONLY;
+    return e(pDev, Length, Usage, Format, Pool, ppIB);
+}
+ 
+ 
+// =============================================================================
+//  Vertex/pixel shader creation hooks
+// =============================================================================
+ 
+HRESULT __stdcall KRipper8::_IDirect3DDevice8_CreateVertexShader(
+    IDirect3DDevice8* pDev, CONST DWORD* pDecl,
+    CONST DWORD* pFunc, DWORD* pHandle, DWORD Usage)
+{
+    return this_->helper_IDirect3DDevice8_CreateVertexShader(
+        this_->pHook_IDirect3DDevice8_CreateVertexShader,
+        pDev, pDecl, pFunc, pHandle, Usage);
+}
+HRESULT KRipper8::helper_IDirect3DDevice8_CreateVertexShader(
+    KHook* pHook, IDirect3DDevice8* pDev, CONST DWORD* pDecl,
+    CONST DWORD* pFunc, DWORD* pHandle, DWORD Usage)
+{
+    auto e = (PFN_IDirect3DDevice8_CreateVertexShader)pHook->getOriginalAddress();
+    HRESULT hr = e(pDev, pDecl, pFunc, pHandle, Usage);
+ 
+    // Cache declaration token array keyed by shader handle
+    if (pDecl)
+    {
+        KVertexDeclaration8 vs8;
+        for (DWORD i = 0; i < 256; ++i)
+        {
+            vs8.Declaration[i] = pDecl[i];
+            if (pDecl[i] == D3DVSD_END() || i >= 255) break;
+        }
+        auto it = VSDb.find(*pHandle);
+        if (it != VSDb.end()) it->second = vs8;
+        else VSDb.insert(std::make_pair(*pHandle, vs8));
+    }
+ 
+    if (SUCCEEDED(hr) && g_pIntruder->getSettings()->saveShaders)
+    {
+        DWORD idx = g_pIntruder->incVertexShaderIdx();
+        std::wstring savePath = g_pIntruder->getShaderSavePath(idx, EShaderExt::VERTEX);
+        std::string  saveName = g_pIntruder->getShaderName(idx, EShaderExt::VERTEX);
+        if (SUCCEEDED(sm1::disassembleShaderToFile(savePath.c_str(), pFunc)))
+        {
+            ShaderFiles sf; sf.fullPath = savePath; sf.name = saveName;
+            vsShadersDb.insert(std::make_pair(*pHandle, sf));
+        }
+        else
+        {
+            g_pLog->logError("VS disassembler failed\n");
+        }
+    }
+    return hr;
+}
+ 
+HRESULT __stdcall KRipper8::_IDirect3DDevice8_CreatePixelShader(
+    IDirect3DDevice8* pDev, CONST DWORD* pFunc, DWORD* pHandle)
+{
+    return this_->helper_IDirect3DDevice8_CreatePixelShader(
+        this_->pHook_IDirect3DDevice8_CreatePixelShader, pDev, pFunc, pHandle);
+}
+HRESULT KRipper8::helper_IDirect3DDevice8_CreatePixelShader(
+    KHook* pHook, IDirect3DDevice8* pDev, CONST DWORD* pFunc, DWORD* pHandle)
+{
+    auto e = (PFN_IDirect3DDevice8_CreatePixelShader)pHook->getOriginalAddress();
+    HRESULT hr = e(pDev, pFunc, pHandle);
+ 
+    if (SUCCEEDED(hr) && g_pIntruder->getSettings()->saveShaders)
+    {
+        DWORD idx = g_pIntruder->incVertexShaderIdx();
+        std::wstring savePath = g_pIntruder->getShaderSavePath(idx, EShaderExt::PIXEL);
+        std::string  saveName = g_pIntruder->getShaderName(idx, EShaderExt::PIXEL);
+        if (SUCCEEDED(sm1::disassembleShaderToFile(savePath.c_str(), pFunc)))
+        {
+            ShaderFiles sf; sf.fullPath = savePath; sf.name = saveName;
+            psShadersDb.insert(std::make_pair(*pHandle, sf));
+        }
+        else
+        {
+            g_pLog->logError("PS disassembler failed\n");
+        }
+    }
+    return hr;
+}
+ 
+HRESULT __stdcall KRipper8::_IDirect3DDevice8_SetVertexShader(
+    IDirect3DDevice8* pDev, DWORD Handle)
+{
+    return this_->helper_IDirect3DDevice8_SetVertexShader(
+        this_->pHook_IDirect3DDevice8_SetVertexShader, pDev, Handle);
+}
+HRESULT KRipper8::helper_IDirect3DDevice8_SetVertexShader(
+    KHook* pHook, IDirect3DDevice8* pDev, DWORD Handle)
+{
+    auto e = (PFN_IDirect3DDevice8_SetVertexShader)pHook->getOriginalAddress();
+    HRESULT hr = e(pDev, Handle);
+    if (SUCCEEDED(hr)) LastShader = Handle;
+    return hr;
+}
+ 
+ 
+// =============================================================================
+//  Shader DB lookup and mesh-shader saving
+// =============================================================================
+ 
+bool KRipper8::getShaderFromDb(DWORD shader, Shaders8Db* db,
+                                std::string* name, std::string* path)
+{
+    auto it = db->find(shader);
+    if (it == db->end()) return false;
+    *name = it->second.name;
+    *path = wideStringToMultiByte(it->second.fullPath.c_str());
+    return true;
+}
+ 
+void KRipper8::saveMeshShaders(IDirect3DDevice8* pDev, KMeshShaders* out)
+{
+    std::string name, path;
+    if (getShaderFromDb(LastShader, &vsShadersDb, &name, &path))
+    {
+        out->shaders.push_back(name);
+        g_pLog->log("VS saved: %s\n", path.c_str());
+    }
+    DWORD ps = 0;
+    if (SUCCEEDED(pDev->GetPixelShader(&ps)))
+    {
+        if (getShaderFromDb(ps, &psShadersDb, &name, &path))
+        {
+            out->shaders.push_back(name);
+            g_pLog->log("PS saved: %s\n", path.c_str());
+        }
+    }
+}
+ 
+ 
+// =============================================================================
+//  Vertex declaration helpers  (from kripper8.cpp getVertexDeclarations etc.)
+// =============================================================================
+ 
+EPrimitiveTopology::Type KRipper8::D3DPRIMITIVETYPE_to_EPrimitiveTopology(
+    D3DPRIMITIVETYPE pt)
+{
+    switch (pt)
+    {
+    case D3DPT_TRIANGLELIST:  return EPrimitiveTopology::TRIANGLELIST;
+    case D3DPT_TRIANGLESTRIP: return EPrimitiveTopology::TRIANGLESTRIP;
+    case D3DPT_POINTLIST:     return EPrimitiveTopology::POINTLIST;
+    case D3DPT_LINELIST:      return EPrimitiveTopology::LINELIST;
+    case D3DPT_LINESTRIP:     return EPrimitiveTopology::LINESTRIP;
+    case D3DPT_TRIANGLEFAN:   return EPrimitiveTopology::TRIANGLEFAN;
+    default:                  return EPrimitiveTopology::UNKNOWNPRIMITIVETYPE;
+    }
+}
+ 
+EInputType::Type KRipper8::convD3D8TypeToInputType(DWORD d3dtype)
+{
+    switch (d3dtype)
+    {
+    case D3DVSDT_FLOAT1:   return EInputType::R32_FLOAT;
+    case D3DVSDT_FLOAT2:   return EInputType::R32G32_FLOAT;
+    case D3DVSDT_FLOAT3:   return EInputType::R32G32B32_FLOAT;
+    case D3DVSDT_FLOAT4:   return EInputType::R32G32B32A32_FLOAT;
+    case D3DVSDT_D3DCOLOR: return EInputType::R8G8B8A8_UINT;
+    case D3DVSDT_UBYTE4:   return EInputType::R8G8B8A8_UINT;
+    case D3DVSDT_SHORT2:   return EInputType::R16G16_SINT;
+    case D3DVSDT_SHORT4:   return EInputType::R16G16B16A16_SINT;
+    default:               return EInputType::UNKNOWNINPUTTYPE;
+    }
+}
+ 
+void KRipper8::dumpVertexDeclarationToLog(const DWORD* pData)
+{
+    std::string decoded;
+    g_pLog->log("--------D3D8 vertex shader declaration--------\n");
+    for (;;)
+    {
+        DWORD token = *pData;
+        DWORD len   = sm1_decodeVS1Declaration(pData, &decoded);
+        g_pLog->log("Len:%d 0x%08X %s\n", len, token, decoded.c_str());
+        if (token == D3DVSD_END()) break;
+        pData += len;
+    }
+    g_pLog->log("----------------------------------------------\n\n");
+}
+ 
+HRESULT KRipper8::createDeclaration(const DWORD* pDecl,
+                                     KInputVertexDeclaration& InputDecl)
+{
+    dumpVertexDeclarationToLog(pDecl);
+    HRESULT hr = E_FAIL;
+    DWORD StreamNum = 0, Offset = 0;
+    for (;;)
+    {
+        DWORD token    = *pDecl;
+        if (token == D3DVSD_END()) { hr = S_OK; break; }
+ 
+        std::string tmp;
+        DWORD len      = sm1_decodeVS1Declaration(pDecl, &tmp);
+        DWORD tokenType= (token >> D3DVSD_TOKENTYPESHIFT) & 0x7;
+        bool  addElem  = false;
+        KInputVertexElement elem{};
+ 
+        if (tokenType == D3DVSD_TOKEN_STREAM)
+        {
+            StreamNum = token & 0xF;
+            Offset    = 0;
+        }
+        else if (tokenType == D3DVSD_TOKEN_STREAMDATA)
+        {
+            if (!(token & D3DVSD_DATALOADTYPEMASK))
+            {
+                DWORD typeDim = (token & D3DVSD_DATATYPEMASK) >> D3DVSD_DATATYPESHIFT;
+                DWORD regAddr = token & 0xF;
+                const char* sem = sm1_getRegSemantic(regAddr);
+                strCopy(elem.UsageSemantic, SEMANTIC_LEN, sem);
+                elem.Type = convD3D8TypeToInputType(typeDim);
+                addElem   = true;
+            }
+            else
+            {
+                // Skip tokens
+                DWORD cnt = (token & D3DVSD_SKIPCOUNTMASK) >> D3DVSD_SKIPCOUNTSHIFT;
+                Offset += 4 * cnt;
+            }
+        }
+ 
+        if (addElem)
+        {
+            elem.Size   = getInputTypeSize(elem.Type);
+            elem.Stream = StreamNum;
+            elem.Offset = Offset;
+            InputDecl.Decl.push_back(elem);
+            Offset += elem.Size;
+        }
+        pDecl += len;
+    }
+    return hr;
+}
+ 
+HRESULT KRipper8::getVertexDeclarations(IDirect3DDevice8* pDev,
+                                         KInputVertexDeclaration& InputDecl,
+                                         KOutputVertexDeclaration& OutputDecl)
+{
+    DWORD VertShader = 0;
+    if (FAILED(pDev->GetVertexShader(&VertShader)))
+        VertShader = LastShader;
+ 
+    g_pLog->log("VertexShader/FVF: 0x%08X\n", VertShader);
+    if (!VertShader)
+    {
+        g_pLog->logError("FVF == 0\n");
+        return E_FVF_NULL;
+    }
+ 
+    HRESULT hr;
+    auto it = VSDb.find(VertShader);
+    if (it == VSDb.end())
+    {
+        // FVF mode ï¿½ crack with D3DXDeclaratorFromFVF
+        DWORD Decl[256] = {};
+        hr = D3DXDeclaratorFromFVF_(VertShader, Decl);
+        if (FAILED(hr))
+        {
+            g_pLog->log("D3DXDeclaratorFromFVF() failed: 0x%08X\n", hr);
+            return hr;
+        }
+        hr = createDeclaration(Decl, InputDecl);
+    }
+    else
+    {
+        hr = createDeclaration(it->second.Declaration, InputDecl);
+    }
+ 
+    if (SUCCEEDED(hr))
+        hr = createKOutputVertexDeclaration(InputDecl, OutputDecl);
+ 
+    return hr;
+}
+ 
+ 
+// =============================================================================
+//  Index buffer dump  (from drawindexedprimitive8.cpp)
+// =============================================================================
+ 
+HRESULT KRipper8::dumpIndexBuffer(IDirect3DDevice8* pDev,
+                                   EPrimitiveTopology::Type primTopology,
+                                   UINT StartIndex,
+                                   UINT PrimitiveCount,
+                                   KFACES* pFACES,
+                                   OptimizedIndexToMeshIndex* optIdxToMeshIdx,
+                                   UINT* pBaseVertexIndex)
+{
+    HRESULT hr;
+    do
+    {
+        TDXRef<IDirect3DIndexBuffer8> pIBRef;
+        BYTE* pbData = nullptr;
+        D3DINDEXBUFFER_DESC desc{}; 
+ 
+        hr = pDev->GetIndices(&pIBRef, pBaseVertexIndex);
+        if (FAILED(hr)) { g_pLog->logError("GetIndices() hr=0x%08X\n", hr); break; }
+        if (!pIBRef.get()) { hr = E_NULL_BUFF; g_pLog->logError("pIB==NULL\n"); break; }
+ 
+        hr = pIBRef->GetDesc(&desc);
+        if (FAILED(hr)) { g_pLog->logError("IB::GetDesc() hr=0x%08X\n", hr); break; }
+ 
+        if (desc.Format != D3DFMT_INDEX16 && desc.Format != D3DFMT_INDEX32)
+        {
+            g_pLog->logError("Unknown IB format 0x%08X\n", desc.Format);
+            break;
+        }
+ 
+        hr = pIBRef->Lock(0, 0, &pbData, D3DLOCK_READONLY);
+        if (FAILED(hr)) { g_pLog->logError("IB::Lock() hr=0x%08X\n", hr); break; }
+ 
+        if (desc.Format == D3DFMT_INDEX16)
+            processIndexes16_PrimitiveCount(
+                (const WORD*)pbData + StartIndex,
+                primTopology, PrimitiveCount, pFACES, optIdxToMeshIdx);
+        else
+            processIndexes32_PrimitiveCount(
+                (const DWORD*)pbData + StartIndex,
+                primTopology, PrimitiveCount, pFACES, optIdxToMeshIdx);
+ 
+        hr = pIBRef->Unlock();
+        if (FAILED(hr)) { g_pLog->logError("IB::Unlock() hr=0x%08X\n", hr); break; }
+        hr = S_OK;
+    }
+    while (FALSE);
+    return hr;
+}
+ 
+ 
+// =============================================================================
+//  Vertex buffer dump  (from drawindexedprimitive8.cpp)
+// =============================================================================
+ 
+HRESULT KRipper8::dumpVertexBuffer(IDirect3DDevice8* pDev,
+                                    const KInputVertexDeclaration&  inputDecl,
+                                    const KOutputVertexDeclaration& outputDecl,
+                                    UINT BaseVertexIndex,
+                                    const OptimizedIndexToMeshIndex& optIdx,
+                                    KVERTICES* pVERTICES)
+{
+    HRESULT hr = E_FAIL;
+    bool    vbOk = false;
+ 
+    for (size_t i = 0; i < inputDecl.Decl.size(); ++i)
+    {
+        UINT  Stride = 0;
+        const KInputVertexElement&  iElem = inputDecl.Decl[i];
+        const KOutputVertexElement& oElem = outputDecl.Decl[i];
+ 
+        TDXRef<IDirect3DVertexBuffer8> pVBRef;
+        hr = pDev->GetStreamSource(iElem.Stream, &pVBRef, &Stride);
+        if (FAILED(hr)) { g_pLog->logError("GetStreamSource() hr=0x%08X\n", hr); break; }
+ 
+        if (!pVBRef.get())
+        {
+            g_pLog->logWarning("pVB==NULL, stream %d\n", iElem.Stream);
+            hr = E_NULL_BUFF;
+            continue;
+        }
+ 
+        D3DVERTEXBUFFER_DESC vbDesc{};
+        hr = pVBRef->GetDesc(&vbDesc);
+        if (FAILED(hr)) { g_pLog->logError("VB::GetDesc() hr=0x%08X\n", hr); break; }
+ 
+        g_pLog->log("Stream %d: pVB=0x%p stride=%d sem=%s\n",
+            iElem.Stream, pVBRef.get(), Stride, iElem.UsageSemantic);
+ 
+        BYTE* pbData = nullptr;
+        hr = pVBRef->Lock(0, 0, &pbData, D3DLOCK_READONLY);
+        if (FAILED(hr)) { g_pLog->logError("VB::Lock() hr=0x%08X\n", hr); break; }
+ 
+        DWORD vertCnt = (DWORD)optIdx.size();
+        UINT  vSz     = BaseVertexIndex * Stride + Stride * vertCnt;
+        if (vbDesc.Size >= vSz)
+        {
+            dumpVertSemantic(iElem.Type,
+                             pbData + BaseVertexIndex * Stride,
+                             iElem.Offset, Stride,
+                             pVERTICES->getRawData(),
+                             oElem.Offset, pVERTICES->getVertexSize(),
+                             optIdx);
+        }
+ 
+        hr = pVBRef->Unlock();
+        if (FAILED(hr)) { g_pLog->logError("VB::Unlock() hr=0x%08X\n", hr); break; }
+        vbOk = true;
+    }
+ 
+    if (vbOk) hr = S_OK;
+    return hr;
+}
+ 
+ 
+// =============================================================================
+//  SetTexture hook  (from texture8.cpp)
+// =============================================================================
+ 
+HRESULT __stdcall KRipper8::_IDirect3DDevice8_SetTexture(
+    IDirect3DDevice8* pDev, DWORD Stage, IDirect3DBaseTexture8* pTexture)
+{
+    return this_->helper_IDirect3DDevice8_SetTexture(
+        this_->pHook_IDirect3DDevice8_SetTexture, pDev, Stage, pTexture);
+}
+HRESULT KRipper8::helper_IDirect3DDevice8_SetTexture(
+    KHook* pHook, IDirect3DDevice8* pDev,
+    DWORD Stage, IDirect3DBaseTexture8* pTexture)
+{
+    auto e = (PFN_IDirect3DDevice8_SetTexture)pHook->getOriginalAddress();
+    ::EnterCriticalSection(&cs);
+    __try { handleTextureSave(pDev, Stage, pTexture); }
+    __except (EXCEPTION_EXECUTE_HANDLER)
+    { g_pLog->logError("Exception in handleTextureSave()\n"); }
+    ::LeaveCriticalSection(&cs);
+    return e(pDev, Stage, pTexture);
+}
+ 
+DWORD KRipper8::isTextureSaved(IDirect3DBaseTexture8* pTex)
+{
+    if (!pTex) return 1;
+    for (auto& t : forcedTexturesDb)
+        if (t == pTex) return 1;
+    return 0;
+}
+ 
+void KRipper8::handleTextureSave(IDirect3DDevice8* pDev,
+                                  DWORD Stage,
+                                  IDirect3DBaseTexture8* pTexture)
+{
+    g_pIntruder->keyHandler(this_);
+    if (!g_pIntruder->isTexturesRipKeyPressed()) return;
+    if (this_->isTextureSaved(pTexture)) return;
+ 
+    std::wstring path = g_pIntruder->getTextureSavePath();
+    HRESULT hr = this_->saveTexture2File(path.c_str(), pDev, pTexture);
+    if (SUCCEEDED(hr))
+    {
+        this_->forcedTexturesDb.push_back(pTexture);
+        g_pIntruder->incTextureIdx();
+        g_pLog->log("Texture saved: %s\n",
+                    wideStringToMultiByte(path.c_str()).c_str());
+    }
+    else
+    {
+        g_pLog->logError("Texture save hr=0x%08X\n", hr);
+    }
+}
+ 
+HRESULT KRipper8::saveTexture2File(LPCTSTR szFile,
+                                    IDirect3DDevice8* pDev,
+                                    IDirect3DBaseTexture8* pTexture)
+{
+    dump_TextureDesc2Log(pTexture);
+    return D3DXSaveTextureToFileW_(szFile, D3DXIFF_DDS, pTexture, nullptr);
+}
+ 
+ 
+// =============================================================================
+//  Per-draw-call mesh texture saving  (from savemeshtextures8.cpp)
+// =============================================================================
+ 
+void KRipper8::addMeshTexture(const KTexture8& t)
+{
+    meshTexturesDb.push_back(t);
+}
+ 
+bool KRipper8::isMeshTextureSaved(IDirect3DBaseTexture8* pTexture, KTexture8* out)
+{
+    for (auto& t : meshTexturesDb)
+    {
+        if (t.pTexture == pTexture) { *out = t; return true; }
+    }
+    return false;
+}
+ 
+void KRipper8::saveMeshTextures(IDirect3DDevice8* pDev, KMeshTextures* out)
+{
+    for (DWORD i = 0; i < 8; ++i)
+    {
+        TDXRef<IDirect3DBaseTexture8> pTex;
+        HRESULT hr = pDev->GetTexture(i, &pTex);
+        if (FAILED(hr))
+        {
+            g_pLog->logError("GetTexture(%d) hr=0x%08X\n", i, hr);
+            continue;
+        }
+        if (!pTex.get()) continue;
+ 
+        KTexture8 savedTex;
+        if (isMeshTextureSaved(pTex.get(), &savedTex))
+        {
+            out->textures.push_back(savedTex.name);
+            g_pLog->log("Tex #%d already saved: %s\n", i,
+                wideStringToMultiByte(savedTex.fullPath.c_str()).c_str());
+        }
+        else
+        {
+            std::string  nameA;
+            std::wstring fullPath = g_pIntruder->getFrameTextureSavePath(nameA, i);
+            hr = saveTexture2File(fullPath.c_str(), pDev, pTex.get());
+            if (SUCCEEDED(hr))
+            {
+                KTexture8 ft;
+                ft.pTexture = pTex.get();
+                ft.name     = nameA;
+                ft.fullPath = fullPath;
+                addMeshTexture(ft);
+                out->textures.push_back(nameA);
+                g_pLog->log("Tex #%d saved: %s\n", i,
+                    wideStringToMultiByte(fullPath.c_str()).c_str());
+            }
+            else
+            {
+                g_pLog->logError("Tex save hr=0x%08X\n", hr);
+            }
+            g_pIntruder->incFrameTextureIdx();
+        }
+    }
+}
+ 
+ 
+// =============================================================================
+//  DrawPrimitive (non-indexed, buffered)  (from drawprimitive8.cpp)
+// =============================================================================
+ 
+void KRipper8::ripDP(IDirect3DDevice8* pDev,
+                     D3DPRIMITIVETYPE PrimitiveType,
+                     UINT StartVertex, UINT PrimitiveCount)
+{
+    do
+    {
+        HRESULT hr;
+        KInputVertexDeclaration  inputDecl;
+        KOutputVertexDeclaration outputDecl;
+ 
+        EPrimitiveTopology::Type topo =
+            D3DPRIMITIVETYPE_to_EPrimitiveTopology(PrimitiveType);
+        g_pLog->log("Topology: %s\n", primitiveTopology2Str(topo));
+        if (!isPrimitiveTopologySupported(topo))
+        { g_pLog->logError("Unsupported topology\n\n"); break; }
+ 
+        hr = getVertexDeclarations(pDev, inputDecl, outputDecl);
+        if (FAILED(hr)) { g_pLog->logError("getVertDecl hr=0x%08X\n\n", hr); break; }
+        dumpInputVertexDeclaration2Log(inputDecl);
+        dumpOutputVertexDeclaration2Log(outputDecl);
+ 
+        KFACES faces;
+        OptimizedIndexToMeshIndex optIdx;
+        generateIndexes_PrimitiveCount(topo, PrimitiveCount, &faces, &optIdx);
+ 
+        DWORD vertSize = outputDecl.getVertexSize();
+        DWORD vertCnt  = (DWORD)optIdx.size();
+        g_pLog->log("Prims=%d Verts=%d OutVtxSz=%d\n",
+            faces.getPrimitivesCount(), vertCnt, vertSize);
+ 
+        KVERTICES vertices(vertCnt, vertSize);
+        hr = dumpVertexBuffer(pDev, inputDecl, outputDecl,
+                              StartVertex, optIdx, &vertices);
+        if (FAILED(hr)) { g_pLog->logError("dumpVB hr=0x%08X\n\n", hr); break; }
+ 
+        KMeshTextures meshTex;
+        saveMeshTextures(pDev, &meshTex);
+        KMeshShaders meshShd;
+        if (g_pIntruder->getSettings()->saveShaders) saveMeshShaders(pDev, &meshShd);
+ 
+        std::wstring ripPath = g_pIntruder->getFrameMeshSavePath();
+        hr = saveRipFile(ripPath.c_str(), inputDecl, outputDecl,
+                         meshTex, meshShd, faces, vertices);
+        std::string utf8 = wideStringToMultiByte(ripPath.c_str());
+        if (SUCCEEDED(hr)) g_pLog->log("Mesh saved: %s\n\n\n", utf8.c_str());
+        else               g_pLog->logError("Mesh save error: %s\n\n\n", utf8.c_str());
+        g_pIntruder->incFrameMeshIdx();
+    }
+    while (FALSE);
+}
+ 
+HRESULT __stdcall KRipper8::_IDirect3DDevice8_DrawPrimitive(
+    IDirect3DDevice8* pDev, D3DPRIMITIVETYPE PrimType,
+    UINT StartVertex, UINT PrimCount)
+{
+    return this_->helper_IDirect3DDevice8_DrawPrimitive(
+        this_->pHook_IDirect3DDevice8_DrawPrimitive,
+        pDev, PrimType, StartVertex, PrimCount);
+}
+HRESULT KRipper8::helper_IDirect3DDevice8_DrawPrimitive(
+    KHook* pHook, IDirect3DDevice8* pDev,
+    D3DPRIMITIVETYPE PrimType, UINT StartVertex, UINT PrimCount)
+{
+    auto e = (PFN_IDirect3DDevice8_DrawPrimitive)pHook->getOriginalAddress();
+    g_pIntruder->keyHandler(this);
+    DWORD minPrim = g_pIntruder->getSettings()->dwMinPrimitives;
+    ::EnterCriticalSection(&cs);
+    if (g_pIntruder->isMeshRipEnabled() && PrimCount >= minPrim)
+    {
+        g_pLog->log("DrawPrimitive(0x%p,%d,%d,%d)\n",pDev,PrimType,StartVertex,PrimCount);
+        __try { ripDP(pDev, PrimType, StartVertex, PrimCount); }
+        __except (EXCEPTION_EXECUTE_HANDLER)
+        { g_pLog->logError("DrawPrimitive exception\n\n\n"); }
+    }
+    ::LeaveCriticalSection(&cs);
+    return e(pDev, PrimType, StartVertex, PrimCount);
+}
+ 
+ 
+// =============================================================================
+//  DrawIndexedPrimitive (indexed, buffered)  (from drawindexedprimitive8.cpp)
+// =============================================================================
+ 
+void KRipper8::ripDIP(IDirect3DDevice8* pDev,
+                       D3DPRIMITIVETYPE Type,
+                       UINT MinIndex, UINT NumVertices,
+                       UINT StartIndex, UINT PrimitiveCount)
+{
+    do
+    {
+        HRESULT hr;
+        KInputVertexDeclaration  inputDecl;
+        KOutputVertexDeclaration outputDecl;
+ 
+        EPrimitiveTopology::Type topo =
+            D3DPRIMITIVETYPE_to_EPrimitiveTopology(Type);
+        g_pLog->log("Topology: %s\n", primitiveTopology2Str(topo));
+        if (!isPrimitiveTopologySupported(topo))
+        { g_pLog->logError("Unsupported topology\n\n"); break; }
+ 
+        hr = getVertexDeclarations(pDev, inputDecl, outputDecl);
+        if (FAILED(hr)) { g_pLog->logError("getVertDecl hr=0x%08X\n\n", hr); break; }
+        dumpInputVertexDeclaration2Log(inputDecl);
+        dumpOutputVertexDeclaration2Log(outputDecl);
+ 
+        UINT BaseVtx = 0;
+        KFACES faces;
+        OptimizedIndexToMeshIndex optIdx;
+        hr = dumpIndexBuffer(pDev, topo, StartIndex, PrimitiveCount,
+                             &faces, &optIdx, &BaseVtx);
+        if (FAILED(hr)) { g_pLog->logError("dumpIB hr=0x%08X\n\n", hr); break; }
+ 
+        DWORD vertSize = outputDecl.getVertexSize();
+        DWORD vertCnt  = (DWORD)optIdx.size();
+        g_pLog->log("Prims=%d Verts=%d OutVtxSz=%d\n",
+            faces.getPrimitivesCount(), vertCnt, vertSize);
+ 
+        KVERTICES vertices(vertCnt, vertSize);
+        hr = dumpVertexBuffer(pDev, inputDecl, outputDecl,
+                              BaseVtx, optIdx, &vertices);
+        if (FAILED(hr)) { g_pLog->logError("dumpVB hr=0x%08X\n\n", hr); break; }
+ 
+        KMeshTextures meshTex;
+        saveMeshTextures(pDev, &meshTex);
+        KMeshShaders meshShd;
+        if (g_pIntruder->getSettings()->saveShaders) saveMeshShaders(pDev, &meshShd);
+ 
+        std::wstring ripPath = g_pIntruder->getFrameMeshSavePath();
+        hr = saveRipFile(ripPath.c_str(), inputDecl, outputDecl,
+                         meshTex, meshShd, faces, vertices);
+        std::string utf8 = wideStringToMultiByte(ripPath.c_str());
+        if (SUCCEEDED(hr)) g_pLog->log("Mesh saved: %s\n\n\n", utf8.c_str());
+        else               g_pLog->logError("Mesh save error: %s\n\n\n", utf8.c_str());
+        g_pIntruder->incFrameMeshIdx();
+    }
+    while (FALSE);
+}
+ 
+HRESULT __stdcall KRipper8::_IDirect3DDevice8_DrawIndexedPrimitive(
+    IDirect3DDevice8* pDev, D3DPRIMITIVETYPE PrimType,
+    UINT MinIndex, UINT NumVerts, UINT StartIndex, UINT PrimCount)
+{
+    return this_->helper_IDirect3DDevice8_DrawIndexedPrimitive(
+        this_->pHook_IDirect3DDevice8_DrawIndexedPrimitive,
+        pDev, PrimType, MinIndex, NumVerts, StartIndex, PrimCount);
+}
+HRESULT KRipper8::helper_IDirect3DDevice8_DrawIndexedPrimitive(
+    KHook* pHook, IDirect3DDevice8* pDev, D3DPRIMITIVETYPE PrimType,
+    UINT MinIndex, UINT NumVerts, UINT StartIndex, UINT PrimCount)
+{
+    auto e = (PFN_IDirect3DDevice8_DrawIndexedPrimitive)pHook->getOriginalAddress();
+    g_pIntruder->keyHandler(this);
+    DWORD minPrim = g_pIntruder->getSettings()->dwMinPrimitives;
+    ::EnterCriticalSection(&cs);
+    if (g_pIntruder->isMeshRipEnabled() && PrimCount >= minPrim)
+    {
+        g_pLog->log("DrawIndexedPrimitive(0x%p,%d,%d,%d,%d,%d)\n",
+            pDev,PrimType,MinIndex,NumVerts,StartIndex,PrimCount);
+        __try { ripDIP(pDev, PrimType, MinIndex, NumVerts, StartIndex, PrimCount); }
+        __except (EXCEPTION_EXECUTE_HANDLER)
+        { g_pLog->logError("DrawIndexedPrimitive exception\n\n\n"); }
+    }
+    ::LeaveCriticalSection(&cs);
+    return e(pDev, PrimType, MinIndex, NumVerts, StartIndex, PrimCount);
+}
+ 
+ 
+// =============================================================================
+//  DrawPrimitiveUP (non-indexed, user-pointer)  (from drawprimitiveup8.cpp)
+// =============================================================================
+ 
+void KRipper8::ripDrawPrimitiveUP(IDirect3DDevice8* pDev,
+                                   D3DPRIMITIVETYPE Type, UINT PrimitiveCount,
+                                   CONST void* pVtxData, UINT Stride)
+{
+    do
+    {
+        HRESULT hr;
+        KInputVertexDeclaration  inputDecl;
+        KOutputVertexDeclaration outputDecl;
+ 
+        EPrimitiveTopology::Type topo =
+            D3DPRIMITIVETYPE_to_EPrimitiveTopology(Type);
+        g_pLog->log("Topology: %s\n", primitiveTopology2Str(topo));
+        if (!isPrimitiveTopologySupported(topo))
+        { g_pLog->logError("Unsupported topology\n\n"); break; }
+ 
+        hr = getVertexDeclarations(pDev, inputDecl, outputDecl);
+        if (FAILED(hr)) { g_pLog->logError("getVertDecl hr=0x%08X\n\n", hr); break; }
+        dumpInputVertexDeclaration2Log(inputDecl);
+        dumpOutputVertexDeclaration2Log(outputDecl);
+ 
+        KFACES faces;
+        OptimizedIndexToMeshIndex optIdx;
+        generateIndexes_PrimitiveCount(topo, PrimitiveCount, &faces, &optIdx);
+ 
+        DWORD vertSize = outputDecl.getVertexSize();
+        DWORD vertCnt  = (DWORD)optIdx.size();
+        g_pLog->log("Prims=%d Verts=%d OutVtxSz=%d\n",
+            faces.getPrimitivesCount(), vertCnt, vertSize);
+ 
+        KVERTICES vertices(vertCnt, vertSize);
+        dumpVbUP(inputDecl, outputDecl, optIdx, &vertices, pVtxData, Stride);
+ 
+        KMeshTextures meshTex; saveMeshTextures(pDev, &meshTex);
+        KMeshShaders  meshShd;
+        if (g_pIntruder->getSettings()->saveShaders) saveMeshShaders(pDev, &meshShd);
+ 
+        std::wstring ripPath = g_pIntruder->getFrameMeshSavePath();
+        hr = saveRipFile(ripPath.c_str(), inputDecl, outputDecl,
+                         meshTex, meshShd, faces, vertices);
+        std::string utf8 = wideStringToMultiByte(ripPath.c_str());
+        if (SUCCEEDED(hr)) g_pLog->log("Mesh saved: %s\n\n\n", utf8.c_str());
+        else               g_pLog->logError("Mesh save error: %s\n\n\n", utf8.c_str());
+        g_pIntruder->incFrameMeshIdx();
+    }
+    while (FALSE);
+}
+ 
+HRESULT __stdcall KRipper8::_IDirect3DDevice8_DrawPrimitiveUP(
+    IDirect3DDevice8* pDev, D3DPRIMITIVETYPE PrimType,
+    UINT PrimCount, CONST void* pVtxData, UINT Stride)
+{
+    return this_->helper_IDirect3DDevice8_DrawPrimitiveUP(
+        this_->pHook_IDirect3DDevice8_DrawPrimitiveUP,
+        pDev, PrimType, PrimCount, pVtxData, Stride);
+}
+HRESULT KRipper8::helper_IDirect3DDevice8_DrawPrimitiveUP(
+    KHook* pHook, IDirect3DDevice8* pDev, D3DPRIMITIVETYPE PrimType,
+    UINT PrimCount, CONST void* pVtxData, UINT Stride)
+{
+    auto e = (PFN_IDirect3DDevice8_DrawPrimitiveUP)pHook->getOriginalAddress();
+    g_pIntruder->keyHandler(this);
+    DWORD minPrim = g_pIntruder->getSettings()->dwMinPrimitives;
+    ::EnterCriticalSection(&cs);
+    if (g_pIntruder->isMeshRipEnabled() && PrimCount >= minPrim)
+    {
+        g_pLog->log("DrawPrimitiveUP(0x%p,%d,%d,0x%p,%d)\n",
+            pDev,PrimType,PrimCount,pVtxData,Stride);
+        __try { ripDrawPrimitiveUP(pDev, PrimType, PrimCount, pVtxData, Stride); }
+        __except (EXCEPTION_EXECUTE_HANDLER)
+        { g_pLog->logError("DrawPrimitiveUP exception\n\n\n"); }
+    }
+    ::LeaveCriticalSection(&cs);
+    return e(pDev, PrimType, PrimCount, pVtxData, Stride);
+}
+ 
+ 
+// =============================================================================
+//  DrawIndexedPrimitiveUP (indexed, user-pointer)
+//  (from drawindexedprimitiveup8.cpp)
+// =============================================================================
+ 
+void KRipper8::ripDrawIndexedPrimitiveUP(IDirect3DDevice8* pDev,
+    D3DPRIMITIVETYPE Type, UINT MinVtxIdx, UINT NumVtxIndices,
+    UINT PrimitiveCount, CONST void* pIdxData,
+    D3DFORMAT IndexDataFormat, CONST void* pVtxData, UINT Stride)
+{
+    do
+    {
+        HRESULT hr;
+        KInputVertexDeclaration  inputDecl;
+        KOutputVertexDeclaration outputDecl;
+ 
+        EPrimitiveTopology::Type topo =
+            D3DPRIMITIVETYPE_to_EPrimitiveTopology(Type);
+        g_pLog->log("Topology: %s\n", primitiveTopology2Str(topo));
+        if (!isPrimitiveTopologySupported(topo))
+        { g_pLog->logError("Unsupported topology\n\n"); break; }
+ 
+        hr = getVertexDeclarations(pDev, inputDecl, outputDecl);
+        if (FAILED(hr)) { g_pLog->logError("getVertDecl hr=0x%08X\n\n", hr); break; }
+        dumpInputVertexDeclaration2Log(inputDecl);
+        dumpOutputVertexDeclaration2Log(outputDecl);
+ 
+        EIndexFormat::Type idxFmt =
+            (IndexDataFormat == D3DFMT_INDEX16) ? EIndexFormat::INDEX_16 :
+            (IndexDataFormat == D3DFMT_INDEX32) ? EIndexFormat::INDEX_32 :
+                                                  EIndexFormat::UNKNOWN;
+        KFACES faces;
+        OptimizedIndexToMeshIndex optIdx;
+        hr = dumpIndexesUP(topo, PrimitiveCount, &faces, &optIdx,
+                           pIdxData, idxFmt);
+        if (FAILED(hr)) { g_pLog->logError("dumpIndexesUP hr=0x%08X\n\n", hr); break; }
+ 
+        DWORD vertSize = outputDecl.getVertexSize();
+        DWORD vertCnt  = (DWORD)optIdx.size();
+        g_pLog->log("Prims=%d Verts=%d OutVtxSz=%d\n",
+            faces.getPrimitivesCount(), vertCnt, vertSize);
+ 
+        KVERTICES vertices(vertCnt, vertSize);
+        dumpVbUP(inputDecl, outputDecl, optIdx, &vertices, pVtxData, Stride);
+ 
+        KMeshTextures meshTex; saveMeshTextures(pDev, &meshTex);
+        KMeshShaders  meshShd;
+        if (g_pIntruder->getSettings()->saveShaders) saveMeshShaders(pDev, &meshShd);
+ 
+        std::wstring ripPath = g_pIntruder->getFrameMeshSavePath();
+        hr = saveRipFile(ripPath.c_str(), inputDecl, outputDecl,
+                         meshTex, meshShd, faces, vertices);
+        std::string utf8 = wideStringToMultiByte(ripPath.c_str());
+        if (SUCCEEDED(hr)) g_pLog->log("Mesh saved: %s\n\n\n", utf8.c_str());
+        else               g_pLog->logError("Mesh save error: %s\n\n\n", utf8.c_str());
+        g_pIntruder->incFrameMeshIdx();
+    }
+    while (FALSE);
+}
+ 
+HRESULT __stdcall KRipper8::_IDirect3DDevice8_DrawIndexedPrimitiveUP(
+    IDirect3DDevice8* pDev, D3DPRIMITIVETYPE PrimType,
+    UINT MinVtxIdx, UINT NumVtxIndices, UINT PrimCount,
+    CONST void* pIdxData, D3DFORMAT IdxFmt,
+    CONST void* pVtxData, UINT Stride)
+{
+    return this_->helper_IDirect3DDevice8_DrawIndexedPrimitiveUP(
+        this_->pHook_IDirect3DDevice8_DrawIndexedPrimitiveUP,
+        pDev, PrimType, MinVtxIdx, NumVtxIndices, PrimCount,
+        pIdxData, IdxFmt, pVtxData, Stride);
+}
+HRESULT KRipper8::helper_IDirect3DDevice8_DrawIndexedPrimitiveUP(
+    KHook* pHook, IDirect3DDevice8* pDev, D3DPRIMITIVETYPE PrimType,
+    UINT MinVtxIdx, UINT NumVtxIndices, UINT PrimCount,
+    CONST void* pIdxData, D3DFORMAT IdxFmt,
+    CONST void* pVtxData, UINT Stride)
+{
+    auto e = (PFN_IDirect3DDevice8_DrawIndexedPrimitiveUP)pHook->getOriginalAddress();
+    g_pIntruder->keyHandler(this);
+    DWORD minPrim = g_pIntruder->getSettings()->dwMinPrimitives;
+    ::EnterCriticalSection(&cs);
+    if (g_pIntruder->isMeshRipEnabled() && PrimCount >= minPrim)
+    {
+        g_pLog->log("DrawIndexedPrimitiveUP(0x%p,%d,%d,%d,%d,0x%p,%d,0x%p,%d)\n",
+            pDev,PrimType,MinVtxIdx,NumVtxIndices,PrimCount,
+            pIdxData,IdxFmt,pVtxData,Stride);
+        __try
+        {
+            ripDrawIndexedPrimitiveUP(pDev, PrimType, MinVtxIdx, NumVtxIndices,
+                                      PrimCount, pIdxData, IdxFmt, pVtxData, Stride);
+        }
+        __except (EXCEPTION_EXECUTE_HANDLER)
+        { g_pLog->logError("DrawIndexedPrimitiveUP exception\n\n\n"); }
+    }
+    ::LeaveCriticalSection(&cs);
+    return e(pDev, PrimType, MinVtxIdx, NumVtxIndices, PrimCount,
+             pIdxData, IdxFmt, pVtxData, Stride);
+}
+ 
+ 
+// =============================================================================
+//  Debug helpers  (from dump8.cpp)
+// =============================================================================
+ 
+const char* KRipper8::D3DFORMAT_2Str(D3DFORMAT f)
+{
+    switch (f)
+    {
+    case D3DFMT_UNKNOWN:       return "D3DFMT_UNKNOWN";
+    case D3DFMT_R8G8B8:        return "D3DFMT_R8G8B8";
+    case D3DFMT_A8R8G8B8:      return "D3DFMT_A8R8G8B8";
+    case D3DFMT_X8R8G8B8:      return "D3DFMT_X8R8G8B8";
+    case D3DFMT_R5G6B5:        return "D3DFMT_R5G6B5";
+    case D3DFMT_X1R5G5B5:      return "D3DFMT_X1R5G5B5";
+    case D3DFMT_A1R5G5B5:      return "D3DFMT_A1R5G5B5";
+    case D3DFMT_A4R4G4B4:      return "D3DFMT_A4R4G4B4";
+    case D3DFMT_R3G3B2:        return "D3DFMT_R3G3B2";
+    case D3DFMT_A8:            return "D3DFMT_A8";
+    case D3DFMT_A8R3G3B2:      return "D3DFMT_A8R3G3B2";
+    case D3DFMT_X4R4G4B4:      return "D3DFMT_X4R4G4B4";
+    case D3DFMT_A2B10G10R10:   return "D3DFMT_A2B10G10R10";
+    case D3DFMT_A8P8:          return "D3DFMT_A8P8";
+    case D3DFMT_P8:            return "D3DFMT_P8";
+    case D3DFMT_L8:            return "D3DFMT_L8";
+    case D3DFMT_A8L8:          return "D3DFMT_A8L8";
+    case D3DFMT_A4L4:          return "D3DFMT_A4L4";
+    case D3DFMT_V8U8:          return "D3DFMT_V8U8";
+    case D3DFMT_L6V5U5:        return "D3DFMT_L6V5U5";
+    case D3DFMT_X8L8V8U8:      return "D3DFMT_X8L8V8U8";
+    case D3DFMT_Q8W8V8U8:      return "D3DFMT_Q8W8V8U8";
+    case D3DFMT_V16U16:        return "D3DFMT_V16U16";
+    case D3DFMT_A2W10V10U10:   return "D3DFMT_A2W10V10U10";
+    case D3DFMT_UYVY:          return "D3DFMT_UYVY";
+    case D3DFMT_YUY2:          return "D3DFMT_YUY2";
+    case D3DFMT_DXT1:          return "D3DFMT_DXT1";
+    case D3DFMT_DXT2:          return "D3DFMT_DXT2";
+    case D3DFMT_DXT3:          return "D3DFMT_DXT3";
+    case D3DFMT_DXT4:          return "D3DFMT_DXT4";
+    case D3DFMT_DXT5:          return "D3DFMT_DXT5";
+    case D3DFMT_D16_LOCKABLE:  return "D3DFMT_D16_LOCKABLE";
+    case D3DFMT_D32:           return "D3DFMT_D32";
+    case D3DFMT_D15S1:         return "D3DFMT_D15S1";
+    case D3DFMT_D24S8:         return "D3DFMT_D24S8";
+    case D3DFMT_D24X8:         return "D3DFMT_D24X8";
+    case D3DFMT_D24X4S4:       return "D3DFMT_D24X4S4";
+    case D3DFMT_D16:           return "D3DFMT_D16";
+    case D3DFMT_VERTEXDATA:    return "D3DFMT_VERTEXDATA";
+    case D3DFMT_INDEX16:       return "D3DFMT_INDEX16";
+    case D3DFMT_INDEX32:       return "D3DFMT_INDEX32";
+    default:                   return "Unknown";
+    }
+}
+ 
+const char* KRipper8::D3DRESOURCETYPE_2Str(D3DRESOURCETYPE t)
+{
+    switch (t)
+    {
+    case D3DRTYPE_SURFACE:      return "D3DRTYPE_SURFACE";
+    case D3DRTYPE_VOLUME:       return "D3DRTYPE_VOLUME";
+    case D3DRTYPE_TEXTURE:      return "D3DRTYPE_TEXTURE";
+    case D3DRTYPE_VOLUMETEXTURE:return "D3DRTYPE_VOLUMETEXTURE";
+    case D3DRTYPE_CUBETEXTURE:  return "D3DRTYPE_CUBETEXTURE";
+    case D3DRTYPE_VERTEXBUFFER: return "D3DRTYPE_VERTEXBUFFER";
+    case D3DRTYPE_INDEXBUFFER:  return "D3DRTYPE_INDEXBUFFER";
+    default:                    return "Unknown";
+    }
+}
+ 
+const char* KRipper8::D3DMULTISAMPLE_2Str(D3DMULTISAMPLE_TYPE x)
+{
+    switch (x)
+    {
+    case D3DMULTISAMPLE_NONE:       return "D3DMULTISAMPLE_NONE";
+    case D3DMULTISAMPLE_2_SAMPLES:  return "D3DMULTISAMPLE_2_SAMPLES";
+    case D3DMULTISAMPLE_3_SAMPLES:  return "D3DMULTISAMPLE_3_SAMPLES";
+    case D3DMULTISAMPLE_4_SAMPLES:  return "D3DMULTISAMPLE_4_SAMPLES";
+    case D3DMULTISAMPLE_5_SAMPLES:  return "D3DMULTISAMPLE_5_SAMPLES";
+    case D3DMULTISAMPLE_6_SAMPLES:  return "D3DMULTISAMPLE_6_SAMPLES";
+    case D3DMULTISAMPLE_7_SAMPLES:  return "D3DMULTISAMPLE_7_SAMPLES";
+    case D3DMULTISAMPLE_8_SAMPLES:  return "D3DMULTISAMPLE_8_SAMPLES";
+    case D3DMULTISAMPLE_9_SAMPLES:  return "D3DMULTISAMPLE_9_SAMPLES";
+    case D3DMULTISAMPLE_10_SAMPLES: return "D3DMULTISAMPLE_10_SAMPLES";
+    case D3DMULTISAMPLE_11_SAMPLES: return "D3DMULTISAMPLE_11_SAMPLES";
+    case D3DMULTISAMPLE_12_SAMPLES: return "D3DMULTISAMPLE_12_SAMPLES";
+    case D3DMULTISAMPLE_13_SAMPLES: return "D3DMULTISAMPLE_13_SAMPLES";
+    case D3DMULTISAMPLE_14_SAMPLES: return "D3DMULTISAMPLE_14_SAMPLES";
+    case D3DMULTISAMPLE_15_SAMPLES: return "D3DMULTISAMPLE_15_SAMPLES";
+    case D3DMULTISAMPLE_16_SAMPLES: return "D3DMULTISAMPLE_16_SAMPLES";
+    default:                        return "Unknown";
+    }
+}
+ 
+const char* KRipper8::D3DPOOL_2Str(D3DPOOL t)
+{
+    switch (t)
+    {
+    case D3DPOOL_DEFAULT:   return "D3DPOOL_DEFAULT";
+    case D3DPOOL_MANAGED:   return "D3DPOOL_MANAGED";
+    case D3DPOOL_SYSTEMMEM: return "D3DPOOL_SYSTEMMEM";
+    case D3DPOOL_SCRATCH:   return "D3DPOOL_SCRATCH";
+    default:                return "Unknown";
+    }
+}
+ 
+const char* KRipper8::D3DUSAGE_2Str(DWORD t)
+{
+    switch (t)
+    {
+    case D3DUSAGE_DEPTHSTENCIL:        return "D3DUSAGE_DEPTHSTENCIL";
+    case D3DUSAGE_DONOTCLIP:           return "D3DUSAGE_DONOTCLIP";
+    case D3DUSAGE_DYNAMIC:             return "D3DUSAGE_DYNAMIC";
+    case D3DUSAGE_NPATCHES:            return "D3DUSAGE_NPATCHES";
+    case D3DUSAGE_POINTS:              return "D3DUSAGE_POINTS";
+    case D3DUSAGE_RTPATCHES:           return "D3DUSAGE_RTPATCHES";
+    case D3DUSAGE_RENDERTARGET:        return "D3DUSAGE_RENDERTARGET";
+    case D3DUSAGE_SOFTWAREPROCESSING:  return "D3DUSAGE_SOFTWAREPROCESSING";
+    case D3DUSAGE_WRITEONLY:           return "D3DUSAGE_WRITEONLY";
+    default:                           return "Unknown";
+    }
+}
+ 
+void KRipper8::dump_TextureDesc2Log(IDirect3DBaseTexture8* pTexture)
+{
+    if (!pTexture) return;
+    D3DRESOURCETYPE type = pTexture->GetType();
+    g_pLog->log("-----Texture desc-----\n");
+    g_pLog->log("LevelCount: %u\n", pTexture->GetLevelCount());
+    g_pLog->log("Type      : %s\n", D3DRESOURCETYPE_2Str(type));
+    g_pLog->log("----------------------\n");
+ 
+    HRESULT hr;
+    if (type == D3DRTYPE_TEXTURE)
+    {
+        D3DSURFACE_DESC d{};
+        hr = static_cast<LPDIRECT3DTEXTURE8>(pTexture)->GetLevelDesc(0, &d);
+        if (SUCCEEDED(hr))
+        {
+            g_pLog->log("Format: %s\nType: %s\nUsage: %s\nPool: %s\n"
+                        "Size: %u\nMSType: %s\nW: %d\nH: %d\n",
+                D3DFORMAT_2Str(d.Format), D3DRESOURCETYPE_2Str(d.Type),
+                D3DUSAGE_2Str(d.Usage), D3DPOOL_2Str(d.Pool),
+                d.Size, D3DMULTISAMPLE_2Str(d.MultiSampleType),
+                d.Width, d.Height);
+        }
+    }
+    else if (type == D3DRTYPE_VOLUMETEXTURE)
+    {
+        D3DVOLUME_DESC d{};
+        hr = static_cast<LPDIRECT3DVOLUMETEXTURE8>(pTexture)->GetLevelDesc(0, &d);
+        if (SUCCEEDED(hr))
+            g_pLog->log("Format: %s\nType: %s\nUsage: %s\nPool: %s\n"
+                        "Size: %u\nW: %d\nH: %d\nD: %d\n",
+                D3DFORMAT_2Str(d.Format), D3DRESOURCETYPE_2Str(d.Type),
+                D3DUSAGE_2Str(d.Usage), D3DPOOL_2Str(d.Pool),
+                d.Size, d.Width, d.Height, d.Depth);
+    }
+    else if (type == D3DRTYPE_CUBETEXTURE)
+    {
+        D3DSURFACE_DESC d{};
+        hr = static_cast<LPDIRECT3DCUBETEXTURE8>(pTexture)->GetLevelDesc(0, &d);
+        if (SUCCEEDED(hr))
+            g_pLog->log("Format: %s\nType: %s\nUsage: %s\nPool: %s\n"
+                        "Size: %u\nMSType: %s\nW: %d\nH: %d\n",
+                D3DFORMAT_2Str(d.Format), D3DRESOURCETYPE_2Str(d.Type),
+                D3DUSAGE_2Str(d.Usage), D3DPOOL_2Str(d.Pool),
+                d.Size, D3DMULTISAMPLE_2Str(d.MultiSampleType),
+                d.Width, d.Height);
+    }
+    g_pLog->log("----------------------\n");
+}
+ 
+ 
+// =============================================================================
+//  Factory functions  (from pre8.cpp) ï¿½ satisfy extern declarations at top
+// =============================================================================
+ 
+KRipper8* create_KRipper8(HINSTANCE hD3D8) { return KRipper8::create(hD3D8); }
+void      delete_KRipper8(KRipper8*& p)    { KRipper8::destroy(p); }
+ 
+ 
+#else // !__d3d8_h__
+ 
+// ---------------------------------------------------------------------------
+//  DX8 SDK not available ï¿½ provide stub factory functions so the rest of
+//  intruder.cpp still links.  The g_pRipper8 pointer will simply stay null
+//  and all DX8 detection code will do nothing.
+// ---------------------------------------------------------------------------
+KRipper8* create_KRipper8(HINSTANCE) { return nullptr; }
+void      delete_KRipper8(KRipper8*&) {}
+ 
+#endif // __d3d8_h__
+
+// =============================================================================
+// =============================================================================
+//  SECTION DX11  ï¿½  KRipper11
+//  Merged from:
+//    dx11/kripper11.h             (class definition)
+//    dx11/kripper11.cpp           (core: lifecycle, device/context hooks)
+//    dx11/draw11.cpp              (Draw)
+//    dx11/drawauto11.cpp          (DrawAuto)
+//    dx11/drawindexed11.cpp       (DrawIndexed + shared helpers)
+//    dx11/drawindexedinstanced11.cpp
+//    dx11/drawindexedinstancedindirect11.cpp
+//    dx11/drawinstanced11.cpp
+//    dx11/drawinstancedindirect11.cpp
+//    dx11/dump11.cpp              (string converters, resource dump)
+//    dx11/savetexture11.cpp       (texture-to-file via fullscreen quad)
+//    dx11/savemeshtextures11.cpp  (per-mesh texture tracking)
+//    dx11/texture11.cpp           (forced-texture-rip path)
+//    dx11/pre11.cpp               (factory: create/delete/setIRipper)
+//
+//  Extra dependencies pulled in (add to link line):
+//    d3d11.lib  dxguid.lib  d3dcompiler.lib  DirectXTex.lib
+//  Windows SDK 8.1+ or later required for d3d11.h.
+// =============================================================================
+ 
+#ifdef _WIN32
+ 
+// --------------------------------------------------------------------------
+// DX11 headers  (guard against double-inclusion if the project already pulls
+//                them in via a pch/common header)
+// --------------------------------------------------------------------------
+#ifndef __d3d11_h__
+#  include <d3d11.h>
+#endif
+#include <d3dcompiler.h>
+#include <DirectXMath.h>   // XMFLOAT2 / XMFLOAT3
+#include "DirectXTex.h"    // DirectX::CaptureTexture / SaveToDDSFile
+ 
+using namespace DirectX;
+ 
+// --------------------------------------------------------------------------
+// dx11types.h  ï¿½ function-pointer typedefs & packed argument structs
+// --------------------------------------------------------------------------
+ 
+typedef HRESULT (__stdcall* PFN_ID3D11Device_CreateInputLayout)(
+    ID3D11Device*,
+    const D3D11_INPUT_ELEMENT_DESC*,
+    UINT,
+    const void*,
+    SIZE_T,
+    ID3D11InputLayout**);
+ 
+typedef HRESULT (__stdcall* PFN_D3D11CreateDeviceAndSwapChain)(
+    IDXGIAdapter*, D3D_DRIVER_TYPE, HMODULE, UINT,
+    CONST D3D_FEATURE_LEVEL*, UINT FeatureLevels, UINT,
+    CONST DXGI_SWAP_CHAIN_DESC*, IDXGISwapChain**,
+    ID3D11Device**, D3D_FEATURE_LEVEL*, ID3D11DeviceContext**);
+ 
+typedef HRESULT (__stdcall* PFN_D3D11CreateDevice)(
+    IDXGIAdapter*, D3D_DRIVER_TYPE, HMODULE, UINT,
+    const D3D_FEATURE_LEVEL*, UINT, UINT,
+    ID3D11Device**, D3D_FEATURE_LEVEL*, ID3D11DeviceContext**);
+ 
+typedef void (__stdcall* PFN_ID3D11DeviceContext_PSSetShaderResources)(
+    ID3D11DeviceContext*, UINT, UINT, ID3D11ShaderResourceView *const *);
+ 
+typedef void (__stdcall* PFN_ID3D11DeviceContext_VSSetShaderResources)(
+    ID3D11DeviceContext*, UINT, UINT, ID3D11ShaderResourceView *const *);
+ 
+typedef void (__stdcall* PFN_ID3D11DeviceContext_GSSetShaderResources)(
+    ID3D11DeviceContext*, UINT, UINT, ID3D11ShaderResourceView *const *);
+ 
+typedef void (__stdcall* PFN_ID3D11DeviceContext_Draw)(
+    ID3D11DeviceContext*, UINT, UINT);
+ 
+typedef void (__stdcall* PFN_ID3D11DeviceContext_DrawAuto)(
+    ID3D11DeviceContext*);
+ 
+typedef void (__stdcall* PFN_ID3D11DeviceContext_DrawIndexed)(
+    ID3D11DeviceContext*, UINT, UINT, INT);
+ 
+typedef void (__stdcall* PFN_ID3D11DeviceContext_DrawIndexedInstanced)(
+    ID3D11DeviceContext*, UINT, UINT, UINT, INT, UINT);
+ 
+typedef void (__stdcall* PFN_ID3D11DeviceContext_DrawIndexedInstancedIndirect)(
+    ID3D11DeviceContext*, ID3D11Buffer*, UINT);
+ 
+typedef void (__stdcall* PFN_ID3D11DeviceContext_DrawInstanced)(
+    ID3D11DeviceContext*, UINT, UINT, UINT, UINT);
+ 
+typedef void (__stdcall* PFN_ID3D11DeviceContext_DrawInstancedIndirect)(
+    ID3D11DeviceContext*, ID3D11Buffer*, UINT);
+ 
+typedef void (__stdcall* PFN_ID3D11DeviceContext_ClearRenderTargetView)(
+    ID3D11DeviceContext*, ID3D11RenderTargetView*, const FLOAT[4]);
+ 
+typedef HRESULT (__stdcall* PFN_ID3D11Device_CreateVertexShader)(
+    ID3D11Device*, const void*, SIZE_T, ID3D11ClassLinkage*, ID3D11VertexShader**);
+ 
+typedef HRESULT (__stdcall* PFN_ID3D11Device_CreatePixelShader)(
+    ID3D11Device*, const void*, SIZE_T, ID3D11ClassLinkage*, ID3D11PixelShader**);
+ 
+typedef HRESULT (__stdcall* PFN_ID3D11Device_CreateGeometryShader)(
+    ID3D11Device*, const void*, SIZE_T, ID3D11ClassLinkage*, ID3D11GeometryShader**);
+ 
+typedef HRESULT (__stdcall* PFN_ID3D11Device_CreateGeometryShaderWithStreamOutput)(
+    ID3D11Device*, const void*, SIZE_T,
+    const D3D11_SO_DECLARATION_ENTRY*, UINT,
+    const UINT*, UINT, UINT,
+    ID3D11ClassLinkage*, ID3D11GeometryShader**);
+ 
+typedef void (__stdcall* PFN_ID3D11Device_GetImmediateContext)(
+    ID3D11Device*, ID3D11DeviceContext**);
+ 
+// Indirect-draw argument structs (packed, matching GPU memory layout)
+#pragma pack(push, 1)
+struct D3D11_DRAW_INDEXED_INSTANCED_INDIRECT_ARGS {
+    UINT IndexCountPerInstance;
+    UINT InstanceCount;
+    UINT StartIndexLocation;
+    INT  BaseVertexLocation;
+    UINT StartInstanceLocation;
+};
+struct D3D11_DRAW_INSTANCED_INDIRECT_ARGS {
+    UINT VertexCountPerInstance;
+    UINT InstanceCount;
+    UINT StartVertexLocation;
+    UINT StartInstanceLocation;
+};
+#pragma pack(pop)
+ 
+// --------------------------------------------------------------------------
+// enums.h  ï¿½ ID3D11DeviceContext / ID3D11Device vtable slot indices
+// --------------------------------------------------------------------------
+enum {
+    IDX_ID3D11DeviceContext_Draw                           = 13,
+    IDX_ID3D11DeviceContext_DrawAuto                       = 38,
+    IDX_ID3D11DeviceContext_DrawIndexed                    = 12,
+    IDX_ID3D11DeviceContext_DrawIndexedInstanced           = 20,
+    IDX_ID3D11DeviceContext_DrawIndexedInstancedIndirect   = 39,
+    IDX_ID3D11DeviceContext_DrawInstanced                  = 21,
+    IDX_ID3D11DeviceContext_ClearRenderTargetView          = 50,
+    IDX_ID3D11DeviceContext_PSSetShaderResources           = 8,
+    IDX_ID3D11Device_CreateInputLayout                     = 11,
+    IDX_ID3D11Device_CreateVertexShader                    = 12,
+    IDX_ID3D11Device_CreatePixelShader                     = 15,
+    IDX_ID3D11Device_CreateGeometryShader                  = 13,
+    IDX_ID3D11Device_CreateGeometryShaderWithStreamOutput  = 14,
+    IDX_ID3D11Device_GetImmediateContext                   = 40
+};
+ 
+// --------------------------------------------------------------------------
+// macro.h  ï¿½ per-function stub generators (DX11 variant)
+//
+//  Each STUB_ macro defines a static __stdcall trampoline that:
+//    1. Looks up the KHook for the right device-context instance index.
+//    2. Forwards to the corresponding helper_* method on this_.
+//
+//  GENERATE_STUBS_GROUP(STUB_X) (from common/macro.h) then instantiates
+//  stubs 0..N and registers their addresses in the matching HooksGroup.
+// --------------------------------------------------------------------------
+ 
+// ID3D11DeviceContext_PSSetShaderResources
+#define STUB_ID3D11DeviceContext_PSSetShaderResources(IDX)                    \
+static void __stdcall                                                          \
+    _ID3D11DeviceContext_PSSetShaderResources_##IDX(                           \
+        ID3D11DeviceContext* pDevCont, UINT StartSlot, UINT NumViews,          \
+        ID3D11ShaderResourceView *const *ppShaderResourceViews)                \
+{                                                                              \
+    KHook* h = this_->hooks_ID3D11DeviceContext_PSSetShaderResources           \
+                      .getHook(IDX);                                           \
+    this_->helper_ID3D11DeviceContext_PSSetShaderResources(                    \
+        h, pDevCont, StartSlot, NumViews, ppShaderResourceViews);             \
+}
+ 
+// ID3D11DeviceContext_Draw
+#define STUB_ID3D11DeviceContext_Draw(IDX)                                    \
+static void __stdcall                                                          \
+    _ID3D11DeviceContext_Draw_##IDX(                                           \
+        ID3D11DeviceContext* pDevCont,                                         \
+        UINT VertexCount, UINT StartVertexLocation)                            \
+{                                                                              \
+    KHook* h = this_->hooks_ID3D11DeviceContext_Draw.getHook(IDX);            \
+    this_->helper_ID3D11DeviceContext_Draw(                                    \
+        h, pDevCont, VertexCount, StartVertexLocation);                        \
+}
+ 
+// ID3D11DeviceContext_DrawAuto
+#define STUB_ID3D11DeviceContext_DrawAuto(IDX)                                \
+static void __stdcall                                                          \
+    _ID3D11DeviceContext_DrawAuto_##IDX(ID3D11DeviceContext* pDevCont)         \
+{                                                                              \
+    KHook* h = this_->hooks_ID3D11DeviceContext_DrawAuto.getHook(IDX);        \
+    this_->helper_ID3D11DeviceContext_DrawAuto(h, pDevCont);                  \
+}
+ 
+// ID3D11DeviceContext_DrawIndexed
+#define STUB_ID3D11DeviceContext_DrawIndexed(IDX)                             \
+static void __stdcall                                                          \
+    _ID3D11DeviceContext_DrawIndexed_##IDX(                                    \
+        ID3D11DeviceContext* pDevCont,                                         \
+        UINT IndexCount, UINT StartIndexLocation, INT BaseVertexLocation)      \
+{                                                                              \
+    KHook* h = this_->hooks_ID3D11DeviceContext_DrawIndexed.getHook(IDX);     \
+    this_->helper_ID3D11DeviceContext_DrawIndexed(                             \
+        h, pDevCont, IndexCount, StartIndexLocation, BaseVertexLocation);     \
+}
+ 
+// ID3D11DeviceContext_DrawIndexedInstanced
+#define STUB_ID3D11DeviceContext_DrawIndexedInstanced(IDX)                    \
+static void __stdcall                                                          \
+    _ID3D11DeviceContext_DrawIndexedInstanced_##IDX(                           \
+        ID3D11DeviceContext* pDevCont,                                         \
+        UINT IndexCountPerInstance, UINT InstanceCount,                        \
+        UINT StartIndexLocation, INT BaseVertexLocation,                       \
+        UINT StartInstanceLocation)                                            \
+{                                                                              \
+    KHook* h = this_->hooks_ID3D11DeviceContext_DrawIndexedInstanced           \
+                      .getHook(IDX);                                           \
+    this_->helper_ID3D11DeviceContext_DrawIndexedInstanced(                    \
+        h, pDevCont, IndexCountPerInstance, InstanceCount,                    \
+        StartIndexLocation, BaseVertexLocation, StartInstanceLocation);        \
+}
+ 
+// ID3D11DeviceContext_DrawIndexedInstancedIndirect
+#define STUB_ID3D11DeviceContext_DrawIndexedInstancedIndirect(IDX)            \
+static void __stdcall                                                          \
+    _ID3D11DeviceContext_DrawIndexedInstancedIndirect_##IDX(                   \
+        ID3D11DeviceContext* pDevCont,                                         \
+        ID3D11Buffer* pBufferForArgs, UINT AlignedByteOffsetForArgs)           \
+{                                                                              \
+    KHook* h = this_->hooks_ID3D11DeviceContext_DrawIndexedInstancedIndirect   \
+                      .getHook(IDX);                                           \
+    this_->helper_ID3D11DeviceContext_DrawIndexedInstancedIndirect(            \
+        h, pDevCont, pBufferForArgs, AlignedByteOffsetForArgs);               \
+}
+ 
+// ID3D11DeviceContext_DrawInstanced
+#define STUB_ID3D11DeviceContext_DrawInstanced(IDX)                           \
+static void __stdcall                                                          \
+    _ID3D11DeviceContext_DrawInstanced_##IDX(                                  \
+        ID3D11DeviceContext* pDevCont,                                         \
+        UINT VertexCountPerInstance, UINT InstanceCount,                       \
+        UINT StartVertexLocation, UINT StartInstanceLocation)                  \
+{                                                                              \
+    KHook* h = this_->hooks_ID3D11DeviceContext_DrawInstanced.getHook(IDX);   \
+    this_->helper_ID3D11DeviceContext_DrawInstanced(                           \
+        h, pDevCont, VertexCountPerInstance, InstanceCount,                   \
+        StartVertexLocation, StartInstanceLocation);                           \
+}
+ 
+// ID3D11DeviceContext_DrawInstancedIndirect
+#define STUB_ID3D11DeviceContext_DrawInstancedIndirect(IDX)                   \
+static void __stdcall                                                          \
+    _ID3D11DeviceContext_DrawInstancedIndirect_##IDX(                          \
+        ID3D11DeviceContext* pDevCont,                                         \
+        ID3D11Buffer* pBufferForArgs, UINT AlignedByteOffsetForArgs)           \
+{                                                                              \
+    KHook* h = this_->hooks_ID3D11DeviceContext_DrawInstancedIndirect          \
+                      .getHook(IDX);                                           \
+    this_->helper_ID3D11DeviceContext_DrawInstancedIndirect(                   \
+        h, pDevCont, pBufferForArgs, AlignedByteOffsetForArgs);               \
+};
+ 
+// ID3D11DeviceContext_ClearRenderTargetView
+#define STUB_ID3D11DeviceContext_ClearRenderTargetView(IDX)                   \
+static void __stdcall                                                          \
+    _ID3D11DeviceContext_ClearRenderTargetView_##IDX(                          \
+        ID3D11DeviceContext* pDeviceContext,                                    \
+        ID3D11RenderTargetView* pRenderTargetView,                             \
+        const FLOAT color[4])                                                  \
+{                                                                              \
+    KHook* h = this_->hooks_ID3D11DeviceContext_ClearRenderTargetView          \
+                      .getHook(IDX);                                           \
+    this_->helper_ID3D11DeviceContext_ClearRenderTargetView(                   \
+        h, pDeviceContext, pRenderTargetView, color);                          \
+}
+ 
+// ID3D11Device_CreateInputLayout
+#define STUB_ID3D11Device_CreateInputLayout(IDX)                              \
+static HRESULT __stdcall                                                       \
+    _ID3D11Device_CreateInputLayout_##IDX(                                     \
+        ID3D11Device* pDev,                                                    \
+        const D3D11_INPUT_ELEMENT_DESC* pInputElementDescs, UINT NumElements,  \
+        const void* pShaderBytecodeWithInputSignature, SIZE_T BytecodeLength,  \
+        ID3D11InputLayout** ppInputLayout)                                     \
+{                                                                              \
+    KHook* h = this_->pHook_ID3D11Device_CreateInputLayout;                   \
+    return this_->helper_ID3D11Device_CreateInputLayout(                       \
+        h, pDev, pInputElementDescs, NumElements,                             \
+        pShaderBytecodeWithInputSignature, BytecodeLength, ppInputLayout);     \
+}
+ 
+// =============================================================================
+//  KRipper11 class definition  (derived from kripper11.h)
+// =============================================================================
+ 
+class KRipper11 : public IRipper
+{
+public:
+    static KRipper11* create(HINSTANCE hD3D11);
+    static void destroy(KRipper11*& p);
+ 
+    // IRipper interface
+    virtual void frameStart()    override;
+    virtual void frameEnd()      override;
+    virtual void textureRipStart() override;
+    virtual void textureRipEnd()   override;
+ 
+protected:
+    virtual ~KRipper11();
+    explicit KRipper11(HINSTANCE hD3D11);
+ 
+private:
+    // ----------------------------------------------------------------
+    // Internal texture record
+    // ----------------------------------------------------------------
+    struct KTexture {
+        ID3D11ShaderResourceView* pTexture;
+        std::string   name;
+        std::wstring  fullPath;
+        KTexture() : pTexture(nullptr) {}
+    };
+    typedef std::vector<KTexture> KFrameTextureVec;
+    KFrameTextureVec meshTexturesDb;
+ 
+    // ----------------------------------------------------------------
+    // Singleton-style 'this' (same pattern as KRipper9)
+    // ----------------------------------------------------------------
+    static KRipper11* this_;
+ 
+    HINSTANCE        hD3D11;
+    D3DCompileHelper d3dCompileHelper;
+    bool             drawIndexedEnabled;
+ 
+    void initialize();
+    void cleanup();
+    void zeroHooks();
+ 
+    // ----------------------------------------------------------------
+    // D3D11CreateDeviceAndSwapChain hook
+    // ----------------------------------------------------------------
+    KHook* pHook_D3D11CreateDeviceAndSwapChain;
+ 
+    HRESULT helper_D3D11CreateDeviceAndSwapChain(
+        KHook*, IDXGIAdapter*, D3D_DRIVER_TYPE, HMODULE, UINT,
+        CONST D3D_FEATURE_LEVEL*, UINT, UINT,
+        CONST DXGI_SWAP_CHAIN_DESC*, IDXGISwapChain**,
+        ID3D11Device**, D3D_FEATURE_LEVEL*, ID3D11DeviceContext**);
+ 
+    static HRESULT __stdcall _D3D11CreateDeviceAndSwapChain(
+        IDXGIAdapter*, D3D_DRIVER_TYPE, HMODULE, UINT,
+        CONST D3D_FEATURE_LEVEL*, UINT, UINT,
+        CONST DXGI_SWAP_CHAIN_DESC*, IDXGISwapChain**,
+        ID3D11Device**, D3D_FEATURE_LEVEL*, ID3D11DeviceContext**);
+ 
+    // ----------------------------------------------------------------
+    // D3D11CreateDevice hook
+    // ----------------------------------------------------------------
+    KHook* pHook_D3D11CreateDevice;
+ 
+    HRESULT helper_D3D11CreateDevice(
+        KHook*, IDXGIAdapter*, D3D_DRIVER_TYPE, HMODULE, UINT,
+        const D3D_FEATURE_LEVEL*, UINT, UINT,
+        ID3D11Device**, D3D_FEATURE_LEVEL*, ID3D11DeviceContext**);
+ 
+    static HRESULT __stdcall _D3D11CreateDevice(
+        IDXGIAdapter*, D3D_DRIVER_TYPE, HMODULE, UINT,
+        const D3D_FEATURE_LEVEL*, UINT, UINT,
+        ID3D11Device**, D3D_FEATURE_LEVEL*, ID3D11DeviceContext**);
+ 
+    // ----------------------------------------------------------------
+    // ID3D11DeviceContext hook groups (one slot per device context
+    // instance ï¿½ the HooksGroup expands stubs 0..N via macros)
+    // ----------------------------------------------------------------
+    HooksGroup hooks_ID3D11DeviceContext_PSSetShaderResources;
+    void helper_ID3D11DeviceContext_PSSetShaderResources(
+        KHook*, ID3D11DeviceContext*, UINT, UINT,
+        ID3D11ShaderResourceView *const *);
+    GENERATE_STUBS_GROUP(STUB_ID3D11DeviceContext_PSSetShaderResources);
+ 
+    HooksGroup hooks_ID3D11DeviceContext_Draw;
+    void helper_ID3D11DeviceContext_Draw(
+        KHook*, ID3D11DeviceContext*, UINT, UINT);
+    GENERATE_STUBS_GROUP(STUB_ID3D11DeviceContext_Draw);
+ 
+    HooksGroup hooks_ID3D11DeviceContext_DrawAuto;
+    void helper_ID3D11DeviceContext_DrawAuto(KHook*, ID3D11DeviceContext*);
+    GENERATE_STUBS_GROUP(STUB_ID3D11DeviceContext_DrawAuto);
+ 
+    HooksGroup hooks_ID3D11DeviceContext_DrawIndexed;
+    void helper_ID3D11DeviceContext_DrawIndexed(
+        KHook*, ID3D11DeviceContext*, UINT, UINT, INT);
+    GENERATE_STUBS_GROUP(STUB_ID3D11DeviceContext_DrawIndexed);
+ 
+    HooksGroup hooks_ID3D11DeviceContext_DrawIndexedInstanced;
+    void helper_ID3D11DeviceContext_DrawIndexedInstanced(
+        KHook*, ID3D11DeviceContext*, UINT, UINT, UINT, INT, UINT);
+    GENERATE_STUBS_GROUP(STUB_ID3D11DeviceContext_DrawIndexedInstanced);
+ 
+    HooksGroup hooks_ID3D11DeviceContext_DrawIndexedInstancedIndirect;
+    void helper_ID3D11DeviceContext_DrawIndexedInstancedIndirect(
+        KHook*, ID3D11DeviceContext*, ID3D11Buffer*, UINT);
+    GENERATE_STUBS_GROUP(STUB_ID3D11DeviceContext_DrawIndexedInstancedIndirect);
+ 
+    HooksGroup hooks_ID3D11DeviceContext_DrawInstanced;
+    void helper_ID3D11DeviceContext_DrawInstanced(
+        KHook*, ID3D11DeviceContext*, UINT, UINT, UINT, UINT);
+    GENERATE_STUBS_GROUP(STUB_ID3D11DeviceContext_DrawInstanced);
+ 
+    HooksGroup hooks_ID3D11DeviceContext_DrawInstancedIndirect;
+    void helper_ID3D11DeviceContext_DrawInstancedIndirect(
+        KHook*, ID3D11DeviceContext*, ID3D11Buffer*, UINT);
+    GENERATE_STUBS_GROUP(STUB_ID3D11DeviceContext_DrawInstancedIndirect);
+ 
+    HooksGroup hooks_ID3D11DeviceContext_ClearRenderTargetView;
+    void helper_ID3D11DeviceContext_ClearRenderTargetView(
+        KHook*, ID3D11DeviceContext*, ID3D11RenderTargetView*, const FLOAT[4]);
+    GENERATE_STUBS_GROUP(STUB_ID3D11DeviceContext_ClearRenderTargetView);
+ 
+    // ----------------------------------------------------------------
+    // Forced-texture-rip  (PSSetShaderResources path)
+    // ----------------------------------------------------------------
+    std::vector<ID3D11ShaderResourceView*> TexturesVec;
+ 
+    void handleTexture(
+        ID3D11DeviceContext*, UINT, UINT,
+        ID3D11ShaderResourceView *const *);
+ 
+    // ----------------------------------------------------------------
+    // ID3D11Device hooks  (single-instance, no HooksGroup needed)
+    // ----------------------------------------------------------------
+    KHook* pHook_ID3D11Device_CreateInputLayout;
+    HRESULT helper_ID3D11Device_CreateInputLayout(
+        KHook*, ID3D11Device*,
+        const D3D11_INPUT_ELEMENT_DESC*, UINT,
+        const void*, SIZE_T, ID3D11InputLayout**);
+    static HRESULT __stdcall _ID3D11Device_CreateInputLayout(
+        ID3D11Device*,
+        const D3D11_INPUT_ELEMENT_DESC*, UINT,
+        const void*, SIZE_T, ID3D11InputLayout**);
+ 
+    KHook* pHook_ID3D11Device_CreateVertexShader;
+    HRESULT helper_ID3D11Device_CreateVertexShader(
+        KHook*, ID3D11Device*, const void*, SIZE_T,
+        ID3D11ClassLinkage*, ID3D11VertexShader**);
+    static HRESULT __stdcall _ID3D11Device_CreateVertexShader(
+        ID3D11Device*, const void*, SIZE_T,
+        ID3D11ClassLinkage*, ID3D11VertexShader**);
+ 
+    KHook* pHook_ID3D11Device_CreatePixelShader;
+    HRESULT helper_ID3D11Device_CreatePixelShader(
+        KHook*, ID3D11Device*, const void*, SIZE_T,
+        ID3D11ClassLinkage*, ID3D11PixelShader**);
+    static HRESULT __stdcall _ID3D11Device_CreatePixelShader(
+        ID3D11Device*, const void*, SIZE_T,
+        ID3D11ClassLinkage*, ID3D11PixelShader**);
+ 
+    KHook* pHook_ID3D11Device_CreateGeometryShader;
+    HRESULT helper_ID3D11Device_CreateGeometryShader(
+        KHook*, ID3D11Device*, const void*, SIZE_T,
+        ID3D11ClassLinkage*, ID3D11GeometryShader**);
+    static HRESULT __stdcall _ID3D11Device_CreateGeometryShader(
+        ID3D11Device*, const void*, SIZE_T,
+        ID3D11ClassLinkage*, ID3D11GeometryShader**);
+ 
+    KHook* pHook_ID3D11Device_CreateGeometryShaderWithStreamOutput;
+    HRESULT helper_ID3D11Device_CreateGeometryShaderWithStreamOutput(
+        KHook*, ID3D11Device*, const void*, SIZE_T,
+        const D3D11_SO_DECLARATION_ENTRY*, UINT,
+        const UINT*, UINT, UINT,
+        ID3D11ClassLinkage*, ID3D11GeometryShader**);
+    static HRESULT __stdcall _ID3D11Device_CreateGeometryShaderWithStreamOutput(
+        ID3D11Device*, const void*, SIZE_T,
+        const D3D11_SO_DECLARATION_ENTRY*, UINT,
+        const UINT*, UINT, UINT,
+        ID3D11ClassLinkage*, ID3D11GeometryShader**);
+ 
+    KHook* pHook_ID3D11Device_GetImmediateContext;
+    void helper_ID3D11Device_GetImmediateContext(
+        KHook*, ID3D11Device*, ID3D11DeviceContext**);
+    static void __stdcall _ID3D11Device_GetImmediateContext(
+        ID3D11Device*, ID3D11DeviceContext**);
+ 
+    // ----------------------------------------------------------------
+    // Input-layout database
+    // ----------------------------------------------------------------
+    struct KD3D11InputElement {
+        char         SemanticName[SEMANTIC_LEN];
+        UINT         SemanticIndex;
+        DXGI_FORMAT  Format;
+        UINT         InputSlot;
+        UINT         AlignedByteOffset;
+        D3D11_INPUT_CLASSIFICATION InputSlotClass;
+        UINT         InstanceDataStepRate;
+ 
+        KD3D11InputElement()
+            : SemanticIndex(0), Format(DXGI_FORMAT_UNKNOWN),
+              InputSlot(0), AlignedByteOffset(0),
+              InputSlotClass(D3D11_INPUT_PER_VERTEX_DATA),
+              InstanceDataStepRate(0)
+        { ZeroMemory(SemanticName, SEMANTIC_LEN); }
+    };
+    typedef std::vector<KD3D11InputElement>               KD3D11VertexDeclaration;
+    typedef std::map<ID3D11InputLayout*, KD3D11VertexDeclaration> KInputLayoutMap;
+    KInputLayoutMap InputLayoutMap;
+ 
+    // ----------------------------------------------------------------
+    // Device ? immediate-context database (for deferred-context support)
+    // ----------------------------------------------------------------
+    typedef std::map<ID3D11Device*, ID3D11DeviceContext*> DeviceToImmContext;
+    DeviceToImmContext deviceToImmContext;
+    void   saveDeviceAndImmContextInDb(ID3D11Device*, ID3D11DeviceContext*);
+    ID3D11DeviceContext* getImmCtxFromDb(ID3D11Device*);
+    ID3D11DeviceContext* getImmCtx(ID3D11DeviceContext*);
+ 
+    // ----------------------------------------------------------------
+    // Shader database
+    // ----------------------------------------------------------------
+    ShadersDb shadersDb;
+    void saveMeshShaders(ID3D11DeviceContext*, KMeshShaders*);
+ 
+    // ----------------------------------------------------------------
+    // Per-draw helpers
+    // ----------------------------------------------------------------
+    void hookDeviceContext(ID3D11DeviceContext** ppCtx);
+    void hookDevice(ID3D11Device** ppDev);
+ 
+    EPrimitiveTopology::Type getPrimitiveTopology(ID3D11DeviceContext*);
+    EPrimitiveTopology::Type D3D11_PRIMITIVE_TOPOLOGY_to_EPrimitiveTopology(
+        D3D11_PRIMITIVE_TOPOLOGY);
+ 
+    HRESULT getInputLayout(ID3D11DeviceContext*, KD3D11VertexDeclaration&);
+    HRESULT getVertexDeclarations(
+        ID3D11DeviceContext*,
+        KInputVertexDeclaration*,
+        KOutputVertexDeclaration*);
+ 
+    HRESULT copyBuffer(ID3D11DeviceContext*, ID3D11Buffer*, ID3D11Buffer**);
+ 
+    HRESULT dumpIndexBuffer(
+        ID3D11DeviceContext*,
+        EPrimitiveTopology::Type,
+        UINT, UINT, INT,
+        KFACES*, OptimizedIndexToMeshIndex*);
+ 
+    HRESULT dumpVertexBuffer(
+        ID3D11DeviceContext*,
+        const KInputVertexDeclaration&,
+        const KOutputVertexDeclaration&,
+        INT,
+        const OptimizedIndexToMeshIndex&,
+        KVERTICES*);
+ 
+    EInputType::Type DXGI_FORMAT_to_EInputType(DXGI_FORMAT);
+ 
+    void ripDraw(ID3D11DeviceContext*, UINT, UINT);
+    void ripDrawInstanced(ID3D11DeviceContext*, UINT, UINT, UINT, UINT);
+    void ripDrawIndexed(ID3D11DeviceContext*, UINT, UINT, INT);
+    void ripDrawIndexedInstanced(ID3D11DeviceContext*, UINT, UINT, UINT, INT, UINT);
+    void ripDrawIndexedInstancedIndirect(ID3D11DeviceContext*, ID3D11Buffer*, UINT);
+ 
+    // ----------------------------------------------------------------
+    // Texture save
+    // ----------------------------------------------------------------
+    HRESULT saveTexture2File(const wchar_t*, ID3D11DeviceContext*,
+                             ID3D11ShaderResourceView*);
+    HRESULT saveTexture2FileMain(const wchar_t*, ID3D11DeviceContext*,
+                                 ID3D11ShaderResourceView*);
+    HRESULT compileShaderFromMemory(LPCSTR, SIZE_T, LPCSTR, LPCSTR, ID3DBlob**);
+ 
+    DWORD isTextureSaved(ID3D11ShaderResourceView*);
+ 
+    // Per-mesh texture helpers
+    bool isMeshTextureSaved(ID3D11ShaderResourceView*, KTexture*);
+    void addMeshTexture(const KTexture&);
+    void saveMeshTextures(ID3D11DeviceContext*, KMeshTextures*);
+ 
+    // ----------------------------------------------------------------
+    // Logging / debug helpers
+    // ----------------------------------------------------------------
+    void        dumpShaderResourceView(ID3D11ShaderResourceView*);
+    void        dumpID3D11BufferDesc(ID3D11Buffer*);
+    void        dump_KD3D11InputElement2Log(const KD3D11InputElement&);
+    void        logReasonIfDeviceRemoved(HRESULT, ID3D11Device*);
+ 
+    const char* DXGI_FORMAT_2_Str(DXGI_FORMAT);
+    const char* D3D11_SRV_DIMENSION_2_Str(D3D11_SRV_DIMENSION);
+    const char* D3D11_USAGE_2_Str(D3D11_USAGE);
+    const char* D3D_FEATURE_LEVEL_2_Str(D3D_FEATURE_LEVEL);
+    const char* D3D_DRIVER_TYPE_2_Str(D3D_DRIVER_TYPE);
+    const char* D3D11_PRIMITIVE_TOPOLOGY_to_Str(D3D11_PRIMITIVE_TOPOLOGY);
+    const char* D3D11_DEVICE_CONTEXT_TYPE_To_String(D3D11_DEVICE_CONTEXT_TYPE);
+ 
+    // Critical section serialises all rip paths
+    CRITICAL_SECTION cs;
+};
+ 
+// Static 'this' pointer (mirrors the KRipper9 pattern)
+KRipper11* KRipper11::this_ = nullptr;
+ 
+// =============================================================================
+//  IMPLEMENTATION ï¿½ kripper11.cpp
+// =============================================================================
+ 
+KRipper11* KRipper11::create(HINSTANCE hD3D11)
+{
+    g_pLog->log("D3D11 ripper init\n");
+    KRipper11* p = new KRipper11(hD3D11);
+    p->initialize();
+    return p;
+}
+ 
+void KRipper11::destroy(KRipper11*& p)
+{
+    if (!p) return;
+    g_pLog->log("D3D11 ripper uninit\n\n");
+    p->cleanup();
+    SAFE_DELETE(p);
+}
+ 
+KRipper11::KRipper11(HINSTANCE hD3D11_)
+    : hD3D11(hD3D11_), drawIndexedEnabled(true)
+{
+    this_ = this;
+    InitializeCriticalSection(&cs);
+    zeroHooks();
+}
+ 
+KRipper11::~KRipper11()
+{
+    this_ = nullptr;
+    DeleteCriticalSection(&cs);
+}
+ 
+void KRipper11::frameStart()  { meshTexturesDb.clear(); }
+void KRipper11::frameEnd()    {}
+void KRipper11::textureRipStart() { TexturesVec.clear(); }
+void KRipper11::textureRipEnd()   {}
+ 
+void KRipper11::zeroHooks()
+{
+    pHook_D3D11CreateDeviceAndSwapChain = nullptr;
+    pHook_D3D11CreateDevice             = nullptr;
+ 
+    GENERATE_HOOKS_GROUP_CLEARER(ID3D11DeviceContext_PSSetShaderResources);
+    GENERATE_HOOKS_GROUP_CLEARER(ID3D11DeviceContext_Draw);
+    GENERATE_HOOKS_GROUP_CLEARER(ID3D11DeviceContext_DrawAuto);
+    GENERATE_HOOKS_GROUP_CLEARER(ID3D11DeviceContext_DrawIndexed);
+    GENERATE_HOOKS_GROUP_CLEARER(ID3D11DeviceContext_DrawIndexedInstanced);
+    GENERATE_HOOKS_GROUP_CLEARER(ID3D11DeviceContext_DrawIndexedInstancedIndirect);
+    GENERATE_HOOKS_GROUP_CLEARER(ID3D11DeviceContext_DrawInstanced);
+    GENERATE_HOOKS_GROUP_CLEARER(ID3D11DeviceContext_DrawInstancedIndirect);
+    GENERATE_HOOKS_GROUP_CLEARER(ID3D11DeviceContext_ClearRenderTargetView);
+ 
+    pHook_ID3D11Device_CreateInputLayout                    = nullptr;
+    pHook_ID3D11Device_CreateVertexShader                   = nullptr;
+    pHook_ID3D11Device_CreatePixelShader                    = nullptr;
+    pHook_ID3D11Device_CreateGeometryShader                 = nullptr;
+    pHook_ID3D11Device_CreateGeometryShaderWithStreamOutput = nullptr;
+    pHook_ID3D11Device_GetImmediateContext                  = nullptr;
+}
+ 
+void KRipper11::initialize()
+{
+    // Hook the two D3D11 factory functions exported from d3d11.dll
+    LPVOID targ = GetProcAddress(hD3D11, "D3D11CreateDeviceAndSwapChain");
+    hookEx("D3D11CreateDeviceAndSwapChain",
+           targ, _D3D11CreateDeviceAndSwapChain,
+           KHookMgr::EHOOK_POOL_DX11,
+           &pHook_D3D11CreateDeviceAndSwapChain);
+ 
+    targ = GetProcAddress(hD3D11, "D3D11CreateDevice");
+    hookEx("D3D11CreateDevice",
+           targ, _D3D11CreateDevice,
+           KHookMgr::EHOOK_POOL_DX11,
+           &pHook_D3D11CreateDevice);
+ 
+    // Also hook DXGI (swap-chain Present) if not already done
+    wchar_t szBuf[MAX_PATH];
+    GetSystemDirectoryW(szBuf, MAX_PATH);
+    lstrcatW(szBuf, L"\\dxgi.dll");
+    HINSTANCE hDXGI = GetModuleHandleW(szBuf);
+    if (hDXGI && !g_pDxgi)
+        g_pDxgi = create_KDxgi(hDXGI);
+    setIRipper(g_pDxgi, this);
+}
+ 
+void KRipper11::cleanup()
+{
+    g_pHookMgr->unhookPool(KHookMgr::EHOOK_POOL_DX11);
+    zeroHooks();
+    if (g_pDxgi) g_pDxgi->setIRipper(nullptr);
+}
+ 
+// ---- Device-context hooking -----------------------------------------------
+ 
+void KRipper11::hookDeviceContext(ID3D11DeviceContext** ppCtx)
+{
+    if (!ppCtx || !*ppCtx) {
+        g_pLog->logWarning("hookDeviceContext(): null pointer\n");
+        return;
+    }
+ 
+    hookEx("ID3D11DeviceContext_Draw",
+           IDX_ID3D11DeviceContext_Draw, *ppCtx,
+           KHookMgr::EHOOK_POOL_DX11,
+           &hooks_ID3D11DeviceContext_Draw);
+ 
+    hookEx("ID3D11DeviceContext_DrawAuto",
+           IDX_ID3D11DeviceContext_DrawAuto, *ppCtx,
+           KHookMgr::EHOOK_POOL_DX11,
+           &hooks_ID3D11DeviceContext_DrawAuto);
+ 
+    hookEx("ID3D11DeviceContext_DrawIndexed",
+           IDX_ID3D11DeviceContext_DrawIndexed, *ppCtx,
+           KHookMgr::EHOOK_POOL_DX11,
+           &hooks_ID3D11DeviceContext_DrawIndexed);
+ 
+    hookEx("ID3D11DeviceContext_DrawIndexedInstanced",
+           IDX_ID3D11DeviceContext_DrawIndexedInstanced, *ppCtx,
+           KHookMgr::EHOOK_POOL_DX11,
+           &hooks_ID3D11DeviceContext_DrawIndexedInstanced);
+ 
+    hookEx("ID3D11DeviceContext_DrawIndexedInstancedIndirect",
+           IDX_ID3D11DeviceContext_DrawIndexedInstancedIndirect, *ppCtx,
+           KHookMgr::EHOOK_POOL_DX11,
+           &hooks_ID3D11DeviceContext_DrawIndexedInstancedIndirect);
+ 
+    hookEx("ID3D11DeviceContext_DrawInstanced",
+           IDX_ID3D11DeviceContext_DrawInstanced, *ppCtx,
+           KHookMgr::EHOOK_POOL_DX11,
+           &hooks_ID3D11DeviceContext_DrawInstanced);
+ 
+    // Note: DrawInstancedIndirect slot intentionally skipped in original code
+    // (same vtable address collision as DrawInstanced on some drivers).
+ 
+    // Re-hook ClearRenderTargetView so we can re-validate the vtable after
+    // the driver patches it (documented DX11 quirk with deferred contexts).
+    hookEx("ID3D11DeviceContext_ClearRenderTargetView",
+           IDX_ID3D11DeviceContext_ClearRenderTargetView, *ppCtx,
+           KHookMgr::EHOOK_POOL_DX11,
+           &hooks_ID3D11DeviceContext_ClearRenderTargetView);
+ 
+    // Forced-texture-rip path
+    hookEx("ID3D11DeviceContext_PSSetShaderResources",
+           IDX_ID3D11DeviceContext_PSSetShaderResources, *ppCtx,
+           KHookMgr::EHOOK_POOL_DX11,
+           &hooks_ID3D11DeviceContext_PSSetShaderResources);
+}
+ 
+void KRipper11::hookDevice(ID3D11Device** ppDev)
+{
+    if (!ppDev || !*ppDev) {
+        g_pLog->logWarning("hookDevice(): null pointer\n");
+        return;
+    }
+ 
+    hookEx("ID3D11Device_CreateInputLayout",
+           IDX_ID3D11Device_CreateInputLayout, *ppDev,
+           KHookMgr::EHOOK_POOL_DX11,
+           _ID3D11Device_CreateInputLayout,
+           &pHook_ID3D11Device_CreateInputLayout);
+ 
+    hookEx("ID3D11Device_CreateVertexShader",
+           IDX_ID3D11Device_CreateVertexShader, *ppDev,
+           KHookMgr::EHOOK_POOL_DX11,
+           _ID3D11Device_CreateVertexShader,
+           &pHook_ID3D11Device_CreateVertexShader);
+ 
+    hookEx("ID3D11Device_CreatePixelShader",
+           IDX_ID3D11Device_CreatePixelShader, *ppDev,
+           KHookMgr::EHOOK_POOL_DX11,
+           _ID3D11Device_CreatePixelShader,
+           &pHook_ID3D11Device_CreatePixelShader);
+ 
+    hookEx("ID3D11Device_CreateGeometryShader",
+           IDX_ID3D11Device_CreateGeometryShader, *ppDev,
+           KHookMgr::EHOOK_POOL_DX11,
+           _ID3D11Device_CreateGeometryShader,
+           &pHook_ID3D11Device_CreateGeometryShader);
+ 
+    hookEx("ID3D11Device_CreateGeometryShaderWithStreamOutput",
+           IDX_ID3D11Device_CreateGeometryShaderWithStreamOutput, *ppDev,
+           KHookMgr::EHOOK_POOL_DX11,
+           _ID3D11Device_CreateGeometryShaderWithStreamOutput,
+           &pHook_ID3D11Device_CreateGeometryShaderWithStreamOutput);
+ 
+    hookEx("ID3D11Device_GetImmediateContext",
+           IDX_ID3D11Device_GetImmediateContext, *ppDev,
+           KHookMgr::EHOOK_POOL_DX11,
+           _ID3D11Device_GetImmediateContext,
+           &pHook_ID3D11Device_GetImmediateContext);
+}
+ 
+// ---- D3D11CreateDeviceAndSwapChain ----------------------------------------
+ 
+HRESULT KRipper11::helper_D3D11CreateDeviceAndSwapChain(
+    KHook* pHook,
+    IDXGIAdapter* pAdapter, D3D_DRIVER_TYPE DriverType,
+    HMODULE Software, UINT Flags,
+    CONST D3D_FEATURE_LEVEL* pFeatureLevels, UINT FeatureLevels,
+    UINT SDKVersion,
+    CONST DXGI_SWAP_CHAIN_DESC* pSwapChainDesc, IDXGISwapChain** ppSwapChain,
+    ID3D11Device** ppDevice, D3D_FEATURE_LEVEL* pFeatureLevel,
+    ID3D11DeviceContext** ppImmediateContext)
+{
+    auto e = (PFN_D3D11CreateDeviceAndSwapChain)pHook->getOriginalAddress();
+ 
+    loadD3DCompile(&d3dCompileHelper);
+    if (g_pIntruder->getSettings()->debugD3D)
+        Flags |= D3D11_CREATE_DEVICE_DEBUG;
+ 
+    HRESULT hr = e(pAdapter, DriverType, Software, Flags,
+                   pFeatureLevels, FeatureLevels, SDKVersion,
+                   pSwapChainDesc, ppSwapChain,
+                   ppDevice, pFeatureLevel, ppImmediateContext);
+ 
+    g_pLog->log("D3D11CreateDeviceAndSwapChain("
+                "ppSwapChain:0x%p ppDevice:0x%p ppImmCtx:0x%p) hr=0x%08X\n",
+                ppSwapChain, ppDevice, ppImmediateContext, hr);
+ 
+    if (SUCCEEDED(hr)) {
+        if (ppDevice && ppImmediateContext)
+            saveDeviceAndImmContextInDb(*ppDevice, *ppImmediateContext);
+ 
+        if (g_pIntruder->getSettings()->debugD3D) {
+            ID3D11Debug* dbg = nullptr;
+            (*ppDevice)->QueryInterface(__uuidof(ID3D11Debug), (void**)&dbg);
+            if (dbg) { dbg->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL); dbg->Release(); }
+        }
+        hookDeviceContext(ppImmediateContext);
+        g_pDxgi->hookSwapChain(ppSwapChain);
+        hookDevice(ppDevice);
+    }
+    return hr;
+}
+ 
+HRESULT __stdcall KRipper11::_D3D11CreateDeviceAndSwapChain(
+    IDXGIAdapter* pAdapter, D3D_DRIVER_TYPE DriverType,
+    HMODULE Software, UINT Flags,
+    CONST D3D_FEATURE_LEVEL* pFeatureLevels, UINT FeatureLevels,
+    UINT SDKVersion,
+    CONST DXGI_SWAP_CHAIN_DESC* pSwapChainDesc, IDXGISwapChain** ppSwapChain,
+    ID3D11Device** ppDevice, D3D_FEATURE_LEVEL* pFeatureLevel,
+    ID3D11DeviceContext** ppImmediateContext)
+{
+    return this_->helper_D3D11CreateDeviceAndSwapChain(
+        this_->pHook_D3D11CreateDeviceAndSwapChain,
+        pAdapter, DriverType, Software, Flags,
+        pFeatureLevels, FeatureLevels, SDKVersion,
+        pSwapChainDesc, ppSwapChain,
+        ppDevice, pFeatureLevel, ppImmediateContext);
+}
+ 
+// ---- D3D11CreateDevice ----------------------------------------------------
+ 
+HRESULT KRipper11::helper_D3D11CreateDevice(
+    KHook* pHook,
+    IDXGIAdapter* pAdapter, D3D_DRIVER_TYPE DriverType,
+    HMODULE Software, UINT Flags,
+    const D3D_FEATURE_LEVEL* pFeatureLevels, UINT FeatureLevels,
+    UINT SDKVersion,
+    ID3D11Device** ppDevice, D3D_FEATURE_LEVEL* pFeatureLevel,
+    ID3D11DeviceContext** ppImmediateContext)
+{
+    auto e = (PFN_D3D11CreateDevice)pHook->getOriginalAddress();
+ 
+    loadD3DCompile(&d3dCompileHelper);
+    if (g_pIntruder->getSettings()->debugD3D)
+        Flags |= D3D11_CREATE_DEVICE_DEBUG;
+ 
+    HRESULT hr = e(pAdapter, DriverType, Software, Flags,
+                   pFeatureLevels, FeatureLevels, SDKVersion,
+                   ppDevice, pFeatureLevel, ppImmediateContext);
+ 
+    g_pLog->log("D3D11CreateDevice(ppDevice:0x%p ppImmCtx:0x%p) hr=0x%08X\n",
+                ppDevice, ppImmediateContext, hr);
+ 
+    if (SUCCEEDED(hr)) {
+        if (ppDevice && ppImmediateContext)
+            saveDeviceAndImmContextInDb(*ppDevice, *ppImmediateContext);
+ 
+        if (g_pIntruder->getSettings()->debugD3D) {
+            ID3D11Debug* dbg = nullptr;
+            (*ppDevice)->QueryInterface(__uuidof(ID3D11Debug), (void**)&dbg);
+            if (dbg) { dbg->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL); dbg->Release(); }
+        }
+        hookDeviceContext(ppImmediateContext);
+        hookDevice(ppDevice);
+    }
+    return hr;
+}
+ 
+HRESULT __stdcall KRipper11::_D3D11CreateDevice(
+    IDXGIAdapter* pAdapter, D3D_DRIVER_TYPE DriverType,
+    HMODULE Software, UINT Flags,
+    const D3D_FEATURE_LEVEL* pFeatureLevels, UINT FeatureLevels,
+    UINT SDKVersion,
+    ID3D11Device** ppDevice, D3D_FEATURE_LEVEL* pFeatureLevel,
+    ID3D11DeviceContext** ppImmediateContext)
+{
+    return this_->helper_D3D11CreateDevice(
+        this_->pHook_D3D11CreateDevice,
+        pAdapter, DriverType, Software, Flags,
+        pFeatureLevels, FeatureLevels, SDKVersion,
+        ppDevice, pFeatureLevel, ppImmediateContext);
+}
+ 
+// ---- ID3D11Device_CreateInputLayout ---------------------------------------
+ 
+HRESULT KRipper11::helper_ID3D11Device_CreateInputLayout(
+    KHook* pHook, ID3D11Device* pDev,
+    const D3D11_INPUT_ELEMENT_DESC* pDescs, UINT NumElements,
+    const void* pBytecode, SIZE_T BytecodeLength,
+    ID3D11InputLayout** ppInputLayout)
+{
+    auto e = (PFN_ID3D11Device_CreateInputLayout)pHook->getOriginalAddress();
+    HRESULT hr = e(pDev, pDescs, NumElements, pBytecode, BytecodeLength, ppInputLayout);
+ 
+    if (SUCCEEDED(hr)) {
+        EnterCriticalSection(&cs);
+        KD3D11VertexDeclaration elemVec;
+        g_pLog->log("ID3D11Device_CreateInputLayout(): 0x%p\n", *ppInputLayout);
+        for (UINT i = 0; i < NumElements; i++) {
+            const D3D11_INPUT_ELEMENT_DESC& src = pDescs[i];
+            KD3D11InputElement dst;
+            strCopy(dst.SemanticName, SEMANTIC_LEN, src.SemanticName);
+            dst.SemanticIndex       = src.SemanticIndex;
+            dst.Format              = src.Format;
+            dst.InputSlot           = src.InputSlot;
+            dst.AlignedByteOffset   = src.AlignedByteOffset;
+            dst.InputSlotClass      = src.InputSlotClass;
+            dst.InstanceDataStepRate= src.InstanceDataStepRate;
+            elemVec.push_back(dst);
+        }
+        auto it = InputLayoutMap.find(*ppInputLayout);
+        if (it == InputLayoutMap.end())
+            InputLayoutMap.insert({*ppInputLayout, elemVec});
+        else
+            it->second = elemVec;
+        LeaveCriticalSection(&cs);
+    } else {
+        g_pLog->logError("ID3D11Device_CreateInputLayout(). HRESULT: 0x%08X\n", hr);
+    }
+    return hr;
+}
+ 
+HRESULT __stdcall KRipper11::_ID3D11Device_CreateInputLayout(
+    ID3D11Device* pDev,
+    const D3D11_INPUT_ELEMENT_DESC* pDescs, UINT NumElements,
+    const void* pBytecode, SIZE_T BytecodeLength,
+    ID3D11InputLayout** ppInputLayout)
+{
+    return this_->helper_ID3D11Device_CreateInputLayout(
+        this_->pHook_ID3D11Device_CreateInputLayout,
+        pDev, pDescs, NumElements, pBytecode, BytecodeLength, ppInputLayout);
+}
+ 
+// ---- Shader hooks (vertex / pixel / geometry / geometry+SO) ---------------
+ 
+HRESULT KRipper11::helper_ID3D11Device_CreateVertexShader(
+    KHook* pHook, ID3D11Device* pDev,
+    const void* pCode, SIZE_T Len,
+    ID3D11ClassLinkage* pLink, ID3D11VertexShader** ppVS)
+{
+    auto e = (PFN_ID3D11Device_CreateVertexShader)pHook->getOriginalAddress();
+    HRESULT hr = e(pDev, pCode, Len, pLink, ppVS);
+    if (SUCCEEDED(hr) && g_pIntruder->getSettings()->saveShaders) {
+        EnterCriticalSection(&cs);
+        saveShader(EShaderExt::VERTEX, pCode, Len, *ppVS, &shadersDb, &d3dCompileHelper);
+        LeaveCriticalSection(&cs);
+    }
+    return hr;
+}
+HRESULT __stdcall KRipper11::_ID3D11Device_CreateVertexShader(
+    ID3D11Device* p, const void* c, SIZE_T l, ID3D11ClassLinkage* lk, ID3D11VertexShader** pp)
+{ return this_->helper_ID3D11Device_CreateVertexShader(this_->pHook_ID3D11Device_CreateVertexShader, p, c, l, lk, pp); }
+ 
+HRESULT KRipper11::helper_ID3D11Device_CreatePixelShader(
+    KHook* pHook, ID3D11Device* pDev,
+    const void* pCode, SIZE_T Len,
+    ID3D11ClassLinkage* pLink, ID3D11PixelShader** ppPS)
+{
+    auto e = (PFN_ID3D11Device_CreatePixelShader)pHook->getOriginalAddress();
+    HRESULT hr = e(pDev, pCode, Len, pLink, ppPS);
+    if (SUCCEEDED(hr) && g_pIntruder->getSettings()->saveShaders) {
+        EnterCriticalSection(&cs);
+        saveShader(EShaderExt::PIXEL, pCode, Len, *ppPS, &shadersDb, &d3dCompileHelper);
+        LeaveCriticalSection(&cs);
+    }
+    return hr;
+}
+HRESULT __stdcall KRipper11::_ID3D11Device_CreatePixelShader(
+    ID3D11Device* p, const void* c, SIZE_T l, ID3D11ClassLinkage* lk, ID3D11PixelShader** pp)
+{ return this_->helper_ID3D11Device_CreatePixelShader(this_->pHook_ID3D11Device_CreatePixelShader, p, c, l, lk, pp); }
+ 
+HRESULT KRipper11::helper_ID3D11Device_CreateGeometryShader(
+    KHook* pHook, ID3D11Device* pDev,
+    const void* pCode, SIZE_T Len,
+    ID3D11ClassLinkage* pLink, ID3D11GeometryShader** ppGS)
+{
+    auto e = (PFN_ID3D11Device_CreateGeometryShader)pHook->getOriginalAddress();
+    HRESULT hr = e(pDev, pCode, Len, pLink, ppGS);
+    if (SUCCEEDED(hr) && g_pIntruder->getSettings()->saveShaders) {
+        EnterCriticalSection(&cs);
+        saveShader(EShaderExt::GEOMETRY, pCode, Len, *ppGS, &shadersDb, &d3dCompileHelper);
+        LeaveCriticalSection(&cs);
+    }
+    return hr;
+}
+HRESULT __stdcall KRipper11::_ID3D11Device_CreateGeometryShader(
+    ID3D11Device* p, const void* c, SIZE_T l, ID3D11ClassLinkage* lk, ID3D11GeometryShader** pp)
+{ return this_->helper_ID3D11Device_CreateGeometryShader(this_->pHook_ID3D11Device_CreateGeometryShader, p, c, l, lk, pp); }
+ 
+HRESULT KRipper11::helper_ID3D11Device_CreateGeometryShaderWithStreamOutput(
+    KHook* pHook, ID3D11Device* pDev,
+    const void* pCode, SIZE_T Len,
+    const D3D11_SO_DECLARATION_ENTRY* pSODecl, UINT NumEntries,
+    const UINT* pStrides, UINT NumStrides,
+    UINT RasterizedStream,
+    ID3D11ClassLinkage* pLink, ID3D11GeometryShader** ppGS)
+{
+    auto e = (PFN_ID3D11Device_CreateGeometryShaderWithStreamOutput)pHook->getOriginalAddress();
+    HRESULT hr = e(pDev, pCode, Len, pSODecl, NumEntries, pStrides, NumStrides,
+                   RasterizedStream, pLink, ppGS);
+    if (SUCCEEDED(hr) && g_pIntruder->getSettings()->saveShaders) {
+        EnterCriticalSection(&cs);
+        saveShader(EShaderExt::GEOMETRY, pCode, Len, *ppGS, &shadersDb, &d3dCompileHelper);
+        LeaveCriticalSection(&cs);
+    }
+    return hr;
+}
+HRESULT __stdcall KRipper11::_ID3D11Device_CreateGeometryShaderWithStreamOutput(
+    ID3D11Device* pDev, const void* pCode, SIZE_T Len,
+    const D3D11_SO_DECLARATION_ENTRY* pSODecl, UINT NumEntries,
+    const UINT* pStrides, UINT NumStrides, UINT RasterizedStream,
+    ID3D11ClassLinkage* pLink, ID3D11GeometryShader** ppGS)
+{
+    return this_->helper_ID3D11Device_CreateGeometryShaderWithStreamOutput(
+        this_->pHook_ID3D11Device_CreateGeometryShaderWithStreamOutput,
+        pDev, pCode, Len, pSODecl, NumEntries, pStrides, NumStrides,
+        RasterizedStream, pLink, ppGS);
+}
+ 
+// ---- ID3D11Device_GetImmediateContext -------------------------------------
+ 
+void KRipper11::helper_ID3D11Device_GetImmediateContext(
+    KHook* pHook, ID3D11Device* pDev, ID3D11DeviceContext** ppCtx)
+{
+    auto e = (PFN_ID3D11Device_GetImmediateContext)pHook->getOriginalAddress();
+    e(pDev, ppCtx);
+    hookDeviceContext(ppCtx);
+}
+void __stdcall KRipper11::_ID3D11Device_GetImmediateContext(
+    ID3D11Device* pDev, ID3D11DeviceContext** ppCtx)
+{ this_->helper_ID3D11Device_GetImmediateContext(this_->pHook_ID3D11Device_GetImmediateContext, pDev, ppCtx); }
+ 
+// ---- ClearRenderTargetView (re-hooks vtable after driver patches it) -------
+ 
+void KRipper11::helper_ID3D11DeviceContext_ClearRenderTargetView(
+    KHook* pHook,
+    ID3D11DeviceContext* pCtx,
+    ID3D11RenderTargetView* pRTV,
+    const FLOAT color[4])
+{
+    auto e = (PFN_ID3D11DeviceContext_ClearRenderTargetView)pHook->getOriginalAddress();
+    e(pCtx, pRTV, color);
+    hookDeviceContext(&pCtx);
+}
+ 
+// ---- Device / immediate-context database ----------------------------------
+ 
+void KRipper11::saveDeviceAndImmContextInDb(ID3D11Device* dev, ID3D11DeviceContext* ctx)
+{
+    if (!dev || !ctx) return;
+    auto it = deviceToImmContext.find(dev);
+    if (it != deviceToImmContext.end())
+        it->second = ctx;
+    else
+        deviceToImmContext.insert({dev, ctx});
+}
+ 
+ID3D11DeviceContext* KRipper11::getImmCtxFromDb(ID3D11Device* dev)
+{
+    auto it = deviceToImmContext.find(dev);
+    return (it != deviceToImmContext.end()) ? it->second : nullptr;
+}
+ 
+ID3D11DeviceContext* KRipper11::getImmCtx(ID3D11DeviceContext* pCtx)
+{
+    if (pCtx->GetType() == D3D11_DEVICE_CONTEXT_DEFERRED) {
+        TDXRef<ID3D11Device> dev;
+        pCtx->GetDevice(&dev);
+        return getImmCtxFromDb(dev.get());
+    }
+    return pCtx;
+}
+ 
+void KRipper11::logReasonIfDeviceRemoved(HRESULT hr, ID3D11Device* dev)
+{
+    if (hr == DXGI_ERROR_DEVICE_REMOVED)
+        g_pLog->logError("Device removed reason: 0x%08X\n", dev->GetDeviceRemovedReason());
+}
+ 
+// ---- EPrimitiveTopology conversion ----------------------------------------
+ 
+EPrimitiveTopology::Type
+KRipper11::D3D11_PRIMITIVE_TOPOLOGY_to_EPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY t)
+{
+    switch (t) {
+    case D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST:  return EPrimitiveTopology::TRIANGLELIST;
+    case D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP: return EPrimitiveTopology::TRIANGLESTRIP;
+    case D3D_PRIMITIVE_TOPOLOGY_UNDEFINED:       return EPrimitiveTopology::UNDEFINED;
+    case D3D_PRIMITIVE_TOPOLOGY_POINTLIST:       return EPrimitiveTopology::POINTLIST;
+    case D3D_PRIMITIVE_TOPOLOGY_LINESTRIP:       return EPrimitiveTopology::LINESTRIP;
+    case D3D_PRIMITIVE_TOPOLOGY_LINELIST:        return EPrimitiveTopology::LINELIST;
+    default:                                     return EPrimitiveTopology::UNKNOWNPRIMITIVETYPE;
+    }
+}
+ 
+EPrimitiveTopology::Type KRipper11::getPrimitiveTopology(ID3D11DeviceContext* pCtx)
+{
+    D3D11_PRIMITIVE_TOPOLOGY t = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
+    pCtx->IAGetPrimitiveTopology(&t);
+    return D3D11_PRIMITIVE_TOPOLOGY_to_EPrimitiveTopology(t);
+}
+ 
+// ---- Input-layout lookup --------------------------------------------------
+ 
+HRESULT KRipper11::getInputLayout(ID3D11DeviceContext* pCtx,
+                                  KD3D11VertexDeclaration& decl)
+{
+    TDXRef<ID3D11InputLayout> pLayout;
+    pCtx->IAGetInputLayout(&pLayout);
+ 
+    auto it = InputLayoutMap.find(pLayout.get());
+    if (it == InputLayoutMap.end()) {
+        g_pLog->logError("InputLayout not found: 0x%p\n", pLayout.get());
+        return E_INPUT_LAYOUT_NOT_FOUND;
+    }
+    decl = it->second;
+    return S_OK;
+}
+ 
+// ---- DXGI_FORMAT ? EInputType ---------------------------------------------
+ 
+EInputType::Type KRipper11::DXGI_FORMAT_to_EInputType(DXGI_FORMAT f)
+{
+    switch (f) {
+    case DXGI_FORMAT_R32G32B32A32_TYPELESS: return EInputType::R32G32B32A32_TYPELESS;
+    case DXGI_FORMAT_R32G32B32A32_FLOAT:    return EInputType::R32G32B32A32_FLOAT;
+    case DXGI_FORMAT_R32G32B32A32_UINT:     return EInputType::R32G32B32A32_UINT;
+    case DXGI_FORMAT_R32G32B32A32_SINT:     return EInputType::R32G32B32A32_SINT;
+    case DXGI_FORMAT_R32G32B32_TYPELESS:    return EInputType::R32G32B32_TYPELESS;
+    case DXGI_FORMAT_R32G32B32_FLOAT:       return EInputType::R32G32B32_FLOAT;
+    case DXGI_FORMAT_R32G32B32_UINT:        return EInputType::R32G32B32_UINT;
+    case DXGI_FORMAT_R32G32B32_SINT:        return EInputType::R32G32B32_SINT;
+    case DXGI_FORMAT_R16G16B16A16_TYPELESS: return EInputType::R16G16B16A16_TYPELESS;
+    case DXGI_FORMAT_R16G16B16A16_FLOAT:    return EInputType::R16G16B16A16_FLOAT;
+    case DXGI_FORMAT_R16G16B16A16_UNORM:    return EInputType::R16G16B16A16_UNORM;
+    case DXGI_FORMAT_R16G16B16A16_UINT:     return EInputType::R16G16B16A16_UINT;
+    case DXGI_FORMAT_R16G16B16A16_SNORM:    return EInputType::R16G16B16A16_SNORM;
+    case DXGI_FORMAT_R16G16B16A16_SINT:     return EInputType::R16G16B16A16_SINT;
+    case DXGI_FORMAT_R32G32_TYPELESS:       return EInputType::R32G32_TYPELESS;
+    case DXGI_FORMAT_R32G32_FLOAT:          return EInputType::R32G32_FLOAT;
+    case DXGI_FORMAT_R32G32_UINT:           return EInputType::R32G32_UINT;
+    case DXGI_FORMAT_R32G32_SINT:           return EInputType::R32G32_SINT;
+    case DXGI_FORMAT_R8G8B8A8_TYPELESS:     return EInputType::R8G8B8A8_TYPELESS;
+    case DXGI_FORMAT_R8G8B8A8_UNORM:        return EInputType::R8G8B8A8_UNORM;
+    case DXGI_FORMAT_R8G8B8A8_UINT:         return EInputType::R8G8B8A8_UINT;
+    case DXGI_FORMAT_R8G8B8A8_SNORM:        return EInputType::R8G8B8A8_SNORM;
+    case DXGI_FORMAT_R8G8B8A8_SINT:         return EInputType::R8G8B8A8_SINT;
+    case DXGI_FORMAT_R16G16_TYPELESS:       return EInputType::R16G16_TYPELESS;
+    case DXGI_FORMAT_R16G16_FLOAT:          return EInputType::R16G16_FLOAT;
+    case DXGI_FORMAT_R16G16_UNORM:          return EInputType::R16G16_UNORM;
+    case DXGI_FORMAT_R16G16_UINT:           return EInputType::R16G16_UINT;
+    case DXGI_FORMAT_R16G16_SNORM:          return EInputType::R16G16_SNORM;
+    case DXGI_FORMAT_R16G16_SINT:           return EInputType::R16G16_SINT;
+    case DXGI_FORMAT_R32_TYPELESS:          return EInputType::R32_TYPELESS;
+    case DXGI_FORMAT_R32_FLOAT:             return EInputType::R32_FLOAT;
+    case DXGI_FORMAT_R32_UINT:              return EInputType::R32_UINT;
+    case DXGI_FORMAT_R32_SINT:              return EInputType::R32_SINT;
+    case DXGI_FORMAT_R8G8_TYPELESS:         return EInputType::R8G8_TYPELESS;
+    case DXGI_FORMAT_R8G8_UNORM:            return EInputType::R8G8_UNORM;
+    case DXGI_FORMAT_R8G8_UINT:             return EInputType::R8G8_UINT;
+    case DXGI_FORMAT_R8G8_SNORM:            return EInputType::R8G8_SNORM;
+    case DXGI_FORMAT_R8G8_SINT:             return EInputType::R8G8_SINT;
+    case DXGI_FORMAT_R16_TYPELESS:          return EInputType::R16_TYPELESS;
+    case DXGI_FORMAT_R16_FLOAT:             return EInputType::R16_FLOAT;
+    case DXGI_FORMAT_R16_UNORM:             return EInputType::R16_UNORM;
+    case DXGI_FORMAT_R16_UINT:              return EInputType::R16_UINT;
+    case DXGI_FORMAT_R16_SNORM:             return EInputType::R16_SNORM;
+    case DXGI_FORMAT_R16_SINT:              return EInputType::R16_SINT;
+    case DXGI_FORMAT_R8_TYPELESS:           return EInputType::R8_TYPELESS;
+    case DXGI_FORMAT_R8_UNORM:              return EInputType::R8_UNORM;
+    case DXGI_FORMAT_R8_UINT:               return EInputType::R8_UINT;
+    case DXGI_FORMAT_R8_SNORM:              return EInputType::R8_SNORM;
+    case DXGI_FORMAT_R8_SINT:               return EInputType::R8_SINT;
+    case DXGI_FORMAT_R10G10B10A2_UNORM:     return EInputType::R10G10B10A2_UNORM;
+    case DXGI_FORMAT_B8G8R8A8_UNORM:        return EInputType::B8G8R8A8_UNORM;
+    default:                                return EInputType::UNKNOWNINPUTTYPE;
+    }
+}
+ 
+// ---- getVertexDeclarations ------------------------------------------------
+ 
+HRESULT KRipper11::getVertexDeclarations(
+    ID3D11DeviceContext* pCtx,
+    KInputVertexDeclaration* inputDecl,
+    KOutputVertexDeclaration* outputDecl)
+{
+    KD3D11VertexDeclaration d3dDecl;
+    HRESULT hr = getInputLayout(pCtx, d3dDecl);
+    if (FAILED(hr)) {
+        g_pLog->logError("Input layout get failed: 0x%08X\n", hr);
+        return hr;
+    }
+ 
+    for (size_t i = 0; i < d3dDecl.size(); i++) {
+        const KD3D11InputElement& src = d3dDecl[i];
+        dump_KD3D11InputElement2Log(src);
+ 
+        EInputType::Type itype = DXGI_FORMAT_to_EInputType(src.Format);
+        if (itype == EInputType::UNKNOWNINPUTTYPE) {
+            g_pLog->logError("Unknown vertex type: %s\n", DXGI_FORMAT_2_Str(src.Format));
+            return E_INPUT_TYPE_ERR;
+        }
+ 
+        KInputVertexElement elem;
+        elem.Type          = itype;
+        elem.Stream        = src.InputSlot;
+        elem.SemanticIndex = src.SemanticIndex;
+        elem.Size          = getInputTypeSize(elem.Type);
+        elem.Offset        = src.AlignedByteOffset;
+        strCopy(elem.UsageSemantic, SEMANTIC_LEN, src.SemanticName);
+        inputDecl->Decl.push_back(elem);
+    }
+ 
+    // Collect unique stream numbers
+    std::vector<DWORD> uniqueStreams;
+    for (size_t i = 0; i < inputDecl->Decl.size(); i++) {
+        DWORD s = inputDecl->Decl[i].Stream;
+        bool found = false;
+        for (DWORD u : uniqueStreams) if (u == s) { found = true; break; }
+        if (!found) uniqueStreams.push_back(s);
+    }
+ 
+    // Fix up D3D11_APPEND_ALIGNED_ELEMENT offsets (-1)
+    for (DWORD stream : uniqueStreams) {
+        DWORD off = 0;
+        for (auto& e : inputDecl->Decl) {
+            if (e.Stream != stream) continue;
+            if (e.Offset == D3D11_APPEND_ALIGNED_ELEMENT)
+                e.Offset = off;
+            else
+                off = e.Offset;
+            off += e.Size;
+        }
+    }
+ 
+    if (SUCCEEDED(hr))
+        hr = createKOutputVertexDeclaration(*inputDecl, *outputDecl);
+    return hr;
+}
+ 
+// ---- copyBuffer -----------------------------------------------------------
+ 
+HRESULT KRipper11::copyBuffer(ID3D11DeviceContext* pCtx,
+                              ID3D11Buffer* pSrc, ID3D11Buffer** ppDst)
+{
+    *ppDst = nullptr;
+    D3D11_BUFFER_DESC src_desc, dst_desc;
+    pSrc->GetDesc(&src_desc);
+    dst_desc = src_desc;
+    dst_desc.Usage          = D3D11_USAGE_STAGING;
+    dst_desc.BindFlags      = 0;
+    dst_desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+    dst_desc.MiscFlags      = 0;
+ 
+    TDXRef<ID3D11Device> dev;
+    pCtx->GetDevice(&dev);
+    HRESULT hr = dev->CreateBuffer(&dst_desc, nullptr, ppDst);
+    if (FAILED(hr)) return hr;
+    pCtx->CopyResource(*ppDst, pSrc);
+    return S_OK;
+}
+ 
+// ---- Shader save helper ---------------------------------------------------
+ 
+void KRipper11::saveMeshShaders(ID3D11DeviceContext* pCtx, KMeshShaders* out)
+{
+    std::string name, fullPath;
+ 
+    TDXRef<ID3D11VertexShader> vs;
+    pCtx->VSGetShader(&vs, nullptr, nullptr);
+    if (getShaderFromDb(vs.get(), &shadersDb, &name, &fullPath)) {
+        out->shaders.push_back(name);
+        g_pLog->log("Vertex shader: %s\n", fullPath.c_str());
+    }
+    TDXRef<ID3D11PixelShader> ps;
+    pCtx->PSGetShader(&ps, nullptr, nullptr);
+    if (getShaderFromDb(ps.get(), &shadersDb, &name, &fullPath)) {
+        out->shaders.push_back(name);
+        g_pLog->log("Pixel  shader: %s\n", fullPath.c_str());
+    }
+    TDXRef<ID3D11GeometryShader> gs;
+    pCtx->GSGetShader(&gs, nullptr, nullptr);
+    if (getShaderFromDb(gs.get(), &shadersDb, &name, &fullPath)) {
+        out->shaders.push_back(name);
+        g_pLog->log("Geometry shader: %s\n", fullPath.c_str());
+    }
+}
+ 
+// =============================================================================
+//  IMPLEMENTATION ï¿½ drawindexed11.cpp
+//  (Contains dumpVertexBuffer, dumpIndexBuffer, ripDrawIndexed,
+//   helper_DrawIndexed, and the D3D11_DEVICE_CONTEXT_TYPE helper)
+// =============================================================================
+ 
+const char* KRipper11::D3D11_DEVICE_CONTEXT_TYPE_To_String(D3D11_DEVICE_CONTEXT_TYPE x)
+{
+    switch (x) {
+    case D3D11_DEVICE_CONTEXT_IMMEDIATE: return "D3D11_DEVICE_CONTEXT_IMMEDIATE";
+    case D3D11_DEVICE_CONTEXT_DEFERRED:  return "D3D11_DEVICE_CONTEXT_DEFERRED";
+    default:                             return "UNKNOWN";
+    }
+}
+ 
+HRESULT KRipper11::dumpVertexBuffer(
+    ID3D11DeviceContext* pCtx,
+    const KInputVertexDeclaration&  inputDecl,
+    const KOutputVertexDeclaration& outputDecl,
+    INT BaseVertexIndex,
+    const OptimizedIndexToMeshIndex& optIdx,
+    KVERTICES* pVerts)
+{
+    HRESULT hr = E_UNK_ERR;
+    ID3D11DeviceContext* pImm = getImmCtx(pCtx);
+    bool vbOk = false;
+ 
+    for (size_t i = 0; i < inputDecl.Decl.size(); i++) {
+        const KInputVertexElement& inElem = inputDecl.Decl[i];
+ 
+        TDXRef<ID3D11Buffer> pVB;
+        UINT stride = 0, offset = 0;
+        pCtx->IAGetVertexBuffers(inElem.Stream, 1, &pVB, &stride, &offset);
+ 
+        g_pLog->log("VertexBuffer: 0x%p Stride %d Offset %d\n",
+                    pVB.get(), stride, offset);
+ 
+        if (!pVB.get()) {
+            g_pLog->logWarning("VertexBuffer == NULL. Try next stream\n");
+            continue;
+        }
+ 
+        TDXRef<ID3D11Buffer> pDstVB;
+        hr = copyBuffer(pImm, pVB.get(), &pDstVB);
+        if (FAILED(hr)) { g_pLog->logError("VB copy. HRESULT: 0x%08X\n", hr); break; }
+ 
+        D3D11_MAPPED_SUBRESOURCE mapped = {};
+        hr = pImm->Map(pDstVB.get(), 0, D3D11_MAP_READ, 0, &mapped);
+        if (FAILED(hr)) { g_pLog->logError("Map(VB). HRESULT: 0x%08X\n", hr); break; }
+ 
+        const KOutputVertexElement& outElem = outputDecl.Decl[i];
+        BYTE* pData = (BYTE*)mapped.pData;
+ 
+        // Pointer arithmetic: BaseVertexIndex * stride + offset
+        // Cast carefully on x64 (original code comment preserved)
+        dumpVertSemantic(
+            inElem.Type,
+            pData + (BaseVertexIndex * (INT)stride + (INT)offset),
+            inElem.Offset, stride,
+            pVerts->getRawData(), outElem.Offset, pVerts->getVertexSize(),
+            optIdx);
+ 
+        pImm->Unmap(pDstVB.get(), 0);
+        vbOk = true;
+    }
+ 
+    if (vbOk) hr = S_OK;
+    return hr;
+}
+ 
+HRESULT KRipper11::dumpIndexBuffer(
+    ID3D11DeviceContext* pCtx,
+    EPrimitiveTopology::Type primTopo,
+    UINT IndexCount, UINT StartIndexLocation, INT BaseVertexLocation,
+    KFACES* pFaces, OptimizedIndexToMeshIndex* optIdx)
+{
+    HRESULT hr = E_UNK_ERR;
+    do {
+        ID3D11DeviceContext* pImm = getImmCtx(pCtx);
+ 
+        TDXRef<ID3D11Buffer> pIB;
+        DXGI_FORMAT ibFmt = DXGI_FORMAT_UNKNOWN;
+        UINT ibOffset = 0;
+        pCtx->IAGetIndexBuffer(&pIB, &ibFmt, &ibOffset);
+ 
+        g_pLog->log("IndexBuffer: 0x%p Format: %s Offset: 0x%08X\n",
+                    pIB.get(), DXGI_FORMAT_2_Str(ibFmt), ibOffset);
+ 
+        if (!pIB.get()) { g_pLog->logError("IndexBuffer == NULL\n"); break; }
+ 
+        TDXRef<ID3D11Buffer> pDstIB;
+        hr = copyBuffer(pImm, pIB.get(), &pDstIB);
+        if (FAILED(hr)) { g_pLog->logError("IB copy. HRESULT: 0x%08X\n", hr); break; }
+ 
+        D3D11_MAPPED_SUBRESOURCE mapped = {};
+        hr = pImm->Map(pDstIB.get(), 0, D3D11_MAP_READ, 0, &mapped);
+        if (FAILED(hr)) { g_pLog->logError("Map(IB). HRESULT: 0x%08X\n", hr); break; }
+ 
+        BYTE* pRaw = (BYTE*)mapped.pData + ibOffset;
+ 
+        if (ibFmt == DXGI_FORMAT_R16_UINT) {
+            const WORD* idx = (WORD*)pRaw + StartIndexLocation;
+            processIndexes16_IndexCount(idx, primTopo, IndexCount, pFaces, optIdx);
+            hr = S_OK;
+        } else if (ibFmt == DXGI_FORMAT_R32_UINT) {
+            const DWORD* idx = (DWORD*)pRaw + StartIndexLocation;
+            processIndexes32_IndexCount(idx, primTopo, IndexCount, pFaces, optIdx);
+            hr = S_OK;
+        } else {
+            g_pLog->logError("Unknown IB format: %s\n", DXGI_FORMAT_2_Str(ibFmt));
+            hr = E_UNK_INDEX_FORMAT_ERR;
+        }
+ 
+        pImm->Unmap(pDstIB.get(), 0);
+    } while (FALSE);
+    return hr;
+}
+ 
+void KRipper11::ripDrawIndexed(ID3D11DeviceContext* pCtx,
+                               UINT IndexCount, UINT StartIndexLocation,
+                               INT BaseVertexLocation)
+{
+    do {
+        g_pLog->log("DevCtxType: 0x%p %s\n", pCtx,
+                    D3D11_DEVICE_CONTEXT_TYPE_To_String(pCtx->GetType()));
+ 
+        ID3D11DeviceContext* pImm = getImmCtx(pCtx);
+        if (!pImm) { g_pLog->logError("Immediate context not found\n\n"); break; }
+ 
+        HRESULT hr;
+        KInputVertexDeclaration  inputDecl;
+        KOutputVertexDeclaration outputDecl;
+ 
+        EPrimitiveTopology::Type topo = getPrimitiveTopology(pCtx);
+        g_pLog->log("Primitive topology: %s\n", primitiveTopology2Str(topo));
+        if (!isPrimitiveTopologySupported(topo)) {
+            g_pLog->logError("Primitive topology not supported\n\n"); break;
+        }
+ 
+        hr = getVertexDeclarations(pCtx, &inputDecl, &outputDecl);
+        if (FAILED(hr)) { g_pLog->logError("Vertex decl. HRESULT: 0x%08X\n\n", hr); break; }
+        dumpInputVertexDeclaration2Log(inputDecl);
+        dumpOutputVertexDeclaration2Log(outputDecl);
+ 
+        KFACES faces;
+        OptimizedIndexToMeshIndex optIdx;
+        hr = dumpIndexBuffer(pCtx, topo, IndexCount, StartIndexLocation,
+                             BaseVertexLocation, &faces, &optIdx);
+        if (FAILED(hr)) { g_pLog->log("IB dump. HRESULT: 0x%08X\n\n", hr); break; }
+ 
+        DWORD vertSize = outputDecl.getVertexSize();
+        DWORD vertCnt  = (DWORD)optIdx.size();
+        g_pLog->log("PrimitivesCount=%d VertexCnt=%d OutVertexSize=%d\n",
+                    faces.getPrimitivesCount(), vertCnt, vertSize);
+ 
+        KVERTICES vertices(vertCnt, vertSize);
+        hr = dumpVertexBuffer(pCtx, inputDecl, outputDecl,
+                              BaseVertexLocation, optIdx, &vertices);
+        if (FAILED(hr)) { g_pLog->logError("VB dump. HRESULT: 0x%08X\n\n", hr); break; }
+ 
+        KMeshTextures meshTex;
+        saveMeshTextures(pCtx, &meshTex);
+ 
+        KMeshShaders meshShaders;
+        if (g_pIntruder->getSettings()->saveShaders)
+            saveMeshShaders(pCtx, &meshShaders);
+ 
+        std::wstring path  = g_pIntruder->getFrameMeshSavePath();
+        std::string  pathA = wideStringToMultiByte(path.c_str());
+        hr = saveRipFile(path.c_str(), inputDecl, outputDecl,
+                         meshTex, meshShaders, faces, vertices);
+        if (SUCCEEDED(hr))
+            g_pLog->log("Mesh saved: %s\n\n\n", pathA.c_str());
+        else
+            g_pLog->logError("Mesh save error: %s\n\n\n", pathA.c_str());
+ 
+        g_pIntruder->incFrameMeshIdx();
+    } while (FALSE);
+}
+ 
+void KRipper11::helper_ID3D11DeviceContext_DrawIndexed(
+    KHook* pHook,
+    ID3D11DeviceContext* pCtx,
+    UINT IndexCount, UINT StartIndexLocation, INT BaseVertexLocation)
+{
+    auto e = (PFN_ID3D11DeviceContext_DrawIndexed)pHook->getOriginalAddress();
+ 
+    if (!drawIndexedEnabled) {
+        e(pCtx, IndexCount, StartIndexLocation, BaseVertexLocation);
+        return;
+    }
+ 
+    g_pIntruder->keyHandler(this);
+    DWORD ripEnabled = g_pIntruder->isMeshRipEnabled();
+    DWORD minIdx     = g_pIntruder->getSettings()->dwMinIndicies;
+ 
+    EnterCriticalSection(&cs);
+    if (ripEnabled) {
+        if (IndexCount >= minIdx) {
+            g_pLog->log("DrawIndexed(0x%p, %d, %d, %d)\n",
+                        pCtx, IndexCount, StartIndexLocation, BaseVertexLocation);
+            EXCEPTION_RECORD excRec; CONTEXT excCtx;
+            __try {
+                ripDrawIndexed(pCtx, IndexCount, StartIndexLocation, BaseVertexLocation);
+            }
+            __except(
+                excRec = *(GetExceptionInformation())->ExceptionRecord,
+                excCtx = *(GetExceptionInformation())->ContextRecord,
+                crashDumpWrite(g_pIntruder->getCrashDumpFile(), GetExceptionInformation()),
+                EXCEPTION_EXECUTE_HANDLER)
+            {
+                g_pLog->logError("DrawIndexed() exception. Crash dump: %s\n\n\n",
+                                 g_pIntruder->getCrashDumpFileUtf8());
+                ExitProcess(0);
+            }
+        } else {
+            g_pLog->logWarning("DrawIndexed() rip skipped\n");
+        }
+    }
+    LeaveCriticalSection(&cs);
+    e(pCtx, IndexCount, StartIndexLocation, BaseVertexLocation);
+}
+ 
+// =============================================================================
+//  IMPLEMENTATION ï¿½ draw11.cpp  (non-indexed draw)
+// =============================================================================
+ 
+void KRipper11::ripDraw(ID3D11DeviceContext* pCtx,
+                        UINT VertexCount, UINT StartVertexLocation)
+{
+    do {
+        HRESULT hr;
+        KInputVertexDeclaration  inputDecl;
+        KOutputVertexDeclaration outputDecl;
+ 
+        EPrimitiveTopology::Type topo = getPrimitiveTopology(pCtx);
+        g_pLog->log("Primitive topology: %s\n", primitiveTopology2Str(topo));
+        if (!isPrimitiveTopologySupported(topo)) {
+            g_pLog->logError("Primitive topology not supported\n\n"); break;
+        }
+ 
+        hr = getVertexDeclarations(pCtx, &inputDecl, &outputDecl);
+        if (FAILED(hr)) { g_pLog->logError("Vertex decl. HRESULT: 0x%08X\n\n", hr); break; }
+        dumpInputVertexDeclaration2Log(inputDecl);
+        dumpOutputVertexDeclaration2Log(outputDecl);
+ 
+        KFACES faces;
+        OptimizedIndexToMeshIndex optIdx;
+        generateIndexes_VertexCount(topo, VertexCount, &faces, &optIdx);
+ 
+        DWORD vertSize = outputDecl.getVertexSize();
+        DWORD vertCnt  = (DWORD)optIdx.size();
+        g_pLog->log("PrimitivesCount=%d VertexCnt=%d OutVertexSize=%d\n",
+                    faces.getPrimitivesCount(), vertCnt, vertSize);
+ 
+        KVERTICES vertices(vertCnt, vertSize);
+        hr = dumpVertexBuffer(pCtx, inputDecl, outputDecl,
+                              StartVertexLocation, optIdx, &vertices);
+        if (FAILED(hr)) { g_pLog->logError("VB dump. HRESULT: 0x%08X\n\n", hr); break; }
+ 
+        KMeshTextures meshTex;
+        saveMeshTextures(pCtx, &meshTex);
+ 
+        KMeshShaders meshShaders;
+        if (g_pIntruder->getSettings()->saveShaders)
+            saveMeshShaders(pCtx, &meshShaders);
+ 
+        std::wstring path  = g_pIntruder->getFrameMeshSavePath();
+        std::string  pathA = wideStringToMultiByte(path.c_str());
+        hr = saveRipFile(path.c_str(), inputDecl, outputDecl,
+                         meshTex, meshShaders, faces, vertices);
+        if (SUCCEEDED(hr))
+            g_pLog->log("Mesh saved: %s\n\n\n", pathA.c_str());
+        else
+            g_pLog->logError("Mesh save error: %s\n\n\n", pathA.c_str());
+ 
+        g_pIntruder->incFrameMeshIdx();
+    } while (FALSE);
+}
+ 
+void KRipper11::helper_ID3D11DeviceContext_Draw(
+    KHook* pHook,
+    ID3D11DeviceContext* pCtx,
+    UINT VertexCount, UINT StartVertexLocation)
+{
+    auto e = (PFN_ID3D11DeviceContext_Draw)pHook->getOriginalAddress();
+    g_pIntruder->keyHandler(this);
+ 
+    DWORD ripEnabled = g_pIntruder->isMeshRipEnabled();
+    DWORD minVert    = g_pIntruder->getSettings()->dwMinVertexCount;
+ 
+    EnterCriticalSection(&cs);
+    if (ripEnabled) {
+        if (VertexCount >= minVert) {
+            g_pLog->log("Draw(0x%p, %d, %d)\n", pCtx, VertexCount, StartVertexLocation);
+            __try { ripDraw(pCtx, VertexCount, StartVertexLocation); }
+            __except(EXCEPTION_EXECUTE_HANDLER)
+            { g_pLog->logError("Draw() exception\n\n\n"); }
+        } else {
+            g_pLog->logWarning("Draw() rip skipped\n");
+        }
+    }
+    LeaveCriticalSection(&cs);
+    e(pCtx, VertexCount, StartVertexLocation);
+}
+ 
+// =============================================================================
+//  IMPLEMENTATION ï¿½ drawauto11.cpp
+// =============================================================================
+ 
+void KRipper11::helper_ID3D11DeviceContext_DrawAuto(
+    KHook* pHook, ID3D11DeviceContext* pCtx)
+{
+    auto e = (PFN_ID3D11DeviceContext_DrawAuto)pHook->getOriginalAddress();
+    g_pIntruder->keyHandler(this);
+ 
+    EnterCriticalSection(&cs);
+    if (g_pIntruder->isMeshRipEnabled()) {
+        g_pLog->log("DrawAuto(0x%p)\n", pCtx);
+        __try { g_pLog->logError("DrawAuto: Not realized\n\n"); }
+        __except(EXCEPTION_EXECUTE_HANDLER)
+        { g_pLog->logError("DrawAuto() exception\n\n\n"); }
+    }
+    LeaveCriticalSection(&cs);
+    e(pCtx);
+}
+ 
+// =============================================================================
+//  IMPLEMENTATION ï¿½ drawindexedinstanced11.cpp
+// =============================================================================
+ 
+void KRipper11::ripDrawIndexedInstanced(
+    ID3D11DeviceContext* pCtx,
+    UINT IndexCountPerInstance, UINT /*InstanceCount*/,
+    UINT StartIndexLocation, INT BaseVertexLocation,
+    UINT StartInstanceLocation)
+{
+    // Delegate to the indexed path; fold instance offset into base vertex
+    ripDrawIndexed(pCtx,
+                   IndexCountPerInstance,
+                   StartIndexLocation,
+                   BaseVertexLocation + (INT)StartInstanceLocation);
+}
+ 
+void KRipper11::helper_ID3D11DeviceContext_DrawIndexedInstanced(
+    KHook* pHook,
+    ID3D11DeviceContext* pCtx,
+    UINT IndexCountPerInstance, UINT InstanceCount,
+    UINT StartIndexLocation, INT BaseVertexLocation,
+    UINT StartInstanceLocation)
+{
+    auto e = (PFN_ID3D11DeviceContext_DrawIndexedInstanced)pHook->getOriginalAddress();
+    g_pIntruder->keyHandler(this);
+ 
+    DWORD ripEnabled = g_pIntruder->isMeshRipEnabled();
+    DWORD minIdx     = g_pIntruder->getSettings()->dwMinIndicies;
+ 
+    EnterCriticalSection(&cs);
+    if (ripEnabled) {
+        if (IndexCountPerInstance >= minIdx) {
+            g_pLog->log("DrawIndexedInstanced(0x%p, %d, %d, %d, %d, %d)\n",
+                        pCtx, IndexCountPerInstance, InstanceCount,
+                        StartIndexLocation, BaseVertexLocation, StartInstanceLocation);
+            __try {
+                ripDrawIndexedInstanced(pCtx, IndexCountPerInstance, InstanceCount,
+                                        StartIndexLocation, BaseVertexLocation,
+                                        StartInstanceLocation);
+            }
+            __except(EXCEPTION_EXECUTE_HANDLER)
+            { g_pLog->logError("DrawIndexedInstanced() exception\n\n\n"); }
+        } else {
+            g_pLog->logWarning("DrawIndexedInstanced() rip skipped\n");
+        }
+    }
+    LeaveCriticalSection(&cs);
+    e(pCtx, IndexCountPerInstance, InstanceCount,
+      StartIndexLocation, BaseVertexLocation, StartInstanceLocation);
+}
+ 
+// =============================================================================
+//  IMPLEMENTATION ï¿½ drawindexedinstancedindirect11.cpp
+// =============================================================================
+ 
+void KRipper11::ripDrawIndexedInstancedIndirect(
+    ID3D11DeviceContext* pCtx,
+    ID3D11Buffer* pArgsBuffer,
+    UINT AlignedByteOffsetForArgs)
+{
+    while (true) {
+        ID3D11DeviceContext* pImm = getImmCtx(pCtx);
+        if (!pImm) { g_pLog->logError("Immediate context not found\n\n"); break; }
+ 
+        TDXRef<ID3D11Buffer> pBuf;
+        HRESULT hr = copyBuffer(pCtx, pArgsBuffer, &pBuf);
+        if (FAILED(hr)) { g_pLog->logError("Args buffer copy. HRESULT: 0x%08X\n", hr); break; }
+ 
+        D3D11_MAPPED_SUBRESOURCE mapped = {};
+        hr = pImm->Map(pBuf.get(), 0, D3D11_MAP_READ, 0, &mapped);
+        if (FAILED(hr)) { g_pLog->logError("Map(args). HRESULT: 0x%08X\n", hr); break; }
+ 
+        BYTE* raw = (BYTE*)mapped.pData + AlignedByteOffsetForArgs;
+        D3D11_DRAW_INDEXED_INSTANCED_INDIRECT_ARGS d =
+            *(D3D11_DRAW_INDEXED_INSTANCED_INDIRECT_ARGS*)raw;
+        pImm->Unmap(pBuf.get(), 0);
+ 
+        g_pLog->log("IndirectArgs: IdxPerInst=%d InstCnt=%d StartIdx=%d BaseVtx=%d StartInst=%d\n",
+                    d.IndexCountPerInstance, d.InstanceCount,
+                    d.StartIndexLocation, d.BaseVertexLocation, d.StartInstanceLocation);
+ 
+        DWORD minIdx = g_pIntruder->getSettings()->dwMinIndicies;
+        if (d.IndexCountPerInstance > minIdx)
+            ripDrawIndexedInstanced(pCtx,
+                                    d.IndexCountPerInstance, d.InstanceCount,
+                                    d.StartIndexLocation, d.BaseVertexLocation,
+                                    d.StartInstanceLocation);
+        else
+            g_pLog->logWarning("DrawIndexedInstancedIndirect rip skipped\n");
+        break;
+    }
+}
+ 
+void KRipper11::helper_ID3D11DeviceContext_DrawIndexedInstancedIndirect(
+    KHook* pHook,
+    ID3D11DeviceContext* pCtx,
+    ID3D11Buffer* pArgsBuffer, UINT AlignedByteOffsetForArgs)
+{
+    auto e = (PFN_ID3D11DeviceContext_DrawIndexedInstancedIndirect)pHook->getOriginalAddress();
+    g_pIntruder->keyHandler(this);
+ 
+    EnterCriticalSection(&cs);
+    if (g_pIntruder->isMeshRipEnabled()) {
+        g_pLog->log("DrawIndexedInstancedIndirect(0x%p, 0x%p, %d)\n",
+                    pCtx, pArgsBuffer, AlignedByteOffsetForArgs);
+        __try {
+            ripDrawIndexedInstancedIndirect(pCtx, pArgsBuffer, AlignedByteOffsetForArgs);
+        }
+        __except(EXCEPTION_EXECUTE_HANDLER)
+        { g_pLog->logError("DrawIndexedInstancedIndirect() exception\n\n\n"); }
+    }
+    LeaveCriticalSection(&cs);
+    e(pCtx, pArgsBuffer, AlignedByteOffsetForArgs);
+}
+ 
+// =============================================================================
+//  IMPLEMENTATION ï¿½ drawinstanced11.cpp
+// =============================================================================
+ 
+void KRipper11::ripDrawInstanced(
+    ID3D11DeviceContext* pCtx,
+    UINT VertexCountPerInstance, UINT /*InstanceCount*/,
+    UINT StartVertexLocation, UINT StartInstanceLocation)
+{
+    ripDraw(pCtx,
+            VertexCountPerInstance,
+            StartInstanceLocation + StartVertexLocation);
+}
+ 
+void KRipper11::helper_ID3D11DeviceContext_DrawInstanced(
+    KHook* pHook,
+    ID3D11DeviceContext* pCtx,
+    UINT VertexCountPerInstance, UINT InstanceCount,
+    UINT StartVertexLocation, UINT StartInstanceLocation)
+{
+    auto e = (PFN_ID3D11DeviceContext_DrawInstanced)pHook->getOriginalAddress();
+    g_pIntruder->keyHandler(this);
+ 
+    DWORD ripEnabled = g_pIntruder->isMeshRipEnabled();
+    DWORD minVert    = g_pIntruder->getSettings()->dwMinVertexCount;
+ 
+    EnterCriticalSection(&cs);
+    if (ripEnabled) {
+        if (VertexCountPerInstance >= minVert) {
+            g_pLog->log("DrawInstanced(0x%p, %d, %d, %d, %d)\n",
+                        pCtx, VertexCountPerInstance, InstanceCount,
+                        StartVertexLocation, StartInstanceLocation);
+            __try {
+                ripDrawInstanced(pCtx, VertexCountPerInstance, InstanceCount,
+                                 StartVertexLocation, StartInstanceLocation);
+            }
+            __except(EXCEPTION_EXECUTE_HANDLER)
+            { g_pLog->logError("DrawInstanced() exception\n\n\n"); }
+        } else {
+            g_pLog->logWarning("DrawInstanced() rip skipped\n");
+        }
+    }
+    LeaveCriticalSection(&cs);
+    e(pCtx, VertexCountPerInstance, InstanceCount, StartVertexLocation, StartInstanceLocation);
+}
+ 
+// =============================================================================
+//  IMPLEMENTATION ï¿½ drawinstancedindirect11.cpp
+// =============================================================================
+ 
+void KRipper11::helper_ID3D11DeviceContext_DrawInstancedIndirect(
+    KHook* pHook,
+    ID3D11DeviceContext* pCtx,
+    ID3D11Buffer* pArgsBuffer, UINT AlignedByteOffsetForArgs)
+{
+    auto e = (PFN_ID3D11DeviceContext_DrawInstancedIndirect)pHook->getOriginalAddress();
+    g_pIntruder->keyHandler(this);
+ 
+    EnterCriticalSection(&cs);
+    if (g_pIntruder->isMeshRipEnabled()) {
+        g_pLog->log("DrawInstancedIndirect(0x%p, 0x%p, %d)\n",
+                    pCtx, pArgsBuffer, AlignedByteOffsetForArgs);
+        __try { g_pLog->logError("DrawInstancedIndirect: Not realized\n\n"); }
+        __except(EXCEPTION_EXECUTE_HANDLER)
+        { g_pLog->logError("DrawInstancedIndirect() exception\n\n\n"); }
+    }
+    LeaveCriticalSection(&cs);
+    e(pCtx, pArgsBuffer, AlignedByteOffsetForArgs);
+}
+ 
+// =============================================================================
+//  IMPLEMENTATION ï¿½ dump11.cpp  (string converters + resource dump)
+// =============================================================================
+ 
+void KRipper11::dumpShaderResourceView(ID3D11ShaderResourceView* pSRV)
+{
+    if (!pSRV) { g_pLog->logError("pTexture==NULL\n"); return; }
+ 
+    D3D11_SHADER_RESOURCE_VIEW_DESC desc;
+    pSRV->GetDesc(&desc);
+    g_pLog->log("---Resource format dump---\n");
+    g_pLog->log("Format        : %s\n", DXGI_FORMAT_2_Str(desc.Format));
+    g_pLog->log("View Dimension: %s\n", D3D11_SRV_DIMENSION_2_Str(desc.ViewDimension));
+    g_pLog->log("--------------------------\n");
+ 
+    TDXRef<ID3D11Resource> res;
+    pSRV->GetResource(&res);
+ 
+    switch (desc.ViewDimension) {
+    case D3D11_SRV_DIMENSION_TEXTURE1D:
+    case D3D11_SRV_DIMENSION_TEXTURE1DARRAY: {
+        ID3D11Texture1D* t = static_cast<ID3D11Texture1D*>(res.get());
+        D3D11_TEXTURE1D_DESC d; t->GetDesc(&d);
+        g_pLog->log("Width:%u MipLevels:%u ArraySize:%u Format:%s Usage:%s\n",
+                    d.Width, d.MipLevels, d.ArraySize,
+                    DXGI_FORMAT_2_Str(d.Format), D3D11_USAGE_2_Str(d.Usage));
+        break; }
+    case D3D11_SRV_DIMENSION_TEXTURE2D:
+    case D3D11_SRV_DIMENSION_TEXTURE2DARRAY:
+    case D3D11_SRV_DIMENSION_TEXTURE2DMS: {
+        ID3D11Texture2D* t = static_cast<ID3D11Texture2D*>(res.get());
+        D3D11_TEXTURE2D_DESC d; t->GetDesc(&d);
+        g_pLog->log("Width:%u Height:%u MipLevels:%u Format:%s Usage:%s\n",
+                    d.Width, d.Height, d.MipLevels,
+                    DXGI_FORMAT_2_Str(d.Format), D3D11_USAGE_2_Str(d.Usage));
+        break; }
+    case D3D11_SRV_DIMENSION_TEXTURE3D: {
+        ID3D11Texture3D* t = static_cast<ID3D11Texture3D*>(res.get());
+        D3D11_TEXTURE3D_DESC d; t->GetDesc(&d);
+        g_pLog->log("Width:%u Height:%u Depth:%u Format:%s Usage:%s\n",
+                    d.Width, d.Height, d.Depth,
+                    DXGI_FORMAT_2_Str(d.Format), D3D11_USAGE_2_Str(d.Usage));
+        break; }
+    default: break;
+    }
+    g_pLog->log("--------------------------\n");
+}
+ 
+void KRipper11::dumpID3D11BufferDesc(ID3D11Buffer* buf)
+{
+    D3D11_BUFFER_DESC d; buf->GetDesc(&d);
+    g_pLog->log("ByteWidth=%d Usage=0x%08X BindFlags=0x%08X "
+                "CPUFlags=0x%08X MiscFlags=0x%08X Stride=%d\n",
+                d.ByteWidth, d.Usage, d.BindFlags,
+                d.CPUAccessFlags, d.MiscFlags, d.StructureByteStride);
+}
+ 
+void KRipper11::dump_KD3D11InputElement2Log(const KD3D11InputElement& e)
+{
+    g_pLog->log("Element:%s Index:%d Format:%s InputSlot:%d "
+                "AlignOffs:%d SlotClass:%d StepRate:%d\n\n",
+                e.SemanticName, e.SemanticIndex,
+                DXGI_FORMAT_2_Str(e.Format), e.InputSlot,
+                e.AlignedByteOffset, (int)e.InputSlotClass,
+                e.InstanceDataStepRate);
+}
+ 
+// ---- String converters ----
+ 
+const char* KRipper11::D3D11_USAGE_2_Str(D3D11_USAGE t)
+{
+    switch(t){
+    case D3D11_USAGE_DEFAULT:   return "D3D11_USAGE_DEFAULT";
+    case D3D11_USAGE_IMMUTABLE: return "D3D11_USAGE_IMMUTABLE";
+    case D3D11_USAGE_DYNAMIC:   return "D3D11_USAGE_DYNAMIC";
+    case D3D11_USAGE_STAGING:   return "D3D11_USAGE_STAGING";
+    default:                    return "Unknown";
+    }
+}
+ 
+const char* KRipper11::D3D_FEATURE_LEVEL_2_Str(D3D_FEATURE_LEVEL fl)
+{
+    switch(fl){
+    case D3D_FEATURE_LEVEL_9_1:  return "D3D_FEATURE_LEVEL_9_1";
+    case D3D_FEATURE_LEVEL_9_2:  return "D3D_FEATURE_LEVEL_9_2";
+    case D3D_FEATURE_LEVEL_9_3:  return "D3D_FEATURE_LEVEL_9_3";
+    case D3D_FEATURE_LEVEL_10_0: return "D3D_FEATURE_LEVEL_10_0";
+    case D3D_FEATURE_LEVEL_10_1: return "D3D_FEATURE_LEVEL_10_1";
+    case D3D_FEATURE_LEVEL_11_0: return "D3D_FEATURE_LEVEL_11_0";
+    default:                     return "Unknown";
+    }
+}
+ 
+const char* KRipper11::D3D_DRIVER_TYPE_2_Str(D3D_DRIVER_TYPE dt)
+{
+    switch(dt){
+    case D3D_DRIVER_TYPE_UNKNOWN:   return "D3D_DRIVER_TYPE_UNKNOWN";
+    case D3D_DRIVER_TYPE_HARDWARE:  return "D3D_DRIVER_TYPE_HARDWARE";
+    case D3D_DRIVER_TYPE_REFERENCE: return "D3D_DRIVER_TYPE_REFERENCE";
+    case D3D_DRIVER_TYPE_NULL:      return "D3D_DRIVER_TYPE_NULL";
+    case D3D_DRIVER_TYPE_SOFTWARE:  return "D3D_DRIVER_TYPE_SOFTWARE";
+    case D3D_DRIVER_TYPE_WARP:      return "D3D_DRIVER_TYPE_WARP";
+    default:                        return "Unknown";
+    }
+}
+ 
+const char* KRipper11::D3D11_SRV_DIMENSION_2_Str(D3D11_SRV_DIMENSION d)
+{
+    switch(d){
+    case D3D11_SRV_DIMENSION_UNKNOWN:          return "D3D11_SRV_DIMENSION_UNKNOWN";
+    case D3D11_SRV_DIMENSION_BUFFER:           return "D3D11_SRV_DIMENSION_BUFFER";
+    case D3D11_SRV_DIMENSION_TEXTURE1D:        return "D3D11_SRV_DIMENSION_TEXTURE1D";
+    case D3D11_SRV_DIMENSION_TEXTURE1DARRAY:   return "D3D11_SRV_DIMENSION_TEXTURE1DARRAY";
+    case D3D11_SRV_DIMENSION_TEXTURE2D:        return "D3D11_SRV_DIMENSION_TEXTURE2D";
+    case D3D11_SRV_DIMENSION_TEXTURE2DARRAY:   return "D3D11_SRV_DIMENSION_TEXTURE2DARRAY";
+    case D3D11_SRV_DIMENSION_TEXTURE2DMS:      return "D3D11_SRV_DIMENSION_TEXTURE2DMS";
+    case D3D11_SRV_DIMENSION_TEXTURE2DMSARRAY: return "D3D11_SRV_DIMENSION_TEXTURE2DMSARRAY";
+    case D3D11_SRV_DIMENSION_TEXTURE3D:        return "D3D11_SRV_DIMENSION_TEXTURE3D";
+    case D3D11_SRV_DIMENSION_TEXTURECUBE:      return "D3D11_SRV_DIMENSION_TEXTURECUBE";
+    case D3D11_SRV_DIMENSION_TEXTURECUBEARRAY: return "D3D11_SRV_DIMENSION_TEXTURECUBEARRAY";
+    case D3D11_SRV_DIMENSION_BUFFEREX:         return "D3D11_SRV_DIMENSION_BUFFEREX";
+    default:                                   return "Unknown";
+    }
+}
+ 
+const char* KRipper11::D3D11_PRIMITIVE_TOPOLOGY_to_Str(D3D11_PRIMITIVE_TOPOLOGY t)
+{
+    switch(t){
+    case D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED:        return "UNDEFINED";
+    case D3D11_PRIMITIVE_TOPOLOGY_POINTLIST:        return "POINTLIST";
+    case D3D11_PRIMITIVE_TOPOLOGY_LINELIST:         return "LINELIST";
+    case D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP:        return "LINESTRIP";
+    case D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST:     return "TRIANGLELIST";
+    case D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP:    return "TRIANGLESTRIP";
+    case D3D11_PRIMITIVE_TOPOLOGY_LINELIST_ADJ:     return "LINELIST_ADJ";
+    case D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP_ADJ:    return "LINESTRIP_ADJ";
+    case D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST_ADJ: return "TRIANGLELIST_ADJ";
+    case D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP_ADJ:return "TRIANGLESTRIP_ADJ";
+    default:                                        return "PATCHLIST/Unknown";
+    }
+}
+ 
+const char* KRipper11::DXGI_FORMAT_2_Str(DXGI_FORMAT f)
+{
+    switch(f){
+    case DXGI_FORMAT_UNKNOWN:                     return "DXGI_FORMAT_UNKNOWN";
+    case DXGI_FORMAT_R32G32B32A32_TYPELESS:       return "DXGI_FORMAT_R32G32B32A32_TYPELESS";
+    case DXGI_FORMAT_R32G32B32A32_FLOAT:          return "DXGI_FORMAT_R32G32B32A32_FLOAT";
+    case DXGI_FORMAT_R32G32B32A32_UINT:           return "DXGI_FORMAT_R32G32B32A32_UINT";
+    case DXGI_FORMAT_R32G32B32A32_SINT:           return "DXGI_FORMAT_R32G32B32A32_SINT";
+    case DXGI_FORMAT_R32G32B32_TYPELESS:          return "DXGI_FORMAT_R32G32B32_TYPELESS";
+    case DXGI_FORMAT_R32G32B32_FLOAT:             return "DXGI_FORMAT_R32G32B32_FLOAT";
+    case DXGI_FORMAT_R32G32B32_UINT:              return "DXGI_FORMAT_R32G32B32_UINT";
+    case DXGI_FORMAT_R32G32B32_SINT:              return "DXGI_FORMAT_R32G32B32_SINT";
+    case DXGI_FORMAT_R16G16B16A16_TYPELESS:       return "DXGI_FORMAT_R16G16B16A16_TYPELESS";
+    case DXGI_FORMAT_R16G16B16A16_FLOAT:          return "DXGI_FORMAT_R16G16B16A16_FLOAT";
+    case DXGI_FORMAT_R16G16B16A16_UNORM:          return "DXGI_FORMAT_R16G16B16A16_UNORM";
+    case DXGI_FORMAT_R16G16B16A16_UINT:           return "DXGI_FORMAT_R16G16B16A16_UINT";
+    case DXGI_FORMAT_R16G16B16A16_SNORM:          return "DXGI_FORMAT_R16G16B16A16_SNORM";
+    case DXGI_FORMAT_R16G16B16A16_SINT:           return "DXGI_FORMAT_R16G16B16A16_SINT";
+    case DXGI_FORMAT_R32G32_TYPELESS:             return "DXGI_FORMAT_R32G32_TYPELESS";
+    case DXGI_FORMAT_R32G32_FLOAT:                return "DXGI_FORMAT_R32G32_FLOAT";
+    case DXGI_FORMAT_R32G32_UINT:                 return "DXGI_FORMAT_R32G32_UINT";
+    case DXGI_FORMAT_R32G32_SINT:                 return "DXGI_FORMAT_R32G32_SINT";
+    case DXGI_FORMAT_R32G8X24_TYPELESS:           return "DXGI_FORMAT_R32G8X24_TYPELESS";
+    case DXGI_FORMAT_D32_FLOAT_S8X24_UINT:        return "DXGI_FORMAT_D32_FLOAT_S8X24_UINT";
+    case DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS:    return "DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS";
+    case DXGI_FORMAT_X32_TYPELESS_G8X24_UINT:     return "DXGI_FORMAT_X32_TYPELESS_G8X24_UINT";
+    case DXGI_FORMAT_R10G10B10A2_TYPELESS:        return "DXGI_FORMAT_R10G10B10A2_TYPELESS";
+    case DXGI_FORMAT_R10G10B10A2_UNORM:           return "DXGI_FORMAT_R10G10B10A2_UNORM";
+    case DXGI_FORMAT_R10G10B10A2_UINT:            return "DXGI_FORMAT_R10G10B10A2_UINT";
+    case DXGI_FORMAT_R11G11B10_FLOAT:             return "DXGI_FORMAT_R11G11B10_FLOAT";
+    case DXGI_FORMAT_R8G8B8A8_TYPELESS:           return "DXGI_FORMAT_R8G8B8A8_TYPELESS";
+    case DXGI_FORMAT_R8G8B8A8_UNORM:              return "DXGI_FORMAT_R8G8B8A8_UNORM";
+    case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:         return "DXGI_FORMAT_R8G8B8A8_UNORM_SRGB";
+    case DXGI_FORMAT_R8G8B8A8_UINT:               return "DXGI_FORMAT_R8G8B8A8_UINT";
+    case DXGI_FORMAT_R8G8B8A8_SNORM:              return "DXGI_FORMAT_R8G8B8A8_SNORM";
+    case DXGI_FORMAT_R8G8B8A8_SINT:               return "DXGI_FORMAT_R8G8B8A8_SINT";
+    case DXGI_FORMAT_R16G16_TYPELESS:             return "DXGI_FORMAT_R16G16_TYPELESS";
+    case DXGI_FORMAT_R16G16_FLOAT:                return "DXGI_FORMAT_R16G16_FLOAT";
+    case DXGI_FORMAT_R16G16_UNORM:                return "DXGI_FORMAT_R16G16_UNORM";
+    case DXGI_FORMAT_R16G16_UINT:                 return "DXGI_FORMAT_R16G16_UINT";
+    case DXGI_FORMAT_R16G16_SNORM:                return "DXGI_FORMAT_R16G16_SNORM";
+    case DXGI_FORMAT_R16G16_SINT:                 return "DXGI_FORMAT_R16G16_SINT";
+    case DXGI_FORMAT_R32_TYPELESS:                return "DXGI_FORMAT_R32_TYPELESS";
+    case DXGI_FORMAT_D32_FLOAT:                   return "DXGI_FORMAT_D32_FLOAT";
+    case DXGI_FORMAT_R32_FLOAT:                   return "DXGI_FORMAT_R32_FLOAT";
+    case DXGI_FORMAT_R32_UINT:                    return "DXGI_FORMAT_R32_UINT";
+    case DXGI_FORMAT_R32_SINT:                    return "DXGI_FORMAT_R32_SINT";
+    case DXGI_FORMAT_R24G8_TYPELESS:              return "DXGI_FORMAT_R24G8_TYPELESS";
+    case DXGI_FORMAT_D24_UNORM_S8_UINT:           return "DXGI_FORMAT_D24_UNORM_S8_UINT";
+    case DXGI_FORMAT_R24_UNORM_X8_TYPELESS:       return "DXGI_FORMAT_R24_UNORM_X8_TYPELESS";
+    case DXGI_FORMAT_X24_TYPELESS_G8_UINT:        return "DXGI_FORMAT_X24_TYPELESS_G8_UINT";
+    case DXGI_FORMAT_R8G8_TYPELESS:               return "DXGI_FORMAT_R8G8_TYPELESS";
+    case DXGI_FORMAT_R8G8_UNORM:                  return "DXGI_FORMAT_R8G8_UNORM";
+    case DXGI_FORMAT_R8G8_UINT:                   return "DXGI_FORMAT_R8G8_UINT";
+    case DXGI_FORMAT_R8G8_SNORM:                  return "DXGI_FORMAT_R8G8_SNORM";
+    case DXGI_FORMAT_R8G8_SINT:                   return "DXGI_FORMAT_R8G8_SINT";
+    case DXGI_FORMAT_R16_TYPELESS:                return "DXGI_FORMAT_R16_TYPELESS";
+    case DXGI_FORMAT_R16_FLOAT:                   return "DXGI_FORMAT_R16_FLOAT";
+    case DXGI_FORMAT_D16_UNORM:                   return "DXGI_FORMAT_D16_UNORM";
+    case DXGI_FORMAT_R16_UNORM:                   return "DXGI_FORMAT_R16_UNORM";
+    case DXGI_FORMAT_R16_UINT:                    return "DXGI_FORMAT_R16_UINT";
+    case DXGI_FORMAT_R16_SNORM:                   return "DXGI_FORMAT_R16_SNORM";
+    case DXGI_FORMAT_R16_SINT:                    return "DXGI_FORMAT_R16_SINT";
+    case DXGI_FORMAT_R8_TYPELESS:                 return "DXGI_FORMAT_R8_TYPELESS";
+    case DXGI_FORMAT_R8_UNORM:                    return "DXGI_FORMAT_R8_UNORM";
+    case DXGI_FORMAT_R8_UINT:                     return "DXGI_FORMAT_R8_UINT";
+    case DXGI_FORMAT_R8_SNORM:                    return "DXGI_FORMAT_R8_SNORM";
+    case DXGI_FORMAT_R8_SINT:                     return "DXGI_FORMAT_R8_SINT";
+    case DXGI_FORMAT_A8_UNORM:                    return "DXGI_FORMAT_A8_UNORM";
+    case DXGI_FORMAT_R1_UNORM:                    return "DXGI_FORMAT_R1_UNORM";
+    case DXGI_FORMAT_R9G9B9E5_SHAREDEXP:          return "DXGI_FORMAT_R9G9B9E5_SHAREDEXP";
+    case DXGI_FORMAT_R8G8_B8G8_UNORM:             return "DXGI_FORMAT_R8G8_B8G8_UNORM";
+    case DXGI_FORMAT_G8R8_G8B8_UNORM:             return "DXGI_FORMAT_G8R8_G8B8_UNORM";
+    case DXGI_FORMAT_BC1_TYPELESS:                return "DXGI_FORMAT_BC1_TYPELESS";
+    case DXGI_FORMAT_BC1_UNORM:                   return "DXGI_FORMAT_BC1_UNORM";
+    case DXGI_FORMAT_BC1_UNORM_SRGB:              return "DXGI_FORMAT_BC1_UNORM_SRGB";
+    case DXGI_FORMAT_BC2_TYPELESS:                return "DXGI_FORMAT_BC2_TYPELESS";
+    case DXGI_FORMAT_BC2_UNORM:                   return "DXGI_FORMAT_BC2_UNORM";
+    case DXGI_FORMAT_BC2_UNORM_SRGB:              return "DXGI_FORMAT_BC2_UNORM_SRGB";
+    case DXGI_FORMAT_BC3_TYPELESS:                return "DXGI_FORMAT_BC3_TYPELESS";
+    case DXGI_FORMAT_BC3_UNORM:                   return "DXGI_FORMAT_BC3_UNORM";
+    case DXGI_FORMAT_BC3_UNORM_SRGB:              return "DXGI_FORMAT_BC3_UNORM_SRGB";
+    case DXGI_FORMAT_BC4_TYPELESS:                return "DXGI_FORMAT_BC4_TYPELESS";
+    case DXGI_FORMAT_BC4_UNORM:                   return "DXGI_FORMAT_BC4_UNORM";
+    case DXGI_FORMAT_BC4_SNORM:                   return "DXGI_FORMAT_BC4_SNORM";
+    case DXGI_FORMAT_BC5_TYPELESS:                return "DXGI_FORMAT_BC5_TYPELESS";
+    case DXGI_FORMAT_BC5_UNORM:                   return "DXGI_FORMAT_BC5_UNORM";
+    case DXGI_FORMAT_BC5_SNORM:                   return "DXGI_FORMAT_BC5_SNORM";
+    case DXGI_FORMAT_B5G6R5_UNORM:                return "DXGI_FORMAT_B5G6R5_UNORM";
+    case DXGI_FORMAT_B5G5R5A1_UNORM:              return "DXGI_FORMAT_B5G5R5A1_UNORM";
+    case DXGI_FORMAT_B8G8R8A8_UNORM:              return "DXGI_FORMAT_B8G8R8A8_UNORM";
+    case DXGI_FORMAT_B8G8R8X8_UNORM:              return "DXGI_FORMAT_B8G8R8X8_UNORM";
+    case DXGI_FORMAT_R10G10B10_XR_BIAS_A2_UNORM:  return "DXGI_FORMAT_R10G10B10_XR_BIAS_A2_UNORM";
+    case DXGI_FORMAT_B8G8R8A8_TYPELESS:           return "DXGI_FORMAT_B8G8R8A8_TYPELESS";
+    case DXGI_FORMAT_B8G8R8A8_UNORM_SRGB:         return "DXGI_FORMAT_B8G8R8A8_UNORM_SRGB";
+    case DXGI_FORMAT_B8G8R8X8_TYPELESS:           return "DXGI_FORMAT_B8G8R8X8_TYPELESS";
+    case DXGI_FORMAT_B8G8R8X8_UNORM_SRGB:         return "DXGI_FORMAT_B8G8R8X8_UNORM_SRGB";
+    case DXGI_FORMAT_BC6H_TYPELESS:               return "DXGI_FORMAT_BC6H_TYPELESS";
+    case DXGI_FORMAT_BC6H_UF16:                   return "DXGI_FORMAT_BC6H_UF16";
+    case DXGI_FORMAT_BC6H_SF16:                   return "DXGI_FORMAT_BC6H_SF16";
+    case DXGI_FORMAT_BC7_TYPELESS:                return "DXGI_FORMAT_BC7_TYPELESS";
+    case DXGI_FORMAT_BC7_UNORM:                   return "DXGI_FORMAT_BC7_UNORM";
+    case DXGI_FORMAT_BC7_UNORM_SRGB:              return "DXGI_FORMAT_BC7_UNORM_SRGB";
+    case DXGI_FORMAT_FORCE_UINT:                  return "DXGI_FORMAT_FORCE_UINT";
+    default:                                      return "Unknown";
+    }
+}
+ 
+// =============================================================================
+//  IMPLEMENTATION ï¿½ savetexture11.cpp
+//  Saves a shader-resource-view texture to DDS by rendering it through a
+//  fullscreen quad and capturing with DirectXTex.
+// =============================================================================
+ 
+// HLSL source for the passthrough vertex + pixel shaders used when saving
+static const char* s_szShaderCode11 =
+    "Texture2D txDiffuse : register(t0);"
+    "SamplerState samLinear : register(s0);"
+    "struct VS_INPUT { float3 Pos : POSITION; float2 Tex : TEXCOORD0; };"
+    "struct PS_INPUT { float4 Pos : SV_POSITION; float2 Tex : TEXCOORD0; };"
+    "PS_INPUT VS(VS_INPUT input) {"
+    "  PS_INPUT o = (PS_INPUT)0;"
+    "  o.Pos.xyz = input.Pos.xyz; o.Pos.w = 1.0f;"
+    "  o.Tex = input.Tex; return o;"
+    "}"
+    "float4 PS(PS_INPUT input) : SV_Target {"
+    "  return txDiffuse.Sample(samLinear, input.Tex);"
+    "}";
+ 
+struct KVert11 { XMFLOAT3 Pos; XMFLOAT2 Tex; };
+ 
+HRESULT KRipper11::compileShaderFromMemory(
+    LPCSTR pData, SIZE_T Len,
+    LPCSTR szEntry, LPCSTR szModel,
+    ID3DBlob** ppBlob)
+{
+    DWORD flags = D3DCOMPILE_ENABLE_STRICTNESS;
+#if defined(DEBUG) || defined(_DEBUG)
+    flags |= D3DCOMPILE_DEBUG;
+#endif
+    TDXRef<ID3DBlob> errBlob;
+    HRESULT hr = d3dCompileHelper.D3DCompile(
+        pData, Len, nullptr, nullptr, nullptr,
+        szEntry, szModel, flags, 0, ppBlob, nullptr);
+    if (FAILED(hr) && errBlob.get())
+        OutputDebugStringA((char*)errBlob->GetBufferPointer());
+    return hr;
+}
+ 
+HRESULT KRipper11::saveTexture2FileMain(
+    const wchar_t* szFile,
+    ID3D11DeviceContext* pDevCont,
+    ID3D11ShaderResourceView* pSRV)
+{
+    HRESULT hr = E_FAIL;
+    ID3D11DeviceContext* pImm = getImmCtx(pDevCont);
+ 
+    // Resolve original (un-hooked) function pointers
+    auto resolveOrig = [&](UINT vtIdx, ID3D11DeviceContext* ctx) -> LPVOID {
+        LPVOID targ = getMethodAddr(ctx, vtIdx);
+        KHook* h = g_pHookMgr->getHookByTargetAddress(targ);
+        if (!h) { hookDeviceContext(&ctx); }
+        return h ? h->getOriginalAddress() : targ;
+    };
+ 
+    auto orig_PSSet = (PFN_ID3D11DeviceContext_PSSetShaderResources)
+        resolveOrig(IDX_ID3D11DeviceContext_PSSetShaderResources, pImm);
+ 
+    // DrawIndexed: look up via pDevCont first (deferred ctx case)
+    LPVOID diTarg = getMethodAddr(pDevCont, IDX_ID3D11DeviceContext_DrawIndexed);
+    KHook* diHook = g_pHookMgr->getHookByTargetAddress(diTarg);
+    if (!diHook) hookDeviceContext(&pDevCont);
+    auto orig_DrawIndexed = (PFN_ID3D11DeviceContext_DrawIndexed)
+        (diHook ? diHook->getOriginalAddress() : diTarg);
+ 
+    auto orig_CreateVS = (PFN_ID3D11Device_CreateVertexShader)
+        pHook_ID3D11Device_CreateVertexShader->getOriginalAddress();
+    auto orig_CreatePS = (PFN_ID3D11Device_CreatePixelShader)
+        pHook_ID3D11Device_CreatePixelShader->getOriginalAddress();
+    auto orig_CreateIL = (PFN_ID3D11Device_CreateInputLayout)
+        pHook_ID3D11Device_CreateInputLayout->getOriginalAddress();
+ 
+    // Check that the SRV is a 2D texture
+    D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+    pSRV->GetDesc(&srvDesc);
+    if (srvDesc.ViewDimension != D3D11_SRV_DIMENSION_TEXTURE2D) {
+        g_pLog->logError("saveTexture: not a Texture2D (dim=%d)\n", srvDesc.ViewDimension);
+        return 0x88887777;
+    }
+ 
+    // --- State to save/restore ---
+    TDXRef<ID3D11InputLayout>       prevIL;
+    TDXRef<ID3D11Buffer>            prevVB, prevIB;
+    UINT prevVBStride = 0, prevVBOffset = 0;
+    DXGI_FORMAT prevIBFmt = DXGI_FORMAT_UNKNOWN; UINT prevIBOffset = 0;
+    D3D11_PRIMITIVE_TOPOLOGY prevTopo = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
+    TDXRef<ID3D11RenderTargetView>  prevRTV;
+    TDXRef<ID3D11DepthStencilView>  prevDSV;
+    UINT prevVPCnt = D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE;
+    std::vector<D3D11_VIEWPORT>     prevVPs(prevVPCnt);
+    TDXRef<ID3D11BlendState>        prevBlend;
+    FLOAT prevBlendFactor[4] = {}; UINT prevSampleMask = 0;
+    TDXRef<ID3D11RasterizerState>   prevRS;
+    TDXRef<ID3D11DepthStencilState> prevDSS; UINT prevStencilRef = 0;
+    TDXRef<ID3D11VertexShader>      prevVS;
+    UINT vsCI = 256;
+    TDXRefVec<ID3D11ClassInstance>  prevVSCI(vsCI);
+    TDXRef<ID3D11PixelShader>       prevPS;
+    UINT psCI = 256;
+    TDXRefVec<ID3D11ClassInstance>  prevPSCI(psCI);
+    TDXRef<ID3D11ShaderResourceView> prevSRV0;
+ 
+    do {
+        TDXRef<ID3D11Device> dev;
+        TDXRef<ID3D11Resource> srcRes;
+        pImm->GetDevice(&dev);
+        pSRV->GetResource(&srcRes);
+        ID3D11Texture2D* pSrcTex = static_cast<ID3D11Texture2D*>(srcRes.get());
+ 
+        D3D11_TEXTURE2D_DESC texDesc = {};
+        pSrcTex->GetDesc(&texDesc);
+ 
+        // Optional downscale
+        DWORD texSz     = g_pIntruder->getSettings()->downscaleWidth *
+                          g_pIntruder->getSettings()->downscaleHeight;
+        DWORD downScale = g_pIntruder->getSettings()->downscale;
+        if (texSz && downScale && texDesc.Width * texDesc.Height > texSz) {
+            g_pLog->logWarning("Texture too large, downscaling\n");
+            texDesc.Width  = max(1u, texDesc.Width  / downScale);
+            texDesc.Height = max(1u, texDesc.Height / downScale);
+        }
+ 
+        // Compile shaders
+        TDXRef<ID3DBlob> vsBlob, psBlob;
+        hr = compileShaderFromMemory(s_szShaderCode11, lstrlenA(s_szShaderCode11),
+                                     "VS", "vs_4_0", &vsBlob);
+        if (FAILED(hr)) { g_pLog->logError("VS compile failed\n"); break; }
+ 
+        TDXRef<ID3D11VertexShader> vs;
+        hr = orig_CreateVS(dev.get(), vsBlob->GetBufferPointer(),
+                           vsBlob->GetBufferSize(), nullptr, &vs);
+        if (FAILED(hr)) { g_pLog->logError("CreateVertexShader failed\n"); break; }
+ 
+        D3D11_INPUT_ELEMENT_DESC layout[] = {
+            { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,  0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+            { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        };
+        TDXRef<ID3D11InputLayout> il;
+        hr = orig_CreateIL(dev.get(), layout, ARRAYSIZE(layout),
+                           vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), &il);
+        if (FAILED(hr)) { g_pLog->logError("CreateInputLayout failed\n"); break; }
+ 
+        hr = compileShaderFromMemory(s_szShaderCode11, lstrlenA(s_szShaderCode11),
+                                     "PS", "ps_4_0", &psBlob);
+        if (FAILED(hr)) { g_pLog->logError("PS compile failed\n"); break; }
+ 
+        TDXRef<ID3D11PixelShader> ps;
+        hr = orig_CreatePS(dev.get(), psBlob->GetBufferPointer(),
+                           psBlob->GetBufferSize(), nullptr, &ps);
+        if (FAILED(hr)) { g_pLog->logError("CreatePixelShader failed\n"); break; }
+ 
+        // Fullscreen quad covering NDC [-1,1]
+        KVert11 verts[] = {
+            { XMFLOAT3(-1.f,-1.f,0.f), XMFLOAT2(0.f,1.f) },
+            { XMFLOAT3( 1.f,-1.f,0.f), XMFLOAT2(1.f,1.f) },
+            { XMFLOAT3( 1.f, 1.f,0.f), XMFLOAT2(1.f,0.f) },
+            { XMFLOAT3(-1.f, 1.f,0.f), XMFLOAT2(0.f,0.f) },
+        };
+        D3D11_BUFFER_DESC bd = {};
+        bd.Usage     = D3D11_USAGE_DEFAULT;
+        bd.ByteWidth = sizeof(verts);
+        bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+        D3D11_SUBRESOURCE_DATA init = {}; init.pSysMem = verts;
+        TDXRef<ID3D11Buffer> vb;
+        hr = dev->CreateBuffer(&bd, &init, &vb);
+        if (FAILED(hr)) { g_pLog->logError("CreateBuffer(VB) failed\n"); break; }
+ 
+        WORD indices[] = { 0,1,3, 3,1,2 };
+        bd.ByteWidth = sizeof(indices); bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
+        init.pSysMem = indices;
+        TDXRef<ID3D11Buffer> ib;
+        hr = dev->CreateBuffer(&bd, &init, &ib);
+        if (FAILED(hr)) { g_pLog->logError("CreateBuffer(IB) failed\n"); break; }
+ 
+        D3D11_SAMPLER_DESC sd = {};
+        sd.Filter   = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+        sd.AddressU = sd.AddressV = sd.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+        sd.ComparisonFunc = D3D11_COMPARISON_NEVER;
+        sd.MaxLOD   = D3D11_FLOAT32_MAX;
+        TDXRef<ID3D11SamplerState> samp;
+        hr = dev->CreateSamplerState(&sd, &samp);
+        if (FAILED(hr)) { g_pLog->logError("CreateSamplerState failed\n"); break; }
+ 
+        // Render-target color texture
+        D3D11_TEXTURE2D_DESC rtd = {};
+        rtd.Width = texDesc.Width; rtd.Height = texDesc.Height;
+        rtd.MipLevels = 1; rtd.ArraySize = 1;
+        rtd.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        rtd.SampleDesc.Count = 1; rtd.Usage = D3D11_USAGE_DEFAULT;
+        rtd.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+        TDXRef<ID3D11Texture2D> colorTex;
+        hr = dev->CreateTexture2D(&rtd, nullptr, &colorTex);
+        if (FAILED(hr)) { g_pLog->logError("CreateTexture2D(RT) failed\n"); break; }
+ 
+        D3D11_RENDER_TARGET_VIEW_DESC rtvd = {};
+        rtvd.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        rtvd.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+        TDXRef<ID3D11RenderTargetView> rtv;
+        hr = dev->CreateRenderTargetView(colorTex.get(), &rtvd, &rtv);
+        if (FAILED(hr)) { g_pLog->logError("CreateRenderTargetView failed\n"); break; }
+ 
+        // Depth-stencil
+        D3D11_TEXTURE2D_DESC dsd = {};
+        dsd.Width = texDesc.Width; dsd.Height = texDesc.Height;
+        dsd.MipLevels = 1; dsd.ArraySize = 1;
+        dsd.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+        dsd.SampleDesc.Count = 1; dsd.Usage = D3D11_USAGE_DEFAULT;
+        dsd.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+        TDXRef<ID3D11Texture2D>       dsTexRef;
+        TDXRef<ID3D11DepthStencilView> dsv;
+        hr = dev->CreateTexture2D(&dsd, nullptr, &dsTexRef);
+        if (FAILED(hr)) { g_pLog->logError("CreateTexture2D(DS) failed\n"); break; }
+        D3D11_DEPTH_STENCIL_VIEW_DESC dsvd = {};
+        dsvd.Format = dsd.Format; dsvd.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+        hr = dev->CreateDepthStencilView(dsTexRef.get(), &dsvd, &dsv);
+        if (FAILED(hr)) { g_pLog->logError("CreateDepthStencilView failed\n"); break; }
+ 
+        // Rasterizer: no cull, solid fill
+        D3D11_RASTERIZER_DESC rsd = {};
+        rsd.CullMode = D3D11_CULL_FRONT; rsd.FillMode = D3D11_FILL_SOLID;
+        TDXRef<ID3D11RasterizerState> rs;
+        hr = dev->CreateRasterizerState(&rsd, &rs);
+        if (FAILED(hr)) { g_pLog->logError("CreateRasterizerState failed\n"); break; }
+ 
+        // Blend: no blending
+        D3D11_BLEND_DESC bld = {};
+        bld.RenderTarget[0].BlendEnable = FALSE;
+        bld.RenderTarget[0].SrcBlend    = D3D11_BLEND_ONE;
+        bld.RenderTarget[0].DestBlend   = D3D11_BLEND_ZERO;
+        bld.RenderTarget[0].BlendOp     = D3D11_BLEND_OP_ADD;
+        bld.RenderTarget[0].SrcBlendAlpha  = D3D11_BLEND_ONE;
+        bld.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+        bld.RenderTarget[0].BlendOpAlpha   = D3D11_BLEND_OP_ADD;
+        bld.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+        TDXRef<ID3D11BlendState> blendState;
+        hr = dev->CreateBlendState(&bld, &blendState);
+        if (FAILED(hr)) { g_pLog->logError("CreateBlendState failed\n"); break; }
+ 
+        // Depth-stencil state (all disabled)
+        D3D11_DEPTH_STENCIL_DESC dss = {};
+        TDXRef<ID3D11DepthStencilState> dssState;
+        hr = dev->CreateDepthStencilState(&dss, &dssState);
+        if (FAILED(hr)) { g_pLog->logError("CreateDepthStencilState failed\n"); break; }
+ 
+        // --- Save current pipeline state ---
+        pImm->IAGetInputLayout(&prevIL);
+        pImm->VSGetShader(&prevVS, &prevVSCI, &vsCI);
+        pImm->PSGetShader(&prevPS, &prevPSCI, &psCI);
+        pImm->PSGetShaderResources(0, 1, &prevSRV0);
+        pImm->IAGetVertexBuffers(0, 1, &prevVB, &prevVBStride, &prevVBOffset);
+        pImm->IAGetIndexBuffer(&prevIB, &prevIBFmt, &prevIBOffset);
+        pImm->IAGetPrimitiveTopology(&prevTopo);
+        pImm->OMGetRenderTargets(1, &prevRTV, &prevDSV);
+        pImm->RSGetViewports(&prevVPCnt, prevVPs.data());
+        pImm->RSGetState(&prevRS);
+        pImm->OMGetBlendState(&prevBlend, prevBlendFactor, &prevSampleMask);
+        pImm->OMGetDepthStencilState(&prevDSS, &prevStencilRef);
+ 
+        // --- Set new state and draw ---
+        float bf[4] = {};
+        pImm->OMSetBlendState(blendState.get(), bf, 0xffffffff);
+        pImm->OMSetDepthStencilState(dssState.get(), 0);
+        pImm->OMSetRenderTargets(1, &rtv, dsv.get());
+ 
+        FLOAT cc[4] = { 1.f, 0.f, 1.f, 1.f };
+        pImm->ClearRenderTargetView(rtv.get(), cc);
+        pImm->ClearDepthStencilView(dsv.get(), D3D11_CLEAR_DEPTH, 1.f, 0);
+ 
+        pImm->RSSetState(rs.get());
+ 
+        D3D11_VIEWPORT vp = {};
+        vp.Width    = (FLOAT)texDesc.Width;
+        vp.Height   = (FLOAT)texDesc.Height;
+        vp.MaxDepth = 1.f;
+        pImm->RSSetViewports(1, &vp);
+ 
+        pImm->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        pImm->IASetIndexBuffer(ib.get(), DXGI_FORMAT_R16_UINT, 0);
+        UINT stride = sizeof(KVert11), offset = 0;
+        pImm->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
+        pImm->IASetInputLayout(il.get());
+        pImm->VSSetShader(vs.get(), nullptr, 0);
+        pImm->PSSetShader(ps.get(), nullptr, 0);
+        orig_PSSet(pImm, 0, 1, &pSRV);
+        pImm->PSSetSamplers(0, 1, &samp);
+        orig_DrawIndexed(pImm, 6, 0, 0);
+ 
+        // --- Capture and save via DirectXTex ---
+        ScratchImage image;
+        hr = CaptureTexture(dev.get(), pImm, colorTex.get(), image);
+        if (SUCCEEDED(hr))
+            hr = SaveToDDSFile(image.GetImages(), image.GetImageCount(),
+                               image.GetMetadata(), DDS_FLAGS_NONE, szFile);
+        hr = S_OK; // treat save as success if we got here
+    } while (FALSE);
+ 
+    // --- Restore pipeline state ---
+    pImm->OMSetBlendState(prevBlend.get(), prevBlendFactor, prevSampleMask);
+    pImm->OMSetDepthStencilState(prevDSS.get(), prevStencilRef);
+    pImm->IASetInputLayout(prevIL.get());
+    pImm->IASetVertexBuffers(0, 1, &prevVB, &prevVBStride, &prevVBOffset);
+    pImm->IASetIndexBuffer(prevIB.get(), prevIBFmt, prevIBOffset);
+    pImm->IASetPrimitiveTopology(prevTopo);
+    pImm->OMSetRenderTargets(1, &prevRTV, prevDSV.get());
+    pImm->RSSetViewports(prevVPCnt, prevVPs.data());
+    pImm->RSSetState(prevRS.get());
+    pImm->VSSetShader(prevVS.get(), &prevVSCI, vsCI);
+    pImm->PSSetShader(prevPS.get(), &prevPSCI, psCI);
+    orig_PSSet(pImm, 0, 1, &prevSRV0);
+ 
+    return hr;
+}
+ 
+HRESULT KRipper11::saveTexture2File(
+    const wchar_t* szFile,
+    ID3D11DeviceContext* pCtx,
+    ID3D11ShaderResourceView* pSRV)
+{
+    dumpShaderResourceView(pSRV);
+    drawIndexedEnabled = false;
+    HRESULT hr = saveTexture2FileMain(szFile, pCtx, pSRV);
+    drawIndexedEnabled = true;
+    return hr;
+}
+ 
+// =============================================================================
+//  IMPLEMENTATION ï¿½ savemeshtextures11.cpp
+// =============================================================================
+ 
+void KRipper11::addMeshTexture(const KTexture& t)
+{
+    meshTexturesDb.push_back(t);
+}
+ 
+bool KRipper11::isMeshTextureSaved(ID3D11ShaderResourceView* pSRV, KTexture* out)
+{
+    for (const KTexture& t : meshTexturesDb) {
+        if (t.pTexture == pSRV) { *out = t; return true; }
+    }
+    return false;
+}
+ 
+//  WARNING: cube and array textures are not fully handled (original TODO).
+void KRipper11::saveMeshTextures(ID3D11DeviceContext* pCtx, KMeshTextures* meshTex)
+{
+    TDXRefVec<ID3D11ShaderResourceView> srvs(D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT);
+    pCtx->PSGetShaderResources(0, D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT, &srvs);
+ 
+    for (size_t i = 0; i < srvs.getSize(); i++) {
+        ID3D11ShaderResourceView* pSRV = srvs.getElement(i);
+        if (!pSRV) continue;
+ 
+        D3D11_SHADER_RESOURCE_VIEW_DESC desc;
+        pSRV->GetDesc(&desc);
+        // Skip buffer resources ï¿½ they are not textures
+        if (desc.ViewDimension == D3D11_SRV_DIMENSION_BUFFER ||
+            desc.ViewDimension == D3D11_SRV_DIMENSION_BUFFEREX)
+            continue;
+ 
+        KTexture tex;
+        if (isMeshTextureSaved(pSRV, &tex)) {
+            meshTex->textures.push_back(tex.name);
+            g_pLog->log("Texture stage #%zu already saved: %s\n", i,
+                        wideStringToMultiByte(tex.fullPath.c_str()).c_str());
+        } else {
+            std::string  nameA;
+            std::wstring path = g_pIntruder->getFrameTextureSavePath(nameA, (DWORD)i);
+            HRESULT hr = saveTexture2File(path.c_str(), pCtx, pSRV);
+            if (SUCCEEDED(hr)) {
+                KTexture ft; ft.pTexture = pSRV; ft.name = nameA; ft.fullPath = path;
+                addMeshTexture(ft);
+                meshTex->textures.push_back(nameA);
+                g_pLog->log("Texture stage #%zu saved: %s\n", i,
+                            wideStringToMultiByte(path.c_str()).c_str());
+            } else {
+                g_pLog->logError("Texture save. HRESULT: 0x%08X\n", hr);
+                dumpShaderResourceView(pSRV);
+            }
+        }
+        g_pIntruder->incFrameTextureIdx();
+    }
+}
+ 
+// =============================================================================
+//  IMPLEMENTATION ï¿½ texture11.cpp  (forced-texture-rip via PSSetShaderResources)
+// =============================================================================
+ 
+DWORD KRipper11::isTextureSaved(ID3D11ShaderResourceView* pTex)
+{
+    if (!pTex) return 1;
+    for (ID3D11ShaderResourceView* p : TexturesVec)
+        if (p == pTex) return 1;
+    return 0;
+}
+ 
+void KRipper11::helper_ID3D11DeviceContext_PSSetShaderResources(
+    KHook* pHook,
+    ID3D11DeviceContext* pCtx,
+    UINT StartSlot, UINT NumViews,
+    ID3D11ShaderResourceView *const *ppSRVs)
+{
+    auto e = (PFN_ID3D11DeviceContext_PSSetShaderResources)pHook->getOriginalAddress();
+ 
+    EnterCriticalSection(&cs);
+    __try { handleTexture(pCtx, StartSlot, NumViews, ppSRVs); }
+    __except(EXCEPTION_EXECUTE_HANDLER)
+    { g_pLog->logError("Exception in handleTexture()\n"); }
+    LeaveCriticalSection(&cs);
+ 
+    e(pCtx, StartSlot, NumViews, ppSRVs);
+    hookDeviceContext(&pCtx);
+}
+ 
+void KRipper11::handleTexture(
+    ID3D11DeviceContext* pCtx,
+    UINT /*StartSlot*/, UINT NumViews,
+    ID3D11ShaderResourceView *const *ppSRVs)
+{
+    g_pIntruder->keyHandler(this);
+    if (!g_pIntruder->isTexturesRipKeyPressed()) return;
+ 
+    for (UINT j = 0; j < NumViews; j++) {
+        ID3D11ShaderResourceView* pSRV = ppSRVs[j];
+        if (!pSRV) continue;
+ 
+        D3D11_SHADER_RESOURCE_VIEW_DESC desc;
+        pSRV->GetDesc(&desc);
+        if (desc.ViewDimension == D3D11_SRV_DIMENSION_BUFFER ||
+            desc.ViewDimension == D3D11_SRV_DIMENSION_BUFFEREX)
+            continue;
+ 
+        if (isTextureSaved(pSRV)) continue;
+ 
+        std::wstring path = g_pIntruder->getTextureSavePath();
+        std::string  pathA = wideStringToMultiByte(path.c_str());
+ 
+        TDXRef<ID3D11Device> dev;
+        pCtx->GetDevice(&dev);
+ 
+        HRESULT hr = saveTexture2File(path.c_str(), pCtx, pSRV);
+        if (SUCCEEDED(hr)) {
+            TexturesVec.push_back(pSRV);
+            g_pIntruder->incTextureIdx();
+            g_pLog->log("Texture saved: %s\n", pathA.c_str());
+        } else {
+            g_pLog->logError("Texture save. HRESULT: 0x%08X\n", hr);
+            logReasonIfDeviceRemoved(hr, dev.get());
+        }
+    }
+}
+ 
+// =============================================================================
+//  IMPLEMENTATION ï¿½ pre11.cpp  (factory functions)
+// =============================================================================
+ 
+KRipper11* create_KRipper11(HINSTANCE hD3D11)
+{
+    return KRipper11::create(hD3D11);
+}
+ 
+void delete_KRipper11(KRipper11*& p)
+{
+    KRipper11::destroy(p);
+}
+ 
+void setIRipper(KDxgi* dxgi, KRipper11* ripper)
+{
+    if (dxgi)
+        dxgi->setIRipper(ripper);
+}
+ 
+#endif // _WIN32
+// =============================================================================
+//  END OF DX11 SECTION
+// =============================================================================
+
+// =============================================================================
+// =============================================================================
+//  SECTION 29  DX7 (d3dim700.dll)  --  KRipper7
+//  Sources merged: dx7/dx7types.h, dx7/enums.h, dx7/macro.h,
+//                  dx7/kripper7.h/.cpp,
+//                  dx7/drawprimitive7.cpp,          dx7/drawprimitivestrided7.cpp,
+//                  dx7/drawprimitivevb7.cpp,
+//                  dx7/drawindexedprimitive7.cpp,   dx7/drawindexedprimitivestrided7.cpp,
+//                  dx7/drawindexedprimitivevb7.cpp,
+//                  dx7/savemeshtextures7.cpp,       dx7/savetexture7.cpp,
+//                  dx7/texture7.cpp,                dx7/pre7.cpp
+//  Also adds common/fvf.cpp (fvfToInputVertexDeclaration) and
+//  common/d3dhelper.cpp (dumpVertexesStrided) which are needed by DX7
+//  but were not yet present in the common sections.
+// =============================================================================
+ 
+// ---- DX7 / DDraw SDK headers ------------------------------------------------
+// Requires the DirectX 7 SDK (or compatible) include path in the project.
+// On Visual Studio with the legacy DirectX SDK the include order matters:
+//   ddraw.h  -> IDirectDraw7, IDirectDrawSurface7, DDLOCK_* constants
+//   d3d.h    -> IDirect3D7, IDirect3DDevice7, IDirect3DVertexBuffer7,
+//               D3DFVF_*, D3DVERTEXBUFFERDESC, D3DDRAWPRIMITIVESTRIDEDDATA
+// If only the modern Windows SDK is available, ddraw.h ships with it but
+// d3d.h (DX7 flavour) must come from the legacy DXSDK.
+ 
+#ifndef DIRECT3D_VERSION
+#  define DIRECT3D_VERSION 0x0700
+#endif
+#ifndef DIRECTDRAW_VERSION
+#  define DIRECTDRAW_VERSION 0x0700
+#endif
+// Guard: d3d9.h defines DIRECT3D_VERSION as 0x0900 and includes ddraw.h
+// internally; if those headers are already present we only need d3d.h for
+// the DX7-specific COM interfaces.
+#ifndef __DDRAW_INCLUDED__
+#  include <ddraw.h>
+#endif
+#ifndef __D3D_H__
+#  include <d3d.h>
+#endif
+ 
+ 
+// =============================================================================
+//  SECTION 29-A  DX7 function-pointer typedefs  (from dx7/dx7types.h)
+// =============================================================================
+ 
+// IDirect3D7::CreateDevice
+typedef HRESULT (__stdcall* PFN_IDirect3D7_CreateDevice)(
+    IDirect3D7*           pFactory,
+    REFCLSID              rclsid,
+    LPDIRECTDRAWSURFACE7  lpDDS,
+    LPDIRECT3DDEVICE7*    lplpD3DDevice);
+ 
+// IDirect3D7::CreateVertexBuffer
+typedef HRESULT (__stdcall* PFN_IDirect3D7_CreateVertexBuffer)(
+    IDirect3D7*              pFactory,
+    D3DVERTEXBUFFERDESC*     lpVBDesc,
+    LPDIRECT3DVERTEXBUFFER7* lplpD3DVertexBuffer,
+    DWORD                    dwFlags);
+ 
+// IDirect3DDevice7::DrawPrimitive
+typedef HRESULT (__stdcall* PFN_IDirect3DDevice7_DrawPrimitive)(
+    IDirect3DDevice7*  pDev,
+    D3DPRIMITIVETYPE   dptPrimitiveType,
+    DWORD              dwVertexTypeDesc,
+    LPVOID             lpvVertices,
+    DWORD              dwVertexCount,
+    DWORD              dwFlags);
+ 
+// IDirect3DDevice7::DrawIndexedPrimitive
+typedef HRESULT (__stdcall* PFN_IDirect3DDevice7_DrawIndexedPrimitive)(
+    IDirect3DDevice7*  pDev,
+    D3DPRIMITIVETYPE   d3dptPrimitiveType,
+    DWORD              dwVertexTypeDesc,
+    LPVOID             lpvVertices,
+    DWORD              dwVertexCount,
+    LPWORD             lpwIndices,
+    DWORD              dwIndexCount,
+    DWORD              dwFlags);
+ 
+// IDirect3DDevice7::DrawPrimitiveStrided
+typedef HRESULT (__stdcall* PFN_IDirect3DDevice7_DrawPrimitiveStrided)(
+    IDirect3DDevice7*              pDev,
+    D3DPRIMITIVETYPE               dptPrimitiveType,
+    DWORD                          dwVertexTypeDesc,
+    LPD3DDRAWPRIMITIVESTRIDEDDATA  lpVertexArray,
+    DWORD                          dwVertexCount,
+    DWORD                          dwFlags);
+ 
+// IDirect3DDevice7::DrawIndexedPrimitiveStrided
+typedef HRESULT (__stdcall* PFN_IDirect3DDevice7_DrawIndexedPrimitiveStrided)(
+    IDirect3DDevice7*              pDev,
+    D3DPRIMITIVETYPE               d3dptPrimitiveType,
+    DWORD                          dwVertexTypeDesc,
+    LPD3DDRAWPRIMITIVESTRIDEDDATA  lpVertexArray,
+    DWORD                          dwVertexCount,
+    LPWORD                         lpwIndices,
+    DWORD                          dwIndexCount,
+    DWORD                          dwFlags);
+ 
+// IDirect3DDevice7::DrawPrimitiveVB
+typedef HRESULT (__stdcall* PFN_IDirect3DDevice7_DrawPrimitiveVB)(
+    IDirect3DDevice7*        pDev,
+    D3DPRIMITIVETYPE         d3dptPrimitiveType,
+    LPDIRECT3DVERTEXBUFFER7  lpd3dVertexBuffer,
+    DWORD                    dwStartVertex,
+    DWORD                    dwNumVertices,
+    DWORD                    dwFlags);
+ 
+// IDirect3DDevice7::DrawIndexedPrimitiveVB
+typedef HRESULT (__stdcall* PFN_IDirect3DDevice7_DrawIndexedPrimitiveVB)(
+    IDirect3DDevice7*        pDev,
+    D3DPRIMITIVETYPE         d3dptPrimitiveType,
+    LPDIRECT3DVERTEXBUFFER7  lpd3dVertexBuffer,
+    DWORD                    dwStartVertex,
+    DWORD                    dwNumVertices,
+    LPWORD                   lpwIndices,
+    DWORD                    dwIndexCount,
+    DWORD                    dwFlags);
+ 
+// IDirect3DDevice7::SetTexture
+typedef HRESULT (__stdcall* PFN_IDirect3DDevice7_SetTexture)(
+    IDirect3DDevice7*     pDev,
+    DWORD                 dwStage,
+    LPDIRECTDRAWSURFACE7  lpTexture);
+ 
+ 
+// =============================================================================
+//  SECTION 29-B  DX7 vtable indices  (from dx7/enums.h)
+// =============================================================================
+ 
+enum
+{
+    IDX7_IDirect3D7_CreateDevice              = 4,
+    IDX7_IDirect3D7_CreateVertexBuffer        = 5,
+ 
+    IDX7_IDirect3DDevice7_DrawPrimitive              = 25,
+    IDX7_IDirect3DDevice7_DrawIndexedPrimitive       = 26,
+    IDX7_IDirect3DDevice7_DrawPrimitiveStrided       = 29,
+    IDX7_IDirect3DDevice7_DrawIndexedPrimitiveStrided= 30,
+    IDX7_IDirect3DDevice7_DrawPrimitiveVB            = 31,
+    IDX7_IDirect3DDevice7_DrawIndexedPrimitiveVB     = 32,
+    IDX7_IDirect3DDevice7_SetTexture                 = 35,
+};
+ 
+ 
+// =============================================================================
+//  SECTION 29-C  DX7 hook-stub macros  (from dx7/macro.h)
+//
+//  Each macro instantiates one __stdcall trampoline that routes through
+//  KRipper7::this_ to the corresponding helper_*() member function.
+//  GENERATE_STUBS_GROUP(STUB_Foo) expands STUB_Foo(0)..STUB_Foo(7) so that
+//  HooksGroup (MAX_CNT=8) is fully populated.
+// =============================================================================
+ 
+// IDirect3D7::CreateDevice
+#define STUB_IDirect3D7_CreateDevice(IDX)                                      \
+static HRESULT __stdcall _IDirect3D7_CreateDevice_##IDX(                       \
+    IDirect3D7* pD3D, REFCLSID rclsid,                                         \
+    LPDIRECTDRAWSURFACE7 lpDDS, LPDIRECT3DDEVICE7* lplpDev)                    \
+{                                                                               \
+    KHook* h = this_->hooks_IDirect3D7_CreateDevice.getHook(IDX);              \
+    return this_->helper_IDirect3D7_CreateDevice(h,pD3D,rclsid,lpDDS,lplpDev); \
+}
+ 
+// IDirect3D7::CreateVertexBuffer
+#define STUB_IDirect3D7_CreateVertexBuffer(IDX)                                \
+static HRESULT __stdcall _IDirect3D7_CreateVertexBuffer_##IDX(                 \
+    IDirect3D7* pD3D, D3DVERTEXBUFFERDESC* lpVBDesc,                           \
+    LPDIRECT3DVERTEXBUFFER7* lplpVB, DWORD dwFlags)                            \
+{                                                                               \
+    KHook* h = this_->hooks_IDirect3D7_CreateVertexBuffer.getHook(IDX);        \
+    return this_->helper_IDirect3D7_CreateVertexBuffer(h,pD3D,lpVBDesc,lplpVB,dwFlags); \
+}
+ 
+// IDirect3DDevice7::DrawPrimitive
+#define STUB_IDirect3DDevice7_DrawPrimitive(IDX)                               \
+static HRESULT __stdcall _IDirect3DDevice7_DrawPrimitive_##IDX(                \
+    IDirect3DDevice7* pDev, D3DPRIMITIVETYPE dpt,                               \
+    DWORD dwVTD, LPVOID lpv, DWORD dwVC, DWORD dwF)                            \
+{                                                                               \
+    KHook* h = this_->hooks_IDirect3DDevice7_DrawPrimitive.getHook(IDX);       \
+    return this_->helper_IDirect3DDevice7_DrawPrimitive(h,pDev,dpt,dwVTD,lpv,dwVC,dwF); \
+}
+ 
+// IDirect3DDevice7::DrawIndexedPrimitive
+#define STUB_IDirect3DDevice7_DrawIndexedPrimitive(IDX)                        \
+static HRESULT __stdcall _IDirect3DDevice7_DrawIndexedPrimitive_##IDX(         \
+    IDirect3DDevice7* pDev, D3DPRIMITIVETYPE dpt, DWORD dwVTD,                  \
+    LPVOID lpv, DWORD dwVC, LPWORD lpwI, DWORD dwIC, DWORD dwF)                \
+{                                                                               \
+    KHook* h = this_->hooks_IDirect3DDevice7_DrawIndexedPrimitive.getHook(IDX);\
+    return this_->helper_IDirect3DDevice7_DrawIndexedPrimitive(                 \
+        h,pDev,dpt,dwVTD,lpv,dwVC,lpwI,dwIC,dwF);                              \
+}
+ 
+// IDirect3DDevice7::DrawPrimitiveStrided
+#define STUB_IDirect3DDevice7_DrawPrimitiveStrided(IDX)                        \
+static HRESULT __stdcall _IDirect3DDevice7_DrawPrimitiveStrided_##IDX(         \
+    IDirect3DDevice7* pDev, D3DPRIMITIVETYPE dpt, DWORD dwVTD,                  \
+    LPD3DDRAWPRIMITIVESTRIDEDDATA lpVA, DWORD dwVC, DWORD dwF)                  \
+{                                                                               \
+    KHook* h = this_->hooks_IDirect3DDevice7_DrawPrimitiveStrided.getHook(IDX);\
+    return this_->helper_IDirect3DDevice7_DrawPrimitiveStrided(                 \
+        h,pDev,dpt,dwVTD,lpVA,dwVC,dwF);                                        \
+}
+ 
+// IDirect3DDevice7::DrawIndexedPrimitiveStrided
+#define STUB_IDirect3DDevice7_DrawIndexedPrimitiveStrided(IDX)                 \
+static HRESULT __stdcall _IDirect3DDevice7_DrawIndexedPrimitiveStrided_##IDX(  \
+    IDirect3DDevice7* pDev, D3DPRIMITIVETYPE dpt, DWORD dwVTD,                  \
+    LPD3DDRAWPRIMITIVESTRIDEDDATA lpVA, DWORD dwVC,                             \
+    LPWORD lpwI, DWORD dwIC, DWORD dwF)                                         \
+{                                                                               \
+    KHook* h = this_->hooks_IDirect3DDevice7_DrawIndexedPrimitiveStrided.getHook(IDX); \
+    return this_->helper_IDirect3DDevice7_DrawIndexedPrimitiveStrided(          \
+        h,pDev,dpt,dwVTD,lpVA,dwVC,lpwI,dwIC,dwF);                             \
+}
+ 
+// IDirect3DDevice7::DrawPrimitiveVB
+#define STUB_IDirect3DDevice7_DrawPrimitiveVB(IDX)                             \
+static HRESULT __stdcall _IDirect3DDevice7_DrawPrimitiveVB_##IDX(              \
+    IDirect3DDevice7* pDev, D3DPRIMITIVETYPE dpt,                               \
+    LPDIRECT3DVERTEXBUFFER7 lpVB, DWORD dwSV, DWORD dwNV, DWORD dwF)           \
+{                                                                               \
+    KHook* h = this_->hooks_IDirect3DDevice7_DrawPrimitiveVB.getHook(IDX);     \
+    return this_->helper_IDirect3DDevice7_DrawPrimitiveVB(h,pDev,dpt,lpVB,dwSV,dwNV,dwF); \
+}
+ 
+// IDirect3DDevice7::DrawIndexedPrimitiveVB
+#define STUB_IDirect3DDevice7_DrawIndexedPrimitiveVB(IDX)                      \
+static HRESULT __stdcall _IDirect3DDevice7_DrawIndexedPrimitiveVB_##IDX(       \
+    IDirect3DDevice7* pDev, D3DPRIMITIVETYPE dpt,                               \
+    LPDIRECT3DVERTEXBUFFER7 lpVB, DWORD dwSV, DWORD dwNV,                      \
+    LPWORD lpwI, DWORD dwIC, DWORD dwF)                                         \
+{                                                                               \
+    KHook* h = this_->hooks_IDirect3DDevice7_DrawIndexedPrimitiveVB.getHook(IDX); \
+    return this_->helper_IDirect3DDevice7_DrawIndexedPrimitiveVB(               \
+        h,pDev,dpt,lpVB,dwSV,dwNV,lpwI,dwIC,dwF);                              \
+}
+ 
+// IDirect3DDevice7::SetTexture
+#define STUB_IDirect3DDevice7_SetTexture(IDX)                                  \
+static HRESULT __stdcall _IDirect3DDevice7_SetTexture_##IDX(                   \
+    IDirect3DDevice7* pDev, DWORD dwStage, LPDIRECTDRAWSURFACE7 lpTex)         \
+{                                                                               \
+    KHook* h = this_->hooks_IDirect3DDevice7_SetTexture.getHook(IDX);          \
+    return this_->helper_IDirect3DDevice7_SetTexture(h,pDev,dwStage,lpTex);    \
+}
+ 
+ 
+// =============================================================================
+//  SECTION 29-D  fvfToInputVertexDeclaration  (from common/fvf.cpp)
+//
+//  Converts a DX7 Flexible Vertex Format (FVF) descriptor into a
+//  KInputVertexDeclaration so the generic vertex-dumping pipeline can handle
+//  DX7 geometry the same way it handles DX9 geometry.
+//
+//  FVF layout (packed in order inside one interleaved stream 0):
+//    1. Position  : XYZ | XYZRHW | XYZBn  (mandatory)
+//    2. Blend Weights: n floats if XYZBn was used
+//    3. Normal    : 3 floats  (optional, D3DFVF_NORMAL)
+//    4. Point Size: 1 float   (optional, D3DFVF_PSIZE)
+//    5. Diffuse   : 4 bytes   (optional, D3DFVF_DIFFUSE)
+//    6. Specular  : 4 bytes   (optional, D3DFVF_SPECULAR)
+//    7. Tex coords: n sets    (optional, D3DFVF_TEXn)
+//       each set is 1-4 floats according to D3DFVF_TEXCOORDSIZEm()
+// =============================================================================
+ 
+// Number of blend floats implied by an XYZBn FVF position type
+static inline int fvfBlendWeightCount(DWORD fvf)
+{
+    switch (fvf & D3DFVF_POSITION_MASK)
+    {
+    case D3DFVF_XYZB1: return 1;
+    case D3DFVF_XYZB2: return 2;
+    case D3DFVF_XYZB3: return 3;
+    case D3DFVF_XYZB4: return 4;
+    case D3DFVF_XYZB5: return 5;
+    default:           return 0;
+    }
+}
+ 
+// Return the texture-coordinate dimensionality of tex stage idx (0-7)
+// D3DFVF_TEXCOORDSIZE1/2/3/4 pack 2 bits per stage starting at bit 16.
+static inline int fvfTexCoordSize(DWORD fvf, int idx)
+{
+    // Extract the 2-bit field for this texture stage
+    DWORD bits = (fvf >> (16 + idx * 2)) & 0x3;
+    // 0 = 2D, 1 = 3D, 2 = 4D, 3 = 1D  (per DX SDK documentation)
+    switch (bits)
+    {
+    case 0: return 2;
+    case 1: return 3;
+    case 2: return 4;
+    case 3: return 1;
+    default: return 2;
+    }
+}
+ 
+// Helper: append one element to the declaration
+static void fvfAddElement(KInputVertexDeclaration* out,
+                          const char* semantic, DWORD semIdx,
+                          EInputType::Type type, DWORD& offset)
+{
+    KInputVertexElement e;
+    strCopy(e.UsageSemantic, SEMANTIC_LEN, semantic);
+    e.SemanticIndex = semIdx;
+    e.Stream        = 0;
+    e.Offset        = offset;
+    e.Size          = getInputTypeSize(type);
+    e.Type          = type;
+    out->Decl.push_back(e);
+    offset += e.Size;
+}
+ 
+void fvfToInputVertexDeclaration(DWORD fvf, KInputVertexDeclaration* out)
+{
+    out->Decl.clear();
+    DWORD offset = 0;
+ 
+    // ---- Position block -------------------------------------------------------
+    DWORD posMask = fvf & D3DFVF_POSITION_MASK;
+ 
+    if (posMask == D3DFVF_XYZRHW)
+    {
+        // Pre-transformed (4 floats: X Y Z W)
+        fvfAddElement(out, "POSITION", 0, EInputType::R32G32B32A32_FLOAT, offset);
+    }
+    else if (posMask == D3DFVF_XYZ)
+    {
+        fvfAddElement(out, "POSITION", 0, EInputType::R32G32B32_FLOAT, offset);
+    }
+    else if (posMask == D3DFVF_XYZB1 || posMask == D3DFVF_XYZB2 ||
+             posMask == D3DFVF_XYZB3 || posMask == D3DFVF_XYZB4 ||
+             posMask == D3DFVF_XYZB5)
+    {
+        // XYZ position + blend weights
+        fvfAddElement(out, "POSITION", 0, EInputType::R32G32B32_FLOAT, offset);
+ 
+        int blendCnt = fvfBlendWeightCount(fvf);
+        // Last blend component may be an index (LASTBETA_UBYTE4) - always treat
+        // all as floats for simplicity; the blend-index flag is advisory.
+        static const EInputType::Type blendTypes[5] = {
+            EInputType::R32_FLOAT,
+            EInputType::R32G32_FLOAT,
+            EInputType::R32G32B32_FLOAT,
+            EInputType::R32G32B32A32_FLOAT,
+            EInputType::FLOAT5,       // 5 floats (legacy)
+        };
+        if (blendCnt >= 1 && blendCnt <= 5)
+            fvfAddElement(out, "BLENDWEIGHT", 0, blendTypes[blendCnt - 1], offset);
+    }
+ 
+    // ---- Normal ---------------------------------------------------------------
+    if (fvf & D3DFVF_NORMAL)
+        fvfAddElement(out, "NORMAL", 0, EInputType::R32G32B32_FLOAT, offset);
+ 
+    // ---- Point size ----------------------------------------------------------
+    if (fvf & D3DFVF_PSIZE)
+        fvfAddElement(out, "PSIZE", 0, EInputType::R32_FLOAT, offset);
+ 
+    // ---- Diffuse colour -------------------------------------------------------
+    if (fvf & D3DFVF_DIFFUSE)
+        fvfAddElement(out, "COLOR", 0, EInputType::B8G8R8A8_UNORM, offset);
+ 
+    // ---- Specular colour ------------------------------------------------------
+    if (fvf & D3DFVF_SPECULAR)
+        fvfAddElement(out, "COLOR", 1, EInputType::B8G8R8A8_UNORM, offset);
+ 
+    // ---- Texture coordinate sets ---------------------------------------------
+    int texCnt = (fvf & D3DFVF_TEXCOUNT_MASK) >> D3DFVF_TEXCOUNT_SHIFT;
+    for (int t = 0; t < texCnt; ++t)
+    {
+        int dim = fvfTexCoordSize(fvf, t);
+        static const EInputType::Type texTypes[4] = {
+            EInputType::R32_FLOAT,
+            EInputType::R32G32_FLOAT,
+            EInputType::R32G32B32_FLOAT,
+            EInputType::R32G32B32A32_FLOAT,
+        };
+        fvfAddElement(out, "TEXCOORD", (DWORD)t, texTypes[dim - 1], offset);
+    }
+}
+ 
+ 
+// =============================================================================
+//  SECTION 29-E  dumpVertexesStrided  (from common/d3dhelper.cpp)
+//
+//  Reads vertex attributes from a D3DDRAWPRIMITIVESTRIDEDDATA structure
+//  (where each semantic has its own base-pointer + stride) and writes the
+//  unpacked results into a KVERTICES buffer.
+//
+//  The mapping from KInputVertexElement semantic to strided array:
+//    POSITION  [0]  -> lpVtxArr->position
+//    BLENDWEIGHT[0] -> lpVtxArr->position  (blend floats follow XYZ in stream)
+//    NORMAL    [0]  -> lpVtxArr->normal
+//    PSIZE     [0]  -> lpVtxArr->position  (no separate psize stream in strided)
+//    COLOR     [0]  -> lpVtxArr->diffuse
+//    COLOR     [1]  -> lpVtxArr->specular
+//    TEXCOORD  [n]  -> lpVtxArr->textureCoords[n]
+// =============================================================================
+ 
+// Resolves (semantic, semanticIndex) -> strided stream {lpvData, dwStride}
+// Returns false when no matching stream could be found.
+static bool resolveStridedStream(
+    LPD3DDRAWPRIMITIVESTRIDEDDATA lpVtxArr,
+    const KInputVertexElement&    ie,
+    const BYTE**                  ppBase,
+    DWORD*                        pStride,
+    DWORD*                        pOffset)
+{
+    *ppBase   = nullptr;
+    *pStride  = 0;
+    *pOffset  = 0;
+ 
+    // Helper lambda to pick a strided array member
+    auto pick = [&](LPVOID base, DWORD stride, DWORD offset = 0) {
+        *ppBase  = (const BYTE*)base;
+        *pStride = stride;
+        *pOffset = offset;
+        return true;
+    };
+ 
+    if (strcmp(ie.UsageSemantic, "POSITION") == 0 && ie.SemanticIndex == 0)
+        return pick(lpVtxArr->position.lpvData, lpVtxArr->position.dwStride);
+ 
+    if (strcmp(ie.UsageSemantic, "BLENDWEIGHT") == 0)
+    {
+        // Blend weights immediately follow the 3-float XYZ in the position stream.
+        // Offset = 3 * sizeof(float) = 12.
+        return pick(lpVtxArr->position.lpvData,
+                    lpVtxArr->position.dwStride,
+                    12 /*sizeof(float)*3*/);
+    }
+ 
+    if (strcmp(ie.UsageSemantic, "NORMAL") == 0)
+        return pick(lpVtxArr->normal.lpvData, lpVtxArr->normal.dwStride);
+ 
+    if (strcmp(ie.UsageSemantic, "PSIZE") == 0)
+    {
+        // No dedicated psize stream; fall back to position stream with an offset
+        // that skips XYZ (and any blend weights).  Since we cannot easily
+        // recompute the offset here, use position stream + computed offset.
+        // In practice PSIZE+strided is extremely rare in DX7 titles.
+        return pick(lpVtxArr->position.lpvData, lpVtxArr->position.dwStride);
+    }
+ 
+    if (strcmp(ie.UsageSemantic, "COLOR") == 0)
+    {
+        if (ie.SemanticIndex == 0)
+            return pick(lpVtxArr->diffuse.lpvData,  lpVtxArr->diffuse.dwStride);
+        if (ie.SemanticIndex == 1)
+            return pick(lpVtxArr->specular.lpvData, lpVtxArr->specular.dwStride);
+        return false;
+    }
+ 
+    if (strcmp(ie.UsageSemantic, "TEXCOORD") == 0)
+    {
+        DWORD t = ie.SemanticIndex;
+        if (t < D3DDP_MAXTEXCOORD)
+            return pick(lpVtxArr->textureCoords[t].lpvData,
+                        lpVtxArr->textureCoords[t].dwStride);
+        return false;
+    }
+ 
+    return false;
+}
+ 
+void dumpVertexesStrided(
+    LPD3DDRAWPRIMITIVESTRIDEDDATA     lpVtxArr,
+    const KInputVertexDeclaration&    inpDecl,
+    const KOutputVertexDeclaration&   outDecl,
+    const OptimizedIndexToMeshIndex&  optIdx,
+    KVERTICES*                        pVERTICES)
+{
+    if (!lpVtxArr) return;
+ 
+    for (size_t i = 0; i < inpDecl.Decl.size(); ++i)
+    {
+        const KInputVertexElement&  ie = inpDecl.Decl[i];
+        const KOutputVertexElement& oe = outDecl.Decl[i];
+ 
+        const BYTE* pBase   = nullptr;
+        DWORD       stride  = 0;
+        DWORD       srcOfs  = 0;
+ 
+        if (!resolveStridedStream(lpVtxArr, ie, &pBase, &stride, &srcOfs))
+            continue;
+        if (!pBase || stride == 0)
+            continue;
+ 
+        // dumpVertSemantic iterates optIdx: for output vertex j it reads
+        // pBase + stride * optIdx[j] + srcOfs and writes to the output buffer.
+        // We express the per-element offset via a synthetic base pointer.
+        dumpVertSemantic(
+            ie.Type,
+            pBase + srcOfs,  // adjust base by intra-vertex offset
+            0,               // SrcOffs = 0 (already baked into base above)
+            stride,
+            pVERTICES->getRawData(),
+            oe.Offset,
+            pVERTICES->getVertexSize(),
+            optIdx);
+    }
+}
+ 
+ 
+// =============================================================================
+//  SECTION 29-F  KRipper7 class definition  (from dx7/kripper7.h)
+// =============================================================================
+ 
+class KRipper7 : public IRipper
+{
+public:
+    KRipper7();
+    virtual ~KRipper7();
+ 
+    // IRipper interface
+    virtual void frameStart()      override;
+    virtual void frameEnd()        override;
+    virtual void textureRipStart() override;
+    virtual void textureRipEnd()   override;
+ 
+    // Called by KDdraw when it intercepts the first IDirect3D7 pointer
+    void initialize(IDirect3D7* pD3D);
+ 
+    void cleanup();
+ 
+private:
+    // ---- Texture tracking ----------------------------------------------------
+    struct KTexture
+    {
+        IDirectDrawSurface7* pTexture;
+        std::string          name;
+        std::wstring         fullPath;
+        KTexture() : pTexture(nullptr) {}
+    };
+    typedef std::vector<KTexture> KFrameTextureVec;
+ 
+    // Textures encountered on active draw calls (reset each frame)
+    KFrameTextureVec              meshTexturesDb;
+    // Textures already saved by the standalone texture-rip hotkey
+    std::vector<LPDIRECTDRAWSURFACE7> forcedTexturesDb;
+ 
+    // ---- Singleton -----------------------------------------------------------
+    static KRipper7* this_;
+ 
+    // ---- Helpers -------------------------------------------------------------
+    void zeroHooks();
+    void hook_IDirect3DDevice7(IDirect3DDevice7* pDev);
+ 
+    static EPrimitiveTopology::Type
+        D3DPRIMITIVETYPE_to_EPrimitiveTopology(D3DPRIMITIVETYPE pt);
+ 
+    // ---- Mesh-texture helpers ------------------------------------------------
+    void saveMeshTextures(IDirect3DDevice7* pDev, KMeshTextures* out);
+    void addMeshTexture(const KTexture& t);
+    bool isMeshTextureSaved(IDirectDrawSurface7* pTexture, KTexture* out);
+ 
+    // ---- Texture-save helpers ------------------------------------------------
+    HRESULT saveTexture2File(const wchar_t* fileName, IDirectDrawSurface7* surf);
+    void    dumpTextureDesc (IDirectDrawSurface7* pTexture);
+    DWORD   isTextureSaved  (LPDIRECTDRAWSURFACE7 pTex);
+    void    handleTextureSave(IDirect3DDevice7* pDev, DWORD Stage,
+                              LPDIRECTDRAWSURFACE7 lpTexture);
+ 
+    // ---- Rip helpers (one per Draw* variant) ---------------------------------
+    void ripDrawPrimitive(
+        IDirect3DDevice7* pDev, D3DPRIMITIVETYPE dpt,
+        DWORD dwVTD, LPVOID lpv, DWORD dwVC, DWORD dwF);
+ 
+    void ripDrawIndexedPrimitive(
+        IDirect3DDevice7* pDev, D3DPRIMITIVETYPE dpt,
+        DWORD dwVTD, LPVOID lpv, DWORD dwVC,
+        LPWORD lpwI, DWORD dwIC, DWORD dwF);
+ 
+    void ripDrawPrimitiveStrided(
+        IDirect3DDevice7* pDev, D3DPRIMITIVETYPE dpt,
+        DWORD dwVTD, LPD3DDRAWPRIMITIVESTRIDEDDATA lpVA, DWORD dwVC, DWORD dwF);
+ 
+    void ripDrawIndexedPrimitiveStrided(
+        IDirect3DDevice7* pDev, D3DPRIMITIVETYPE dpt, DWORD dwVTD,
+        LPD3DDRAWPRIMITIVESTRIDEDDATA lpVA, DWORD dwVC,
+        LPWORD lpwI, DWORD dwIC, DWORD dwF);
+ 
+    void ripDrawPrimitiveVB(
+        IDirect3DDevice7* pDev, D3DPRIMITIVETYPE dpt,
+        LPDIRECT3DVERTEXBUFFER7 lpVB, DWORD dwSV, DWORD dwNV, DWORD dwF);
+ 
+    void ripDrawIndexedPrimitiveVB(
+        IDirect3DDevice7* pDev, D3DPRIMITIVETYPE dpt,
+        LPDIRECT3DVERTEXBUFFER7 lpVB, DWORD dwSV, DWORD dwNV,
+        LPWORD lpwI, DWORD dwIC, DWORD dwF);
+ 
+    // ---- Critical section ----------------------------------------------------
+    CRITICAL_SECTION cs;
+ 
+    // ==========================================================================
+    //  Hook groups  (8 slots each, one per COM-object instance seen at runtime)
+    // ==========================================================================
+ 
+    // IDirect3D7::CreateDevice
+    HooksGroup hooks_IDirect3D7_CreateDevice;
+    HRESULT helper_IDirect3D7_CreateDevice(
+        KHook*, IDirect3D7*, REFCLSID, LPDIRECTDRAWSURFACE7, LPDIRECT3DDEVICE7*);
+    GENERATE_STUBS_GROUP(STUB_IDirect3D7_CreateDevice)
+ 
+    // IDirect3D7::CreateVertexBuffer
+    HooksGroup hooks_IDirect3D7_CreateVertexBuffer;
+    HRESULT helper_IDirect3D7_CreateVertexBuffer(
+        KHook*, IDirect3D7*, D3DVERTEXBUFFERDESC*,
+        LPDIRECT3DVERTEXBUFFER7*, DWORD);
+    GENERATE_STUBS_GROUP(STUB_IDirect3D7_CreateVertexBuffer)
+ 
+    // IDirect3DDevice7::DrawPrimitive
+    HooksGroup hooks_IDirect3DDevice7_DrawPrimitive;
+    HRESULT helper_IDirect3DDevice7_DrawPrimitive(
+        KHook*, IDirect3DDevice7*, D3DPRIMITIVETYPE, DWORD, LPVOID, DWORD, DWORD);
+    GENERATE_STUBS_GROUP(STUB_IDirect3DDevice7_DrawPrimitive)
+ 
+    // IDirect3DDevice7::DrawIndexedPrimitive
+    HooksGroup hooks_IDirect3DDevice7_DrawIndexedPrimitive;
+    HRESULT helper_IDirect3DDevice7_DrawIndexedPrimitive(
+        KHook*, IDirect3DDevice7*, D3DPRIMITIVETYPE, DWORD, LPVOID, DWORD,
+        LPWORD, DWORD, DWORD);
+    GENERATE_STUBS_GROUP(STUB_IDirect3DDevice7_DrawIndexedPrimitive)
+ 
+    // IDirect3DDevice7::DrawPrimitiveStrided
+    HooksGroup hooks_IDirect3DDevice7_DrawPrimitiveStrided;
+    HRESULT helper_IDirect3DDevice7_DrawPrimitiveStrided(
+        KHook*, IDirect3DDevice7*, D3DPRIMITIVETYPE, DWORD,
+        LPD3DDRAWPRIMITIVESTRIDEDDATA, DWORD, DWORD);
+    GENERATE_STUBS_GROUP(STUB_IDirect3DDevice7_DrawPrimitiveStrided)
+ 
+    // IDirect3DDevice7::DrawIndexedPrimitiveStrided
+    HooksGroup hooks_IDirect3DDevice7_DrawIndexedPrimitiveStrided;
+    HRESULT helper_IDirect3DDevice7_DrawIndexedPrimitiveStrided(
+        KHook*, IDirect3DDevice7*, D3DPRIMITIVETYPE, DWORD,
+        LPD3DDRAWPRIMITIVESTRIDEDDATA, DWORD, LPWORD, DWORD, DWORD);
+    GENERATE_STUBS_GROUP(STUB_IDirect3DDevice7_DrawIndexedPrimitiveStrided)
+ 
+    // IDirect3DDevice7::DrawPrimitiveVB
+    HooksGroup hooks_IDirect3DDevice7_DrawPrimitiveVB;
+    HRESULT helper_IDirect3DDevice7_DrawPrimitiveVB(
+        KHook*, IDirect3DDevice7*, D3DPRIMITIVETYPE,
+        LPDIRECT3DVERTEXBUFFER7, DWORD, DWORD, DWORD);
+    GENERATE_STUBS_GROUP(STUB_IDirect3DDevice7_DrawPrimitiveVB)
+ 
+    // IDirect3DDevice7::DrawIndexedPrimitiveVB
+    HooksGroup hooks_IDirect3DDevice7_DrawIndexedPrimitiveVB;
+    HRESULT helper_IDirect3DDevice7_DrawIndexedPrimitiveVB(
+        KHook*, IDirect3DDevice7*, D3DPRIMITIVETYPE,
+        LPDIRECT3DVERTEXBUFFER7, DWORD, DWORD, LPWORD, DWORD, DWORD);
+    GENERATE_STUBS_GROUP(STUB_IDirect3DDevice7_DrawIndexedPrimitiveVB)
+ 
+    // IDirect3DDevice7::SetTexture
+    HooksGroup hooks_IDirect3DDevice7_SetTexture;
+    HRESULT helper_IDirect3DDevice7_SetTexture(
+        KHook*, IDirect3DDevice7*, DWORD, LPDIRECTDRAWSURFACE7);
+    GENERATE_STUBS_GROUP(STUB_IDirect3DDevice7_SetTexture)
+};
+ 
+// Static singleton pointer definition
+KRipper7* KRipper7::this_ = nullptr;
+ 
+ 
+// =============================================================================
+//  SECTION 29-G  KRipper7 core  (from dx7/kripper7.cpp)
+// =============================================================================
+ 
+KRipper7::KRipper7()
+{
+    this_ = this;
+    InitializeCriticalSection(&cs);
+    zeroHooks();
+    g_pLog->log("D3D7 ripper init\n");
+}
+ 
+KRipper7::~KRipper7()
+{
+    g_pLog->log("D3D7 ripper uninit\n");
+    g_pHookMgr->unhookPool(KHookMgr::EHOOK_POOL_D3DIM700);
+    zeroHooks();
+    DeleteCriticalSection(&cs);
+}
+ 
+void KRipper7::frameStart()   { meshTexturesDb.clear(); }
+void KRipper7::frameEnd()     {}
+void KRipper7::textureRipStart() { forcedTexturesDb.clear(); }
+void KRipper7::textureRipEnd()   {}
+void KRipper7::cleanup()         {}
+ 
+void KRipper7::initialize(IDirect3D7* pD3D)
+{
+    hookEx("IDirect3D7_CreateDevice",
+           (DWORD)IDX7_IDirect3D7_CreateDevice,
+           pD3D,
+           KHookMgr::EHOOK_POOL_D3DIM700,
+           &hooks_IDirect3D7_CreateDevice);
+ 
+    hookEx("IDirect3D7_CreateVertexBuffer",
+           (DWORD)IDX7_IDirect3D7_CreateVertexBuffer,
+           pD3D,
+           KHookMgr::EHOOK_POOL_D3DIM700,
+           &hooks_IDirect3D7_CreateVertexBuffer);
+}
+ 
+void KRipper7::hook_IDirect3DDevice7(IDirect3DDevice7* pDev)
+{
+    hookEx("IDirect3DDevice7_DrawPrimitive",
+           (DWORD)IDX7_IDirect3DDevice7_DrawPrimitive,
+           pDev, KHookMgr::EHOOK_POOL_D3DIM700,
+           &hooks_IDirect3DDevice7_DrawPrimitive);
+ 
+    hookEx("IDirect3DDevice7_DrawIndexedPrimitive",
+           (DWORD)IDX7_IDirect3DDevice7_DrawIndexedPrimitive,
+           pDev, KHookMgr::EHOOK_POOL_D3DIM700,
+           &hooks_IDirect3DDevice7_DrawIndexedPrimitive);
+ 
+    hookEx("IDirect3DDevice7_DrawPrimitiveStrided",
+           (DWORD)IDX7_IDirect3DDevice7_DrawPrimitiveStrided,
+           pDev, KHookMgr::EHOOK_POOL_D3DIM700,
+           &hooks_IDirect3DDevice7_DrawPrimitiveStrided);
+ 
+    hookEx("IDirect3DDevice7_DrawIndexedPrimitiveStrided",
+           (DWORD)IDX7_IDirect3DDevice7_DrawIndexedPrimitiveStrided,
+           pDev, KHookMgr::EHOOK_POOL_D3DIM700,
+           &hooks_IDirect3DDevice7_DrawIndexedPrimitiveStrided);
+ 
+    hookEx("IDirect3DDevice7_DrawPrimitiveVB",
+           (DWORD)IDX7_IDirect3DDevice7_DrawPrimitiveVB,
+           pDev, KHookMgr::EHOOK_POOL_D3DIM700,
+           &hooks_IDirect3DDevice7_DrawPrimitiveVB);
+ 
+    hookEx("IDirect3DDevice7_DrawIndexedPrimitiveVB",
+           (DWORD)IDX7_IDirect3DDevice7_DrawIndexedPrimitiveVB,
+           pDev, KHookMgr::EHOOK_POOL_D3DIM700,
+           &hooks_IDirect3DDevice7_DrawIndexedPrimitiveVB);
+ 
+    hookEx("IDirect3DDevice7_SetTexture",
+           (DWORD)IDX7_IDirect3DDevice7_SetTexture,
+           pDev, KHookMgr::EHOOK_POOL_D3DIM700,
+           &hooks_IDirect3DDevice7_SetTexture);
+}
+ 
+void KRipper7::zeroHooks()
+{
+    GENERATE_HOOKS_GROUP_CLEARER(IDirect3D7_CreateDevice)
+    GENERATE_HOOKS_GROUP_CLEARER(IDirect3D7_CreateVertexBuffer)
+    GENERATE_HOOKS_GROUP_CLEARER(IDirect3DDevice7_DrawPrimitive)
+    GENERATE_HOOKS_GROUP_CLEARER(IDirect3DDevice7_DrawIndexedPrimitive)
+    GENERATE_HOOKS_GROUP_CLEARER(IDirect3DDevice7_DrawPrimitiveStrided)
+    GENERATE_HOOKS_GROUP_CLEARER(IDirect3DDevice7_DrawIndexedPrimitiveStrided)
+    GENERATE_HOOKS_GROUP_CLEARER(IDirect3DDevice7_DrawPrimitiveVB)
+    GENERATE_HOOKS_GROUP_CLEARER(IDirect3DDevice7_DrawIndexedPrimitiveVB)
+    GENERATE_HOOKS_GROUP_CLEARER(IDirect3DDevice7_SetTexture)
+}
+ 
+EPrimitiveTopology::Type
+KRipper7::D3DPRIMITIVETYPE_to_EPrimitiveTopology(D3DPRIMITIVETYPE pt)
+{
+    switch (pt)
+    {
+    case D3DPT_POINTLIST:    return EPrimitiveTopology::POINTLIST;
+    case D3DPT_LINELIST:     return EPrimitiveTopology::LINELIST;
+    case D3DPT_LINESTRIP:    return EPrimitiveTopology::LINESTRIP;
+    case D3DPT_TRIANGLELIST: return EPrimitiveTopology::TRIANGLELIST;
+    case D3DPT_TRIANGLESTRIP:return EPrimitiveTopology::TRIANGLESTRIP;
+    case D3DPT_TRIANGLEFAN:  return EPrimitiveTopology::TRIANGLEFAN;
+    default:                 return EPrimitiveTopology::UNKNOWNPRIMITIVETYPE;
+    }
+}
+ 
+ 
+// ---- IDirect3D7::CreateVertexBuffer -----------------------------------------
+// Strip the WRITEONLY flag so we can Lock() the buffer for readback.
+ 
+HRESULT KRipper7::helper_IDirect3D7_CreateVertexBuffer(
+    KHook* h, IDirect3D7* pD3D,
+    D3DVERTEXBUFFERDESC* lpVBDesc, LPDIRECT3DVERTEXBUFFER7* lplpVB, DWORD dwFlags)
+{
+    auto e = (PFN_IDirect3D7_CreateVertexBuffer)h->getOriginalAddress();
+    lpVBDesc->dwCaps &= ~D3DVBCAPS_WRITEONLY;
+    return e(pD3D, lpVBDesc, lplpVB, dwFlags);
+}
+ 
+ 
+// ---- IDirect3D7::CreateDevice -----------------------------------------------
+// Intercept device creation to hook the resulting IDirect3DDevice7 vtable,
+// and attach a frame-present hook to the DDraw surface used as render target.
+ 
+HRESULT KRipper7::helper_IDirect3D7_CreateDevice(
+    KHook* h, IDirect3D7* pD3D, REFCLSID rclsid,
+    LPDIRECTDRAWSURFACE7 lpDDS, LPDIRECT3DDEVICE7* lplpDev)
+{
+    auto e = (PFN_IDirect3D7_CreateDevice)h->getOriginalAddress();
+ 
+    std::string devname = guidToName(rclsid);
+    g_pLog->log("IDirect3D7_CreateDevice(%s)\n", devname.c_str());
+ 
+    HRESULT hr = e(pD3D, rclsid, lpDDS, lplpDev);
+    if (SUCCEEDED(hr))
+    {
+        hook_IDirect3DDevice7(*lplpDev);
+ 
+        // Hook the DDraw surface Flip/Blt for frame detection
+        if (g_pDdraw)
+            g_pDdraw->hook_IDirectDrawSurface(lpDDS);
+    }
+    return hr;
+}
+ 
+ 
+// =============================================================================
+//  SECTION 29-H  DrawPrimitive  (from dx7/drawprimitive7.cpp)
+// =============================================================================
+ 
+void KRipper7::ripDrawPrimitive(
+    IDirect3DDevice7* pDev, D3DPRIMITIVETYPE dpt,
+    DWORD dwVTD, LPVOID lpv, DWORD dwVC, DWORD /*dwF*/)
+{
+    do
+    {
+        EPrimitiveTopology::Type topo = D3DPRIMITIVETYPE_to_EPrimitiveTopology(dpt);
+        if (!isPrimitiveTopologySupported(topo))
+        {
+            g_pLog->logError("DrawPrimitive: unsupported topology\n\n");
+            break;
+        }
+ 
+        KInputVertexDeclaration  inpDecl;
+        KOutputVertexDeclaration outDecl;
+        fvfToInputVertexDeclaration(dwVTD, &inpDecl);
+        createKOutputVertexDeclaration(inpDecl, outDecl);
+        dumpInputVertexDeclaration2Log(inpDecl);
+        dumpOutputVertexDeclaration2Log(outDecl);
+ 
+        KFACES                    faces;
+        OptimizedIndexToMeshIndex optIdx;
+        generateIndexes_VertexCount(topo, dwVC, &faces, &optIdx);
+ 
+        DWORD vertSz  = outDecl.getVertexSize();
+        DWORD vertCnt = (DWORD)optIdx.size();
+        g_pLog->log("PrimitivesCount=%d\nVertexCnt=%d\nOutVertexSize=%d\n",
+                    faces.getPrimitivesCount(), vertCnt, vertSz);
+ 
+        KVERTICES vertices(vertCnt, vertSz);
+        dumpVbUP(inpDecl, outDecl, optIdx, &vertices,
+                 lpv, inpDecl.getStreamVertexSize(0));
+ 
+        KMeshTextures meshTextures;
+        saveMeshTextures(pDev, &meshTextures);
+        KMeshShaders  meshShaders; // DX7: no shaders
+ 
+        std::wstring path   = g_pIntruder->getFrameMeshSavePath();
+        std::string  pathA  = wideStringToMultiByte(path.c_str());
+        HRESULT hr = saveRipFile(path.c_str(), inpDecl, outDecl,
+                                 meshTextures, meshShaders, faces, vertices);
+        if (SUCCEEDED(hr))
+            g_pLog->log("Mesh saved: %s\n\n\n", pathA.c_str());
+        else
+            g_pLog->logError("Mesh save error: %s\n\n\n", pathA.c_str());
+ 
+        g_pIntruder->incFrameMeshIdx();
+    }
+    while (false);
+}
+ 
+HRESULT KRipper7::helper_IDirect3DDevice7_DrawPrimitive(
+    KHook* h, IDirect3DDevice7* pDev, D3DPRIMITIVETYPE dpt,
+    DWORD dwVTD, LPVOID lpv, DWORD dwVC, DWORD dwF)
+{
+    auto e = (PFN_IDirect3DDevice7_DrawPrimitive)h->getOriginalAddress();
+ 
+    g_pIntruder->keyHandler(this);
+    DWORD rip    = g_pIntruder->isMeshRipEnabled();
+    DWORD minVtx = g_pIntruder->getSettings()->dwMinVertexCount;
+ 
+    if (rip)
+    {
+        if (dwVC >= minVtx)
+        {
+            g_pLog->log("IDirect3DDevice7_DrawPrimitive(0x%p,%d,0x%08X,0x%p,%d,0x%08X)\n",
+                        pDev, dpt, dwVTD, lpv, dwVC, dwF);
+            __try { ripDrawPrimitive(pDev,dpt,dwVTD,lpv,dwVC,dwF); }
+            __except(EXCEPTION_EXECUTE_HANDLER)
+            { g_pLog->logError("DrawPrimitive exception\n\n\n"); }
+        }
+        else
+            g_pLog->logWarning("DrawPrimitive skipped (vertex count too low)\n");
+    }
+    return e(pDev, dpt, dwVTD, lpv, dwVC, dwF);
+}
+ 
+ 
+// =============================================================================
+//  SECTION 29-I  DrawIndexedPrimitive  (from dx7/drawindexedprimitive7.cpp)
+// =============================================================================
+ 
+void KRipper7::ripDrawIndexedPrimitive(
+    IDirect3DDevice7* pDev, D3DPRIMITIVETYPE dpt,
+    DWORD dwVTD, LPVOID lpv, DWORD /*dwVC*/,
+    LPWORD lpwI, DWORD dwIC, DWORD /*dwF*/)
+{
+    do
+    {
+        EPrimitiveTopology::Type topo = D3DPRIMITIVETYPE_to_EPrimitiveTopology(dpt);
+        if (!isPrimitiveTopologySupported(topo))
+        { g_pLog->logError("DrawIndexedPrimitive: unsupported topology\n\n"); break; }
+ 
+        KInputVertexDeclaration  inpDecl;
+        KOutputVertexDeclaration outDecl;
+        fvfToInputVertexDeclaration(dwVTD, &inpDecl);
+        createKOutputVertexDeclaration(inpDecl, outDecl);
+        dumpInputVertexDeclaration2Log(inpDecl);
+        dumpOutputVertexDeclaration2Log(outDecl);
+ 
+        DWORD primCnt = primitiveCountFromIndexCount(dwIC, topo);
+ 
+        KFACES                    faces;
+        OptimizedIndexToMeshIndex optIdx;
+        HRESULT hr = dumpIndexesUP(topo, primCnt, &faces, &optIdx,
+                                   lpwI, EIndexFormat::INDEX_16);
+        if (FAILED(hr))
+        { g_pLog->logError("dumpIndexesUP() HRESULT: 0x%08X\n\n", hr); break; }
+ 
+        DWORD vertSz  = outDecl.getVertexSize();
+        DWORD vertCnt = (DWORD)optIdx.size();
+        g_pLog->log("PrimitivesCount=%d\nVertexCnt=%d\nOutVertexSize=%d\n",
+                    faces.getPrimitivesCount(), vertCnt, vertSz);
+ 
+        KVERTICES vertices(vertCnt, vertSz);
+        dumpVbUP(inpDecl, outDecl, optIdx, &vertices,
+                 lpv, inpDecl.getStreamVertexSize(0));
+ 
+        KMeshTextures meshTextures;
+        saveMeshTextures(pDev, &meshTextures);
+        KMeshShaders meshShaders;
+ 
+        std::wstring path  = g_pIntruder->getFrameMeshSavePath();
+        std::string  pathA = wideStringToMultiByte(path.c_str());
+        hr = saveRipFile(path.c_str(), inpDecl, outDecl,
+                         meshTextures, meshShaders, faces, vertices);
+        if (SUCCEEDED(hr)) g_pLog->log("Mesh saved: %s\n\n\n", pathA.c_str());
+        else               g_pLog->logError("Mesh save error: %s\n\n\n", pathA.c_str());
+ 
+        g_pIntruder->incFrameMeshIdx();
+    }
+    while (false);
+}
+ 
+HRESULT KRipper7::helper_IDirect3DDevice7_DrawIndexedPrimitive(
+    KHook* h, IDirect3DDevice7* pDev, D3DPRIMITIVETYPE dpt,
+    DWORD dwVTD, LPVOID lpv, DWORD dwVC,
+    LPWORD lpwI, DWORD dwIC, DWORD dwF)
+{
+    auto e = (PFN_IDirect3DDevice7_DrawIndexedPrimitive)h->getOriginalAddress();
+ 
+    g_pIntruder->keyHandler(this);
+    DWORD rip    = g_pIntruder->isMeshRipEnabled();
+    DWORD minVtx = g_pIntruder->getSettings()->dwMinVertexCount;
+ 
+    if (rip)
+    {
+        if (dwVC >= minVtx)
+        {
+            g_pLog->log("IDirect3DDevice7_DrawIndexedPrimitive"
+                        "(0x%p,%d,0x%08X,0x%p,%d,0x%p,%d,0x%08X)\n",
+                        pDev,dpt,dwVTD,lpv,dwVC,lpwI,dwIC,dwF);
+            __try { ripDrawIndexedPrimitive(pDev,dpt,dwVTD,lpv,dwVC,lpwI,dwIC,dwF); }
+            __except(EXCEPTION_EXECUTE_HANDLER)
+            { g_pLog->logError("DrawIndexedPrimitive exception\n\n\n"); }
+        }
+        else
+            g_pLog->logWarning("DrawIndexedPrimitive skipped\n");
+    }
+    return e(pDev,dpt,dwVTD,lpv,dwVC,lpwI,dwIC,dwF);
+}
+ 
+ 
+// =============================================================================
+//  SECTION 29-J  DrawPrimitiveStrided  (from dx7/drawprimitivestrided7.cpp)
+// =============================================================================
+ 
+void KRipper7::ripDrawPrimitiveStrided(
+    IDirect3DDevice7* pDev, D3DPRIMITIVETYPE dpt,
+    DWORD dwVTD, LPD3DDRAWPRIMITIVESTRIDEDDATA lpVA, DWORD dwVC, DWORD /*dwF*/)
+{
+    do
+    {
+        EPrimitiveTopology::Type topo = D3DPRIMITIVETYPE_to_EPrimitiveTopology(dpt);
+        if (!isPrimitiveTopologySupported(topo))
+        { g_pLog->logError("DrawPrimitiveStrided: unsupported topology\n\n"); break; }
+ 
+        KInputVertexDeclaration  inpDecl;
+        KOutputVertexDeclaration outDecl;
+        fvfToInputVertexDeclaration(dwVTD, &inpDecl);
+        createKOutputVertexDeclaration(inpDecl, outDecl);
+        dumpInputVertexDeclaration2Log(inpDecl);
+        dumpOutputVertexDeclaration2Log(outDecl);
+ 
+        KFACES                    faces;
+        OptimizedIndexToMeshIndex optIdx;
+        generateIndexes_VertexCount(topo, dwVC, &faces, &optIdx);
+ 
+        DWORD vertSz  = outDecl.getVertexSize();
+        DWORD vertCnt = (DWORD)optIdx.size();
+        g_pLog->log("PrimitivesCount=%d\nVertexCnt=%d\nOutVertexSize=%d\n",
+                    faces.getPrimitivesCount(), vertCnt, vertSz);
+ 
+        KVERTICES vertices(vertCnt, vertSz);
+        dumpVertexesStrided(lpVA, inpDecl, outDecl, optIdx, &vertices);
+ 
+        KMeshTextures meshTextures;
+        saveMeshTextures(pDev, &meshTextures);
+        KMeshShaders meshShaders;
+ 
+        std::wstring path  = g_pIntruder->getFrameMeshSavePath();
+        std::string  pathA = wideStringToMultiByte(path.c_str());
+        HRESULT hr = saveRipFile(path.c_str(), inpDecl, outDecl,
+                                 meshTextures, meshShaders, faces, vertices);
+        if (SUCCEEDED(hr)) g_pLog->log("Mesh saved: %s\n\n\n", pathA.c_str());
+        else               g_pLog->logError("Mesh save error: %s\n\n\n", pathA.c_str());
+ 
+        g_pIntruder->incFrameMeshIdx();
+    }
+    while (false);
+}
+ 
+HRESULT KRipper7::helper_IDirect3DDevice7_DrawPrimitiveStrided(
+    KHook* h, IDirect3DDevice7* pDev, D3DPRIMITIVETYPE dpt,
+    DWORD dwVTD, LPD3DDRAWPRIMITIVESTRIDEDDATA lpVA, DWORD dwVC, DWORD dwF)
+{
+    auto e = (PFN_IDirect3DDevice7_DrawPrimitiveStrided)h->getOriginalAddress();
+ 
+    g_pIntruder->keyHandler(this);
+    DWORD rip    = g_pIntruder->isMeshRipEnabled();
+    DWORD minVtx = g_pIntruder->getSettings()->dwMinVertexCount;
+ 
+    if (rip)
+    {
+        if (dwVC >= minVtx)
+        {
+            g_pLog->log("IDirect3DDevice7_DrawPrimitiveStrided"
+                        "(0x%p,%d,0x%08X,0x%p,%d,0x%08X)\n",
+                        pDev,dpt,dwVTD,lpVA,dwVC,dwF);
+            __try { ripDrawPrimitiveStrided(pDev,dpt,dwVTD,lpVA,dwVC,dwF); }
+            __except(EXCEPTION_EXECUTE_HANDLER)
+            { g_pLog->logError("DrawPrimitiveStrided exception\n\n\n"); }
+        }
+        else
+            g_pLog->logWarning("DrawPrimitiveStrided skipped\n");
+    }
+    return e(pDev,dpt,dwVTD,lpVA,dwVC,dwF);
+}
+ 
+ 
+// =============================================================================
+//  SECTION 29-K  DrawIndexedPrimitiveStrided  (dx7/drawindexedprimitivestrided7.cpp)
+// =============================================================================
+ 
+void KRipper7::ripDrawIndexedPrimitiveStrided(
+    IDirect3DDevice7* pDev, D3DPRIMITIVETYPE dpt, DWORD dwVTD,
+    LPD3DDRAWPRIMITIVESTRIDEDDATA lpVA, DWORD /*dwVC*/,
+    LPWORD lpwI, DWORD dwIC, DWORD /*dwF*/)
+{
+    do
+    {
+        EPrimitiveTopology::Type topo = D3DPRIMITIVETYPE_to_EPrimitiveTopology(dpt);
+        if (!isPrimitiveTopologySupported(topo))
+        { g_pLog->logError("DrawIndexedPrimitiveStrided: unsupported topology\n\n"); break; }
+ 
+        KInputVertexDeclaration  inpDecl;
+        KOutputVertexDeclaration outDecl;
+        fvfToInputVertexDeclaration(dwVTD, &inpDecl);
+        createKOutputVertexDeclaration(inpDecl, outDecl);
+        dumpInputVertexDeclaration2Log(inpDecl);
+        dumpOutputVertexDeclaration2Log(outDecl);
+ 
+        DWORD primCnt = primitiveCountFromIndexCount(dwIC, topo);
+ 
+        KFACES                    faces;
+        OptimizedIndexToMeshIndex optIdx;
+        HRESULT hr = dumpIndexesUP(topo, primCnt, &faces, &optIdx,
+                                   lpwI, EIndexFormat::INDEX_16);
+        if (FAILED(hr))
+        { g_pLog->logError("dumpIndexesUP() HRESULT: 0x%08X\n\n", hr); break; }
+ 
+        DWORD vertSz  = outDecl.getVertexSize();
+        DWORD vertCnt = (DWORD)optIdx.size();
+        g_pLog->log("PrimitivesCount=%d\nVertexCnt=%d\nOutVertexSize=%d\n",
+                    faces.getPrimitivesCount(), vertCnt, vertSz);
+ 
+        KVERTICES vertices(vertCnt, vertSz);
+        dumpVertexesStrided(lpVA, inpDecl, outDecl, optIdx, &vertices);
+ 
+        KMeshTextures meshTextures;
+        saveMeshTextures(pDev, &meshTextures);
+        KMeshShaders meshShaders;
+ 
+        std::wstring path  = g_pIntruder->getFrameMeshSavePath();
+        std::string  pathA = wideStringToMultiByte(path.c_str());
+        hr = saveRipFile(path.c_str(), inpDecl, outDecl,
+                         meshTextures, meshShaders, faces, vertices);
+        if (SUCCEEDED(hr)) g_pLog->log("Mesh saved: %s\n\n\n", pathA.c_str());
+        else               g_pLog->logError("Mesh save error: %s\n\n\n", pathA.c_str());
+ 
+        g_pIntruder->incFrameMeshIdx();
+    }
+    while (false);
+}
+ 
+HRESULT KRipper7::helper_IDirect3DDevice7_DrawIndexedPrimitiveStrided(
+    KHook* h, IDirect3DDevice7* pDev, D3DPRIMITIVETYPE dpt, DWORD dwVTD,
+    LPD3DDRAWPRIMITIVESTRIDEDDATA lpVA, DWORD dwVC,
+    LPWORD lpwI, DWORD dwIC, DWORD dwF)
+{
+    auto e = (PFN_IDirect3DDevice7_DrawIndexedPrimitiveStrided)h->getOriginalAddress();
+ 
+    g_pIntruder->keyHandler(this);
+    DWORD rip    = g_pIntruder->isMeshRipEnabled();
+    DWORD minVtx = g_pIntruder->getSettings()->dwMinVertexCount;
+ 
+    if (rip)
+    {
+        if (dwVC >= minVtx)
+        {
+            g_pLog->log("IDirect3DDevice7_DrawIndexedPrimitiveStrided"
+                        "(0x%p,%d,0x%08X,0x%p,%d,0x%p,%d,0x%08X)\n",
+                        pDev,dpt,dwVTD,lpVA,dwVC,lpwI,dwIC,dwF);
+            __try
+            { ripDrawIndexedPrimitiveStrided(pDev,dpt,dwVTD,lpVA,dwVC,lpwI,dwIC,dwF); }
+            __except(EXCEPTION_EXECUTE_HANDLER)
+            { g_pLog->logError("DrawIndexedPrimitiveStrided exception\n\n\n"); }
+        }
+        else
+            g_pLog->logWarning("DrawIndexedPrimitiveStrided skipped\n");
+    }
+    return e(pDev,dpt,dwVTD,lpVA,dwVC,lpwI,dwIC,dwF);
+}
+ 
+ 
+// =============================================================================
+//  SECTION 29-L  DrawPrimitiveVB  (from dx7/drawprimitivevb7.cpp)
+// =============================================================================
+ 
+void KRipper7::ripDrawPrimitiveVB(
+    IDirect3DDevice7* pDev, D3DPRIMITIVETYPE dpt,
+    LPDIRECT3DVERTEXBUFFER7 lpVB, DWORD dwSV, DWORD dwNV, DWORD /*dwF*/)
+{
+    do
+    {
+        EPrimitiveTopology::Type topo = D3DPRIMITIVETYPE_to_EPrimitiveTopology(dpt);
+        if (!isPrimitiveTopologySupported(topo))
+        { g_pLog->logError("DrawPrimitiveVB: unsupported topology\n\n"); break; }
+ 
+        D3DVERTEXBUFFERDESC vbDesc = {};
+        vbDesc.dwSize = sizeof(vbDesc);
+        HRESULT hr = lpVB->GetVertexBufferDesc(&vbDesc);
+        if (FAILED(hr))
+        { g_pLog->logError("GetVertexBufferDesc() HRESULT: 0x%08X\n\n\n", hr); break; }
+ 
+        KInputVertexDeclaration  inpDecl;
+        KOutputVertexDeclaration outDecl;
+        g_pLog->log("FVF: 0x%08X\n", vbDesc.dwFVF);
+        fvfToInputVertexDeclaration(vbDesc.dwFVF, &inpDecl);
+        createKOutputVertexDeclaration(inpDecl, outDecl);
+        dumpInputVertexDeclaration2Log(inpDecl);
+        dumpOutputVertexDeclaration2Log(outDecl);
+ 
+        DWORD primCnt = primitiveCountFromVertexCount(dwNV, topo);
+ 
+        KFACES                    faces;
+        OptimizedIndexToMeshIndex optIdx;
+        generateIndexes_PrimitiveCount(topo, primCnt, &faces, &optIdx);
+ 
+        DWORD vertSz  = outDecl.getVertexSize();
+        DWORD vertCnt = (DWORD)optIdx.size();
+        g_pLog->log("PrimitivesCount=%d\nVertexCnt=%d\nOutVertexSize=%d\n",
+                    faces.getPrimitivesCount(), vertCnt, vertSz);
+ 
+        KVERTICES vertices(vertCnt, vertSz);
+ 
+        LPVOID vbData = nullptr;
+        hr = lpVB->Lock(DDLOCK_READONLY | DDLOCK_WAIT, &vbData, nullptr);
+        if (FAILED(hr))
+        { g_pLog->logError("VB Lock() HRESULT: 0x%08X\n\n", hr); break; }
+ 
+        DWORD stride = inpDecl.getStreamVertexSize(0);
+        dumpVbUP(inpDecl, outDecl, optIdx, &vertices,
+                 (BYTE*)vbData + dwSV * stride, stride);
+ 
+        lpVB->Unlock();
+ 
+        KMeshTextures meshTextures;
+        saveMeshTextures(pDev, &meshTextures);
+        KMeshShaders meshShaders;
+ 
+        std::wstring path  = g_pIntruder->getFrameMeshSavePath();
+        std::string  pathA = wideStringToMultiByte(path.c_str());
+        hr = saveRipFile(path.c_str(), inpDecl, outDecl,
+                         meshTextures, meshShaders, faces, vertices);
+        if (SUCCEEDED(hr)) g_pLog->log("Mesh saved: %s\n\n\n", pathA.c_str());
+        else               g_pLog->logError("Mesh save error: %s\n\n\n", pathA.c_str());
+ 
+        g_pIntruder->incFrameMeshIdx();
+    }
+    while (false);
+}
+ 
+HRESULT KRipper7::helper_IDirect3DDevice7_DrawPrimitiveVB(
+    KHook* h, IDirect3DDevice7* pDev, D3DPRIMITIVETYPE dpt,
+    LPDIRECT3DVERTEXBUFFER7 lpVB, DWORD dwSV, DWORD dwNV, DWORD dwF)
+{
+    auto e = (PFN_IDirect3DDevice7_DrawPrimitiveVB)h->getOriginalAddress();
+ 
+    g_pIntruder->keyHandler(this);
+    DWORD rip    = g_pIntruder->isMeshRipEnabled();
+    DWORD minVtx = g_pIntruder->getSettings()->dwMinVertexCount;
+ 
+    if (rip)
+    {
+        if (dwNV >= minVtx)
+        {
+            g_pLog->log("IDirect3DDevice7_DrawPrimitiveVB"
+                        "(0x%p,%d,0x%p,%d,%d,0x%08X)\n",
+                        pDev,dpt,lpVB,dwSV,dwNV,dwF);
+            __try { ripDrawPrimitiveVB(pDev,dpt,lpVB,dwSV,dwNV,dwF); }
+            __except(EXCEPTION_EXECUTE_HANDLER)
+            { g_pLog->logError("DrawPrimitiveVB exception\n\n\n"); }
+        }
+        else
+            g_pLog->logWarning("DrawPrimitiveVB skipped\n");
+    }
+    return e(pDev,dpt,lpVB,dwSV,dwNV,dwF);
+}
+ 
+ 
+// =============================================================================
+//  SECTION 29-M  DrawIndexedPrimitiveVB  (from dx7/drawindexedprimitivevb7.cpp)
+// =============================================================================
+ 
+void KRipper7::ripDrawIndexedPrimitiveVB(
+    IDirect3DDevice7* pDev, D3DPRIMITIVETYPE dpt,
+    LPDIRECT3DVERTEXBUFFER7 lpVB, DWORD dwSV, DWORD dwNV,
+    LPWORD lpwI, DWORD dwIC, DWORD /*dwF*/)
+{
+    do
+    {
+        EPrimitiveTopology::Type topo = D3DPRIMITIVETYPE_to_EPrimitiveTopology(dpt);
+        if (!isPrimitiveTopologySupported(topo))
+        { g_pLog->logError("DrawIndexedPrimitiveVB: unsupported topology\n\n"); break; }
+ 
+        D3DVERTEXBUFFERDESC vbDesc = {};
+        vbDesc.dwSize = sizeof(vbDesc);
+        HRESULT hr = lpVB->GetVertexBufferDesc(&vbDesc);
+        if (FAILED(hr))
+        { g_pLog->logError("GetVertexBufferDesc() HRESULT: 0x%08X\n\n\n", hr); break; }
+ 
+        KInputVertexDeclaration  inpDecl;
+        KOutputVertexDeclaration outDecl;
+        g_pLog->log("FVF: 0x%08X\n", vbDesc.dwFVF);
+        fvfToInputVertexDeclaration(vbDesc.dwFVF, &inpDecl);
+        createKOutputVertexDeclaration(inpDecl, outDecl);
+        dumpInputVertexDeclaration2Log(inpDecl);
+        dumpOutputVertexDeclaration2Log(outDecl);
+ 
+        DWORD primCnt = primitiveCountFromIndexCount(dwIC, topo);
+ 
+        KFACES                    faces;
+        OptimizedIndexToMeshIndex optIdx;
+        hr = dumpIndexesUP(topo, primCnt, &faces, &optIdx,
+                           lpwI, EIndexFormat::INDEX_16);
+        if (FAILED(hr))
+        { g_pLog->logError("dumpIndexesUP() HRESULT: 0x%08X\n\n", hr); break; }
+ 
+        DWORD vertSz  = outDecl.getVertexSize();
+        DWORD vertCnt = (DWORD)optIdx.size();
+        g_pLog->log("PrimitivesCount=%d\nVertexCnt=%d\nOutVertexSize=%d\n",
+                    faces.getPrimitivesCount(), vertCnt, vertSz);
+ 
+        KVERTICES vertices(vertCnt, vertSz);
+ 
+        LPVOID vbData = nullptr;
+        hr = lpVB->Lock(DDLOCK_READONLY | DDLOCK_WAIT, &vbData, nullptr);
+        if (FAILED(hr))
+        { g_pLog->logError("VB Lock() HRESULT: 0x%08X\n\n", hr); break; }
+ 
+        DWORD stride = inpDecl.getStreamVertexSize(0);
+        dumpVbUP(inpDecl, outDecl, optIdx, &vertices,
+                 (BYTE*)vbData + dwSV * stride, stride);
+ 
+        lpVB->Unlock();
+ 
+        KMeshTextures meshTextures;
+        saveMeshTextures(pDev, &meshTextures);
+        KMeshShaders meshShaders;
+ 
+        std::wstring path  = g_pIntruder->getFrameMeshSavePath();
+        std::string  pathA = wideStringToMultiByte(path.c_str());
+        hr = saveRipFile(path.c_str(), inpDecl, outDecl,
+                         meshTextures, meshShaders, faces, vertices);
+        if (SUCCEEDED(hr)) g_pLog->log("Mesh saved: %s\n\n\n", pathA.c_str());
+        else               g_pLog->logError("Mesh save error: %s\n\n\n", pathA.c_str());
+ 
+        g_pIntruder->incFrameMeshIdx();
+    }
+    while (false);
+}
+ 
+HRESULT KRipper7::helper_IDirect3DDevice7_DrawIndexedPrimitiveVB(
+    KHook* h, IDirect3DDevice7* pDev, D3DPRIMITIVETYPE dpt,
+    LPDIRECT3DVERTEXBUFFER7 lpVB, DWORD dwSV, DWORD dwNV,
+    LPWORD lpwI, DWORD dwIC, DWORD dwF)
+{
+    auto e = (PFN_IDirect3DDevice7_DrawIndexedPrimitiveVB)h->getOriginalAddress();
+ 
+    g_pIntruder->keyHandler(this);
+    DWORD rip    = g_pIntruder->isMeshRipEnabled();
+    DWORD minVtx = g_pIntruder->getSettings()->dwMinVertexCount;
+ 
+    if (rip)
+    {
+        if (dwNV >= minVtx)
+        {
+            g_pLog->log("IDirect3DDevice7_DrawIndexedPrimitiveVB"
+                        "(0x%p,%d,0x%p,%d,%d,0x%p,%d,0x%08X)\n",
+                        pDev,dpt,lpVB,dwSV,dwNV,lpwI,dwIC,dwF);
+            __try
+            { ripDrawIndexedPrimitiveVB(pDev,dpt,lpVB,dwSV,dwNV,lpwI,dwIC,dwF); }
+            __except(EXCEPTION_EXECUTE_HANDLER)
+            { g_pLog->logError("DrawIndexedPrimitiveVB exception\n\n\n"); }
+        }
+        else
+            g_pLog->logWarning("DrawIndexedPrimitiveVB skipped\n");
+    }
+    return e(pDev,dpt,lpVB,dwSV,dwNV,lpwI,dwIC,dwF);
+}
+ 
+ 
+// =============================================================================
+//  SECTION 29-N  Texture management  (from dx7/savemeshtextures7.cpp,
+//                                         dx7/savetexture7.cpp,
+//                                         dx7/texture7.cpp)
+// =============================================================================
+ 
+// ---- savemeshtextures7 ------------------------------------------------------
+ 
+void KRipper7::addMeshTexture(const KTexture& t)
+{
+    meshTexturesDb.push_back(t);
+}
+ 
+bool KRipper7::isMeshTextureSaved(IDirectDrawSurface7* pTexture, KTexture* out)
+{
+    for (auto& t : meshTexturesDb)
+    {
+        if (t.pTexture == pTexture)
+        { *out = t; return true; }
+    }
+    return false;
+}
+ 
+void KRipper7::saveMeshTextures(IDirect3DDevice7* pDev, KMeshTextures* meshTextures)
+{
+    for (DWORD i = 0; i < 8; ++i)
+    {
+        // TDXRef auto-releases on scope exit
+        IDirectDrawSurface7* pRawTex = nullptr;
+        HRESULT hr = pDev->GetTexture(i, (LPDIRECTDRAWSURFACE7*)&pRawTex);
+        if (FAILED(hr))
+        {
+            g_pLog->logError("GetTexture(%d) HRESULT: 0x%08X\n", i, hr);
+            continue;
+        }
+        if (!pRawTex) continue;
+ 
+        // We own a reference; release on all paths
+        struct AutoRelease {
+            IDirectDrawSurface7* p;
+            ~AutoRelease() { if(p) p->Release(); }
+        } ar = {pRawTex};
+ 
+        KTexture savedTex;
+        if (isMeshTextureSaved(pRawTex, &savedTex))
+        {
+            meshTextures->textures.push_back(savedTex.name);
+            g_pLog->log("Texture stage #%d already saved: %s\n", i,
+                        wideStringToMultiByte(savedTex.fullPath.c_str()).c_str());
+        }
+        else
+        {
+            std::string  nameA;
+            std::wstring path = g_pIntruder->getFrameTextureSavePath(nameA, i);
+ 
+            hr = saveTexture2File(path.c_str(), pRawTex);
+            if (SUCCEEDED(hr))
+            {
+                KTexture ft;
+                ft.pTexture = pRawTex;
+                ft.name     = nameA;
+                ft.fullPath = path;
+                addMeshTexture(ft);
+                meshTextures->textures.push_back(nameA);
+                g_pLog->log("Texture stage #%d saved: %s\n", i,
+                            wideStringToMultiByte(path.c_str()).c_str());
+            }
+            else
+                g_pLog->logError("Texture stage #%d save HRESULT: 0x%08X\n", i, hr);
+ 
+            g_pIntruder->incFrameTextureIdx();
+        }
+    }
+}
+ 
+// ---- savetexture7 -----------------------------------------------------------
+// Delegates to KDdraw which knows how to blit a DDraw surface to disk.
+ 
+HRESULT KRipper7::saveTexture2File(const wchar_t* fileName,
+                                    IDirectDrawSurface7* surf)
+{
+    if (!g_pDdraw)
+    {
+        g_pLog->logError("saveTexture2File: g_pDdraw is null\n");
+        return E_POINTER;
+    }
+    return g_pDdraw->save_IDirectDrawSurface(fileName, surf);
+}
+ 
+void KRipper7::dumpTextureDesc(IDirectDrawSurface7* /*pTexture*/)
+{
+    // Diagnostic logging of the DDraw surface descriptor.
+    // Left as a no-op in this integration; add DDSURFACEDESC2 queries here
+    // if deeper debugging of texture formats is needed.
+}
+ 
+// ---- texture7 (SetTexture hook + forced texture rip) ------------------------
+ 
+DWORD KRipper7::isTextureSaved(LPDIRECTDRAWSURFACE7 pTex)
+{
+    if (!pTex) return 1; // null = "unset" => treat as already handled
+ 
+    for (auto p : forcedTexturesDb)
+        if (p == pTex) return 1;
+ 
+    return 0;
+}
+ 
+void KRipper7::handleTextureSave(IDirect3DDevice7* /*pDev*/, DWORD /*Stage*/,
+                                  LPDIRECTDRAWSURFACE7 pTexture)
+{
+    g_pIntruder->keyHandler(this);
+    if (!g_pIntruder->isTexturesRipKeyPressed()) return;
+ 
+    if (!isTextureSaved(pTexture))
+    {
+        std::wstring path  = g_pIntruder->getTextureSavePath();
+        std::string  pathA = wideStringToMultiByte(path.c_str());
+ 
+        HRESULT hr = saveTexture2File(path.c_str(), pTexture);
+        if (SUCCEEDED(hr))
+        {
+            g_pIntruder->incTextureIdx();
+            g_pLog->log("Texture saved: %s\n", pathA.c_str());
+        }
+        else
+            g_pLog->logError("Texture save HRESULT: 0x%08X\n", hr);
+ 
+        // Mark as processed regardless of success so we don't retry every frame
+        forcedTexturesDb.push_back(pTexture);
+    }
+}
+ 
+HRESULT KRipper7::helper_IDirect3DDevice7_SetTexture(
+    KHook* h, IDirect3DDevice7* pDev, DWORD dwStage, LPDIRECTDRAWSURFACE7 lpTexture)
+{
+    // DX7 runtimes sometimes replace the device vtable between calls, so
+    // re-hook here (same pattern as DX9's setDeviceHooks).
+    hook_IDirect3DDevice7(pDev);
+ 
+    auto e = (PFN_IDirect3DDevice7_SetTexture)h->getOriginalAddress();
+ 
+    EnterCriticalSection(&cs);
+    __try { handleTextureSave(pDev, dwStage, lpTexture); }
+    __except(EXCEPTION_EXECUTE_HANDLER)
+    { g_pLog->logError("Exception in KRipper7::handleTextureSave()\n"); }
+    LeaveCriticalSection(&cs);
+ 
+    return e(pDev, dwStage, lpTexture);
+}
+ 
+ 
+// =============================================================================
+//  SECTION 29-O  Factory functions  (from dx7/pre7.cpp)
+// =============================================================================
+ 
+KRipper7* create_KRipper7()           { return new KRipper7; }
+void      delete_KRipper7(KRipper7*& p) { delete p; p = nullptr; }
+
+// =============================================================================
+// =============================================================================
+//  SECTION 30  DirectX 6 (d3dim.dll)  --  KRipper6
+//
+//  Sources merged:
+//    dx6/dx6types.h          dx6/enums.h           dx6/macro.h
+//    dx6/kripper6.h/.cpp
+//    dx6/drawprimitive6.cpp              dx6/drawprimitivestrided6.cpp
+//    dx6/drawprimitivevb6.cpp
+//    dx6/drawindexedprimitive6.cpp       dx6/drawindexedprimitivestrided6.cpp
+//    dx6/drawindexedprimitivevb6.cpp
+//    dx6/savemeshtextures6.cpp           dx6/savetexture6.cpp
+//    dx6/texture6.cpp                    dx6/pre6.cpp
+//
+//  This section uses the DX6 COM interfaces from the legacy DXSDK7 headers
+//  (ddraw.h / d3d.h).  Include order in the outer TU must be:
+//    #include <ddraw.h>   // IDirectDraw4, IDirectDrawSurface4
+//    #include <d3d.h>     // IDirect3D3, IDirect3DDevice3, D3DFVF_* â€¦
+//  Both headers must appear *before* d3d9.h (or enable only DX6 in the build).
+// =============================================================================
+
+// Guard: compile this block only when the DX6 SDK headers are present.
+#if defined(__DDRAW_INCLUDED__) && defined(__D3D_H__)
+
+// ---------------------------------------------------------------------------
+//  SECTION 30-A  Function-pointer typedefs  (from dx6/dx6types.h)
+// ---------------------------------------------------------------------------
+#pragma once
+
+
+#include "../DXSDK/DXSDK7/include/ddraw.h"
+#include "../DXSDK/DXSDK7/include/d3d.h"
+
+
+
+// IDirect3D3_CreateDevice
+typedef HRESULT(__stdcall* PFN_IDirect3D3_CreateDevice)(
+                                           IDirect3D3* d3d,
+                                           REFCLSID rclsid,
+                                           LPDIRECTDRAWSURFACE4 lpDDS,
+                                           LPDIRECT3DDEVICE3*  lplpD3DDevice,
+                                           LPUNKNOWN pUnkOuter
+                                           );
+
+// IDirect3D3_CreateVertexBuffer
+typedef HRESULT(__stdcall* PFN_IDirect3D3_CreateVertexBuffer)(
+                                IDirect3D3* d3d,
+                                LPD3DVERTEXBUFFERDESC lpVBDesc,
+                                LPDIRECT3DVERTEXBUFFER* lpD3DVertexBuffer,
+                                DWORD dwFlags,
+                                LPUNKNOWN pUnkOuter
+                                );
+
+
+// IDirect3DDevice3_DrawPrimitive
+typedef HRESULT (__stdcall* PFN_IDirect3DDevice3_DrawPrimitive)(
+                                            IDirect3DDevice3* pDev,
+                                            D3DPRIMITIVETYPE dptPrimitiveType,
+                                            DWORD  dwVertexTypeDesc,
+                                            LPVOID lpvVertices,
+                                            DWORD  dwVertexCount,
+                                            DWORD  dwFlags
+                                            );
+
+// IDirect3DDevice3_DrawIndexedPrimitive
+typedef HRESULT(__stdcall* PFN_IDirect3DDevice3_DrawIndexedPrimitive)(
+                                            IDirect3DDevice3* pDev,
+                                            D3DPRIMITIVETYPE d3dptPrimitiveType,
+                                            DWORD  dwVertexTypeDesc,
+                                            LPVOID lpvVertices,
+                                            DWORD  dwVertexCount,
+                                            LPWORD lpwIndices,
+                                            DWORD  dwIndexCount,
+                                            DWORD  dwFlags
+                                            );
+
+// IDirect3DDevice3_DrawPrimitiveStrided
+typedef HRESULT(__stdcall* PFN_IDirect3DDevice3_DrawPrimitiveStrided)(
+                                   IDirect3DDevice3* pDev,
+                                   D3DPRIMITIVETYPE dptPrimitiveType,
+                                   DWORD  dwVertexTypeDesc,
+                                   LPD3DDRAWPRIMITIVESTRIDEDDATA lpVertexArray,
+                                   DWORD  dwVertexCount,
+                                   DWORD  dwFlags
+                                   );
+
+// IDirect3DDevice3_DrawIndexedPrimitiveStrided
+typedef HRESULT(__stdcall* PFN_IDirect3DDevice3_DrawIndexedPrimitiveStrided)(
+                                   IDirect3DDevice3* pDev,
+                                   D3DPRIMITIVETYPE d3dptPrimitiveType,
+                                   DWORD  dwVertexTypeDesc,
+                                   LPD3DDRAWPRIMITIVESTRIDEDDATA lpVertexArray,
+                                   DWORD  dwVertexCount,
+                                   LPWORD lpwIndices,
+                                   DWORD  dwIndexCount,
+                                   DWORD  dwFlags
+                                   );
+
+
+
+// IDirect3DDevice3_DrawPrimitiveVB
+typedef HRESULT(__stdcall* PFN_IDirect3DDevice3_DrawPrimitiveVB)(
+                                   IDirect3DDevice3* pDev,
+                                   D3DPRIMITIVETYPE d3dptPrimitiveType,
+                                   LPDIRECT3DVERTEXBUFFER lpd3dVertexBuffer,
+                                   DWORD dwStartVertex,
+                                   DWORD dwNumVertices,
+                                   DWORD dwFlags
+                                   );
+
+
+// IDirect3DDevice3_DrawIndexedPrimitiveVB
+typedef HRESULT(__stdcall* PFN_IDirect3DDevice3_DrawIndexedPrimitiveVB)(
+                                   IDirect3DDevice3* pDev,
+                                   D3DPRIMITIVETYPE d3dptPrimitiveType,
+                                   LPDIRECT3DVERTEXBUFFER lpd3dVertexBuffer,
+                                   LPWORD lpwIndices,
+                                   DWORD  dwIndexCount,
+                                   DWORD  dwFlags
+                                   );
+
+
+// IDirect3DDevice3_SetTexture
+typedef HRESULT(__stdcall* PFN_IDirect3DDevice3_SetTexture)(
+                                            IDirect3DDevice3* pDev,
+                                            DWORD dwStage,
+                                            LPDIRECT3DTEXTURE2 lpTexture
+                                            );
+
+// ---------------------------------------------------------------------------
+//  SECTION 30-B  VTable indices  (from dx6/enums.h)
+// ---------------------------------------------------------------------------
+#pragma once
+
+
+enum
+{
+  IDX_IDirect3D3_CreateDevice = 8,
+  IDX_IDirect3D3_CreateVertexBuffer = 9,
+
+  IDX_IDirect3DDevice3_DrawPrimitive = 28,
+  IDX_IDirect3DDevice3_DrawIndexedPrimitive = 29,
+  IDX_IDirect3DDevice3_DrawPrimitiveStrided = 32,
+  IDX_IDirect3DDevice3_DrawIndexedPrimitiveStrided = 33,
+  IDX_IDirect3DDevice3_DrawPrimitiveVB = 34,
+  IDX_IDirect3DDevice3_DrawIndexedPrimitiveVB = 35,
+  IDX_IDirect3DDevice3_SetTexture = 38
+};
+
+// ---------------------------------------------------------------------------
+//  SECTION 30-C  Hook-stub macros  (from dx6/macro.h)
+// ---------------------------------------------------------------------------
+#pragma once
+
+
+
+// IDirect3DDevice3_DrawPrimitive
+#define STUB_IDirect3DDevice3_DrawPrimitive(IDX)\
+static HRESULT __stdcall _IDirect3DDevice3_DrawPrimitive_##IDX(\
+                                            IDirect3DDevice3* pDev,\
+                                            D3DPRIMITIVETYPE dptPrimitiveType,\
+                                            DWORD  dwVertexTypeDesc,\
+                                            LPVOID lpvVertices,\
+                                            DWORD  dwVertexCount,\
+                                            DWORD  dwFlags\
+)\
+{\
+  KHook* h = this_->hooks_IDirect3DDevice3_DrawPrimitive.getHook(##IDX);\
+  return this_->helper_IDirect3DDevice3_DrawPrimitive(\
+                                                      h,\
+                                                      pDev,\
+                                                      dptPrimitiveType,\
+                                                      dwVertexTypeDesc,\
+                                                      lpvVertices,\
+                                                      dwVertexCount,\
+                                                      dwFlags\
+                                                      );\
+}
+
+
+// IDirect3D3_CreateDevice
+#define STUB_IDirect3D3_CreateDevice(IDX)\
+static HRESULT __stdcall _IDirect3D3_CreateDevice_##IDX(\
+                                           IDirect3D3* d3d,\
+                                           REFCLSID rclsid,\
+                                           LPDIRECTDRAWSURFACE4 lpDDS,\
+                                           LPDIRECT3DDEVICE3 *  lplpD3DDevice,\
+                                           LPUNKNOWN pUnkOuter\
+)\
+{\
+KHook* h = this_->hooks_IDirect3D3_CreateDevice.getHook(##IDX);\
+return this_->helper_IDirect3D3_CreateDevice(h, d3d, rclsid, lpDDS, lplpD3DDevice, pUnkOuter);\
+}
+
+
+
+
+// IDirect3DDevice3_DrawIndexedPrimitive
+#define STUB_IDirect3DDevice3_DrawIndexedPrimitive(IDX)\
+static HRESULT __stdcall _IDirect3DDevice3_DrawIndexedPrimitive_##IDX(\
+                                            IDirect3DDevice3* pDev,\
+                                            D3DPRIMITIVETYPE d3dptPrimitiveType,\
+                                            DWORD  dwVertexTypeDesc,\
+                                            LPVOID lpvVertices,\
+                                            DWORD  dwVertexCount,\
+                                            LPWORD lpwIndices,\
+                                            DWORD  dwIndexCount,\
+                                            DWORD  dwFlags\
+)\
+{\
+  KHook* h = this_->hooks_IDirect3DDevice3_DrawIndexedPrimitive.getHook(##IDX);\
+  return this_->helper_IDirect3DDevice3_DrawIndexedPrimitive(\
+                                                        h,\
+                                                        pDev,\
+                                                        d3dptPrimitiveType,\
+                                                        dwVertexTypeDesc,\
+                                                        lpvVertices,\
+                                                        dwVertexCount,\
+                                                        lpwIndices,\
+                                                        dwIndexCount,\
+                                                        dwFlags);\
+}
+
+
+
+// IDirect3DDevice3_DrawPrimitiveStrided
+#define STUB_IDirect3DDevice3_DrawPrimitiveStrided(IDX)\
+static HRESULT __stdcall _IDirect3DDevice3_DrawPrimitiveStrided_##IDX(\
+                                   IDirect3DDevice3* pDev,\
+                                   D3DPRIMITIVETYPE dptPrimitiveType,\
+                                   DWORD  dwVertexTypeDesc,\
+                                   LPD3DDRAWPRIMITIVESTRIDEDDATA lpVertexArray,\
+                                   DWORD  dwVertexCount,\
+                                   DWORD  dwFlags\
+)\
+{\
+  KHook* h = this_->hooks_IDirect3DDevice3_DrawPrimitiveStrided.getHook(##IDX);\
+  return this_->helper_IDirect3DDevice3_DrawPrimitiveStrided(h,\
+                                                            pDev,\
+                                                            dptPrimitiveType,\
+                                                            dwVertexTypeDesc,\
+                                                            lpVertexArray,\
+                                                            dwVertexCount,\
+                                                            dwFlags);\
+}
+
+
+// IDirect3DDevice3_DrawIndexedPrimitiveStrided
+#define STUB_IDirect3DDevice3_DrawIndexedPrimitiveStrided(IDX)\
+static HRESULT __stdcall _IDirect3DDevice3_DrawIndexedPrimitiveStrided_##IDX(\
+                                   IDirect3DDevice3* pDev,\
+                                   D3DPRIMITIVETYPE d3dptPrimitiveType,\
+                                   DWORD  dwVertexTypeDesc,\
+                                   LPD3DDRAWPRIMITIVESTRIDEDDATA lpVertexArray,\
+                                   DWORD  dwVertexCount,\
+                                   LPWORD lpwIndices,\
+                                   DWORD  dwIndexCount,\
+                                   DWORD  dwFlags\
+                                   )\
+{\
+  KHook* h = this_->hooks_IDirect3DDevice3_DrawIndexedPrimitiveStrided.getHook(##IDX);\
+  return this_->helper_IDirect3DDevice3_DrawIndexedPrimitiveStrided(h,\
+                                                        pDev,\
+                                                        d3dptPrimitiveType,\
+                                                        dwVertexTypeDesc,\
+                                                        lpVertexArray,\
+                                                        dwVertexCount,\
+                                                        lpwIndices,\
+                                                        dwIndexCount,\
+                                                        dwFlags);\
+}
+
+
+// IDirect3DDevice3_DrawPrimitiveVB
+#define STUB_IDirect3DDevice3_DrawPrimitiveVB(IDX)\
+static HRESULT __stdcall _IDirect3DDevice3_DrawPrimitiveVB_##IDX(\
+                                   IDirect3DDevice3* pDev,\
+                                   D3DPRIMITIVETYPE d3dptPrimitiveType,\
+                                   LPDIRECT3DVERTEXBUFFER lpd3dVertexBuffer,\
+                                   DWORD dwStartVertex,\
+                                   DWORD dwNumVertices,\
+                                   DWORD dwFlags\
+                                   )\
+{\
+  KHook* h = this_->hooks_IDirect3DDevice3_DrawPrimitiveVB.getHook(##IDX);\
+  return this_->helper_IDirect3DDevice3_DrawPrimitiveVB(h,\
+                                                        pDev,\
+                                                        d3dptPrimitiveType,\
+                                                        lpd3dVertexBuffer,\
+                                                        dwStartVertex,\
+                                                        dwNumVertices,\
+                                                        dwFlags);\
+}
+
+
+// IDirect3DDevice3_DrawIndexedPrimitiveVB
+#define STUB_IDirect3DDevice3_DrawIndexedPrimitiveVB(IDX)\
+static HRESULT __stdcall _IDirect3DDevice3_DrawIndexedPrimitiveVB_##IDX(\
+                                   IDirect3DDevice3* pDev,\
+                                   D3DPRIMITIVETYPE d3dptPrimitiveType,\
+                                   LPDIRECT3DVERTEXBUFFER lpd3dVertexBuffer,\
+                                   LPWORD lpwIndices,\
+                                   DWORD  dwIndexCount,\
+                                   DWORD  dwFlags\
+                                )\
+{\
+  KHook* h = this_->hooks_IDirect3DDevice3_DrawIndexedPrimitiveVB.getHook(##IDX);\
+  return this_->helper_IDirect3DDevice3_DrawIndexedPrimitiveVB(h,\
+                                                           pDev,\
+                                                           d3dptPrimitiveType,\
+                                                           lpd3dVertexBuffer,\
+                                                           lpwIndices,\
+                                                           dwIndexCount,\
+                                                           dwFlags\
+                                                           );\
+}
+
+
+// IDirect3D3_CreateVertexBuffer
+#define STUB_IDirect3D3_CreateVertexBuffer(IDX)\
+static HRESULT __stdcall _IDirect3D3_CreateVertexBuffer_##IDX(\
+                                IDirect3D3* d3d,\
+                                LPD3DVERTEXBUFFERDESC lpVBDesc,\
+                                LPDIRECT3DVERTEXBUFFER* lpD3DVertexBuffer,\
+                                DWORD dwFlags,\
+                                LPUNKNOWN pUnkOuter\
+                                )\
+{\
+  KHook* h = this_->hooks_IDirect3D3_CreateVertexBuffer.getHook(##IDX); \
+  return this_->helper_IDirect3D3_CreateVertexBuffer(\
+                                             h,\
+                                             d3d, \
+                                             lpVBDesc, \
+                                             lpD3DVertexBuffer, \
+                                             dwFlags,\
+                                             pUnkOuter\
+                                             );\
+}
+
+
+// IDirect3DDevice3_SetTexture
+#define STUB_IDirect3DDevice3_SetTexture(IDX)\
+static HRESULT __stdcall _IDirect3DDevice3_SetTexture_##IDX(\
+                                            IDirect3DDevice3* pDev,\
+                                            DWORD dwStage,\
+                                            LPDIRECT3DTEXTURE2 lpTexture\
+                                                )\
+{\
+  KHook* h = this_->hooks_IDirect3DDevice3_SetTexture.getHook(##IDX); \
+  return this_->helper_IDirect3DDevice3_SetTexture(\
+                                             h,\
+                                             pDev,\
+                                             dwStage,\
+                                             lpTexture\
+                                             );\
+}
+
+// ---------------------------------------------------------------------------
+//  SECTION 30-D  KRipper6 class declaration  (from dx6/kripper6.h)
+// ---------------------------------------------------------------------------
+#pragma once
+
+
+#include <windows.h>
+#include <vector>
+#include <string>
+#include <map>
+
+
+class KHook;
+class KFACES;
+class KVERTICES;
+
+
+class KRipper6: public IRipper
+{
+public:
+  KRipper6();
+  virtual ~KRipper6();
+
+  // IRipper
+  virtual void frameStart();
+  virtual void frameEnd();
+  virtual void textureRipStart();
+  virtual void textureRipEnd();
+
+
+  void cleanup();
+  void initialize(IDirect3D3* obj);
+
+
+  void addTextureSurface(LPDIRECT3DTEXTURE2 tex, void* surface);
+
+private:
+  struct KTexture
+  {
+    LPDIRECT3DTEXTURE2 pTexture;
+    std::string  name;
+    std::wstring fullPath;
+
+    KTexture(): pTexture(NULL)
+    {
+    }
+  };
+  typedef std::vector < KTexture > KFrameTextureVec;
+
+  static KRipper6* this_;
+
+  void zeroHooks();
+  void hook_IDirect3DDevice3(IDirect3DDevice3* pDev);
+
+  CRITICAL_SECTION cs;
+
+
+  // IDirect3D3_CreateDevice
+  HooksGroup hooks_IDirect3D3_CreateDevice;
+  HRESULT helper_IDirect3D3_CreateDevice( KHook*,
+                                          IDirect3D3* d3d,
+                                          REFCLSID rclsid,
+                                          LPDIRECTDRAWSURFACE4 lpDDS,
+                                          LPDIRECT3DDEVICE3 *  lplpD3DDevice,
+                                          LPUNKNOWN pUnkOuter
+                                         );
+  GENERATE_STUBS_GROUP(STUB_IDirect3D3_CreateDevice);
+
+
+
+  // IDirect3D3_CreateVertexBuffer
+  HooksGroup hooks_IDirect3D3_CreateVertexBuffer;
+  HRESULT helper_IDirect3D3_CreateVertexBuffer(
+                              KHook*,
+                              IDirect3D3* d3d,
+                              LPD3DVERTEXBUFFERDESC lpVBDesc,
+                              LPDIRECT3DVERTEXBUFFER* lpD3DVertexBuffer,
+                              DWORD dwFlags,
+                              LPUNKNOWN pUnkOuter
+                              );
+  GENERATE_STUBS_GROUP(STUB_IDirect3D3_CreateVertexBuffer);
+
+
+
+  // IDirect3DDevice3_DrawPrimitive
+  HooksGroup hooks_IDirect3DDevice3_DrawPrimitive;
+  HRESULT helper_IDirect3DDevice3_DrawPrimitive(
+                                            KHook*,
+                                            IDirect3DDevice3* pDev,
+                                            D3DPRIMITIVETYPE dptPrimitiveType,
+                                            DWORD  dwVertexTypeDesc,
+                                            LPVOID lpvVertices,
+                                            DWORD  dwVertexCount,
+                                            DWORD  dwFlags
+                                            );
+  GENERATE_STUBS_GROUP(STUB_IDirect3DDevice3_DrawPrimitive);
+
+
+
+
+  EPrimitiveTopology::Type D3DPRIMITIVETYPE_to_EPrimitiveTopology(
+                                                         D3DPRIMITIVETYPE pt
+                                                         );
+
+
+  void saveMeshTextures(IDirect3DDevice3*, KMeshTextures*);
+
+
+
+  // IDirect3DDevice3_DrawIndexedPrimitive
+  HooksGroup hooks_IDirect3DDevice3_DrawIndexedPrimitive;
+  HRESULT helper_IDirect3DDevice3_DrawIndexedPrimitive(KHook*,
+                                          IDirect3DDevice3* pDev,
+                                          D3DPRIMITIVETYPE d3dptPrimitiveType,
+                                          DWORD  dwVertexTypeDesc,
+                                          LPVOID lpvVertices,
+                                          DWORD  dwVertexCount,
+                                          LPWORD lpwIndices,
+                                          DWORD  dwIndexCount,
+                                          DWORD  dwFlags
+                                            );
+  GENERATE_STUBS_GROUP(STUB_IDirect3DDevice3_DrawIndexedPrimitive);
+
+
+  // IDirect3DDevice3_DrawPrimitiveStrided
+  HooksGroup hooks_IDirect3DDevice3_DrawPrimitiveStrided;
+  HRESULT helper_IDirect3DDevice3_DrawPrimitiveStrided(KHook*,
+                                   IDirect3DDevice3* pDev,
+                                   D3DPRIMITIVETYPE dptPrimitiveType,
+                                   DWORD  dwVertexTypeDesc,
+                                   LPD3DDRAWPRIMITIVESTRIDEDDATA lpVertexArray,
+                                   DWORD  dwVertexCount,
+                                   DWORD  dwFlags
+                                   );
+  GENERATE_STUBS_GROUP(STUB_IDirect3DDevice3_DrawPrimitiveStrided);
+
+
+
+
+
+  // IDirect3DDevice3_DrawIndexedPrimitiveStrided
+  HooksGroup hooks_IDirect3DDevice3_DrawIndexedPrimitiveStrided;
+  HRESULT helper_IDirect3DDevice3_DrawIndexedPrimitiveStrided(
+                                   KHook* h,
+                                   IDirect3DDevice3* pDev,
+                                   D3DPRIMITIVETYPE d3dptPrimitiveType,
+                                   DWORD  dwVertexTypeDesc,
+                                   LPD3DDRAWPRIMITIVESTRIDEDDATA lpVertexArray,
+                                   DWORD  dwVertexCount,
+                                   LPWORD lpwIndices,
+                                   DWORD  dwIndexCount,
+                                   DWORD  dwFlags
+                                   );
+  GENERATE_STUBS_GROUP(STUB_IDirect3DDevice3_DrawIndexedPrimitiveStrided);
+
+
+  // IDirect3DDevice3_DrawPrimitiveVB
+  HooksGroup hooks_IDirect3DDevice3_DrawPrimitiveVB;
+  HRESULT helper_IDirect3DDevice3_DrawPrimitiveVB(
+                                        KHook* h,
+                                        IDirect3DDevice3* pDev,
+                                        D3DPRIMITIVETYPE d3dptPrimitiveType,
+                                        LPDIRECT3DVERTEXBUFFER lpd3dVertexBuffer,
+                                        DWORD dwStartVertex,
+                                        DWORD dwNumVertices,
+                                        DWORD dwFlags
+                                        );
+  GENERATE_STUBS_GROUP(STUB_IDirect3DDevice3_DrawPrimitiveVB);
+
+
+  // IDirect3DDevice3_DrawIndexedPrimitiveVB
+  HooksGroup hooks_IDirect3DDevice3_DrawIndexedPrimitiveVB;
+  HRESULT helper_IDirect3DDevice3_DrawIndexedPrimitiveVB(
+                                    KHook* h,
+                                    IDirect3DDevice3* pDev,
+                                    D3DPRIMITIVETYPE d3dptPrimitiveType,
+                                    LPDIRECT3DVERTEXBUFFER lpd3dVertexBuffer,
+                                    LPWORD lpwIndices,
+                                    DWORD  dwIndexCount,
+                                    DWORD  dwFlags
+                                    );
+  GENERATE_STUBS_GROUP(STUB_IDirect3DDevice3_DrawIndexedPrimitiveVB);
+
+
+
+
+  void ripDrawIndexedPrimitiveVB(
+                                  IDirect3DDevice3* pDev,
+                                  D3DPRIMITIVETYPE d3dptPrimitiveType,
+                                  LPDIRECT3DVERTEXBUFFER lpd3dVertexBuffer,
+                                  LPWORD lpwIndices,
+                                  DWORD  dwIndexCount,
+                                  DWORD  dwFlags
+                                 );
+  void ripDrawPrimitiveVB(
+                          IDirect3DDevice3* pDev,
+                          D3DPRIMITIVETYPE d3dptPrimitiveType,
+                          LPDIRECT3DVERTEXBUFFER lpd3dVertexBuffer,
+                          DWORD dwStartVertex,
+                          DWORD dwNumVertices,
+                          DWORD dwFlags
+                          );
+  
+  void ripDrawPrimitive(
+                        IDirect3DDevice3* pDev,
+                        D3DPRIMITIVETYPE dptPrimitiveType,
+                        DWORD  dwVertexTypeDesc,
+                        LPVOID lpvVertices,
+                        DWORD  dwVertexCount,
+                        DWORD  dwFlags
+                        );
+
+  void ripDrawIndexedPrimitive( IDirect3DDevice3* pDev,
+                                D3DPRIMITIVETYPE d3dptPrimitiveType,
+                                DWORD  dwVertexTypeDesc,
+                                LPVOID lpvVertices,
+                                DWORD  dwVertexCount,
+                                LPWORD lpwIndices,
+                                DWORD  dwIndexCount,
+                                DWORD  dwFlags
+                               );
+
+  void ripDrawPrimitiveStrided(
+                                IDirect3DDevice3* pDev,
+                                D3DPRIMITIVETYPE dptPrimitiveType,
+                                DWORD  dwVertexTypeDesc,
+                                LPD3DDRAWPRIMITIVESTRIDEDDATA lpVertexArray,
+                                DWORD  dwVertexCount,
+                                DWORD  dwFlags
+                               );
+
+  void ripDrawIndexedPrimitiveStrided(
+                                    IDirect3DDevice3* pDev,
+                                    D3DPRIMITIVETYPE d3dptPrimitiveType,
+                                    DWORD  dwVertexTypeDesc,
+                                    LPD3DDRAWPRIMITIVESTRIDEDDATA lpVertexArray,
+                                    DWORD  dwVertexCount,
+                                    LPWORD lpwIndices,
+                                    DWORD  dwIndexCount,
+                                    DWORD  dwFlags
+                                   );
+
+  KFrameTextureVec meshTexturesDb;
+  void addMeshTexture(const KTexture& t);
+  bool isMeshTextureSaved(LPDIRECT3DTEXTURE2 pTexture, KTexture* out);
+
+  HRESULT saveTexture2File(const wchar_t* fileName,
+                           LPDIRECT3DTEXTURE2 pTexture
+                           );
+
+  void dumpTextureDesc(LPDIRECT3DTEXTURE2 pTexture);
+
+
+
+
+  // IDirect3DDevice3_SetTexture
+  HooksGroup hooks_IDirect3DDevice3_SetTexture;
+  HRESULT helper_IDirect3DDevice3_SetTexture(
+                                    KHook* h,
+                                    IDirect3DDevice3* pDev,
+                                    DWORD dwStage,
+                                    LPDIRECT3DTEXTURE2 lpTexture
+                                    );
+  GENERATE_STUBS_GROUP(STUB_IDirect3DDevice3_SetTexture);
+
+
+  void handleTextureSave(IDirect3DDevice3* pDev,
+                         DWORD Stage,
+                         LPDIRECT3DTEXTURE2 lpTexture
+                         );
+  std::vector < LPDIRECT3DTEXTURE2 > forcedTexturesDb;
+
+  DWORD isTextureSaved(LPDIRECT3DTEXTURE2 pTex);
+
+
+  typedef std::map <LPDIRECT3DTEXTURE2, void*> TextureToSurfaceDb;
+  TextureToSurfaceDb textureToSurfaceDb;
+};
+
+// ---------------------------------------------------------------------------
+//  SECTION 30-E  KRipper6 implementation
+//  (kripper6.cpp, pre6.cpp, draw*.cpp, savemeshtextures6.cpp,
+//   savetexture6.cpp, texture6.cpp â€” local #includes stripped)
+// ---------------------------------------------------------------------------
+//************************************************************************
+// D3D6 Ripper
+//************************************************************************
+
+extern KIntruder* g_pIntruder;
+extern KHookMgr*  g_pHookMgr;
+extern KLog*      g_pLog;
+
+
+// Static vars initialize
+KRipper6* KRipper6::this_ = 0;
+extern KDdraw* g_pDdraw;
+
+
+KRipper6::KRipper6()
+{
+  this_ = this;
+  InitializeCriticalSection(&cs);
+  zeroHooks();
+
+  g_pLog->log("D3D6 ripper init\n");
+}
+
+
+KRipper6::~KRipper6()
+{
+  g_pLog->log("D3D6 ripper uninit\n");
+
+  g_pHookMgr->unhookPool(KHookMgr::EHOOK_POOL_D3DIM);
+  this_->zeroHooks();
+
+  DeleteCriticalSection(&cs);
+}
+
+
+void KRipper6::frameStart()
+{
+  meshTexturesDb.clear();
+}
+
+
+void KRipper6::frameEnd()
+{
+
+}
+
+
+void KRipper6::textureRipStart()
+{
+  forcedTexturesDb.clear();
+}
+
+
+void KRipper6::textureRipEnd()
+{
+}
+
+
+void KRipper6::initialize(IDirect3D3* obj)
+{
+  // IDirect3D3_CreateDevice
+  hookEx("IDirect3D3_CreateDevice",
+         IDX_IDirect3D3_CreateDevice,
+         obj,
+         KHookMgr::EHOOK_POOL_D3DIM,
+         &hooks_IDirect3D3_CreateDevice
+         );
+  
+  // IDirect3D3_CreateVertexBuffer
+  hookEx("IDirect3D3_CreateVertexBuffer",
+         IDX_IDirect3D3_CreateVertexBuffer,
+         obj,
+         KHookMgr::EHOOK_POOL_D3DIM,
+         &hooks_IDirect3D3_CreateVertexBuffer
+         );
+
+}
+
+
+void KRipper6::hook_IDirect3DDevice3(IDirect3DDevice3* pDev)
+{
+  // IDirect3DDevice3_DrawPrimitive
+  hookEx("IDirect3DDevice3_DrawPrimitive",
+         IDX_IDirect3DDevice3_DrawPrimitive,
+         pDev,
+         KHookMgr::EHOOK_POOL_D3DIM,
+         &hooks_IDirect3DDevice3_DrawPrimitive
+         );
+
+  // IDirect3DDevice3_DrawIndexedPrimitive
+  hookEx("IDirect3DDevice3_DrawIndexedPrimitive",
+         IDX_IDirect3DDevice3_DrawIndexedPrimitive,
+         pDev,
+         KHookMgr::EHOOK_POOL_D3DIM,
+         &hooks_IDirect3DDevice3_DrawIndexedPrimitive
+         );
+
+
+  // IDirect3DDevice3_DrawPrimitiveStrided
+  hookEx("IDirect3DDevice3_DrawPrimitiveStrided",
+         IDX_IDirect3DDevice3_DrawPrimitiveStrided,
+         pDev,
+         KHookMgr::EHOOK_POOL_D3DIM,
+         &hooks_IDirect3DDevice3_DrawPrimitiveStrided
+         );
+
+
+  // IDirect3DDevice3_DrawIndexedPrimitiveStrided
+  hookEx("IDirect3DDevice3_DrawIndexedPrimitiveStrided",
+         IDX_IDirect3DDevice3_DrawIndexedPrimitiveStrided,
+         pDev,
+         KHookMgr::EHOOK_POOL_D3DIM,
+         &hooks_IDirect3DDevice3_DrawIndexedPrimitiveStrided
+         );
+
+
+  // IDirect3DDevice3_DrawPrimitiveVB
+  hookEx("IDirect3DDevice3_DrawPrimitiveVB",
+         IDX_IDirect3DDevice3_DrawPrimitiveVB,
+         pDev,
+         KHookMgr::EHOOK_POOL_D3DIM,
+         &hooks_IDirect3DDevice3_DrawPrimitiveVB
+         );
+
+
+  // IDirect3DDevice3_DrawIndexedPrimitiveVB
+  hookEx("IDirect3DDevice3_DrawIndexedPrimitiveVB",
+         IDX_IDirect3DDevice3_DrawIndexedPrimitiveVB,
+         pDev,
+         KHookMgr::EHOOK_POOL_D3DIM,
+         &hooks_IDirect3DDevice3_DrawIndexedPrimitiveVB
+         );
+
+
+  // IDirect3DDevice3_SetTexture
+  hookEx("IDirect3DDevice3_SetTexture",
+         IDX_IDirect3DDevice3_SetTexture,
+         pDev,
+         KHookMgr::EHOOK_POOL_D3DIM,
+         &hooks_IDirect3DDevice3_SetTexture
+         );
+}
+
+
+void KRipper6::zeroHooks()
+{
+  GENERATE_HOOKS_GROUP_CLEARER(IDirect3D3_CreateDevice);
+  GENERATE_HOOKS_GROUP_CLEARER(IDirect3D3_CreateVertexBuffer);
+
+  GENERATE_HOOKS_GROUP_CLEARER(IDirect3DDevice3_DrawPrimitive);
+  GENERATE_HOOKS_GROUP_CLEARER(IDirect3DDevice3_DrawIndexedPrimitive);
+  GENERATE_HOOKS_GROUP_CLEARER(IDirect3DDevice3_DrawPrimitiveStrided);
+  GENERATE_HOOKS_GROUP_CLEARER(IDirect3DDevice3_DrawIndexedPrimitiveStrided);
+  GENERATE_HOOKS_GROUP_CLEARER(IDirect3DDevice3_DrawPrimitiveVB);
+  GENERATE_HOOKS_GROUP_CLEARER(IDirect3DDevice3_DrawIndexedPrimitiveVB);
+
+  GENERATE_HOOKS_GROUP_CLEARER(IDirect3DDevice3_SetTexture);
+}
+
+
+void KRipper6::cleanup()
+{
+
+}
+
+
+
+
+
+EPrimitiveTopology::Type 
+KRipper6::D3DPRIMITIVETYPE_to_EPrimitiveTopology(D3DPRIMITIVETYPE pt)
+{
+  EPrimitiveTopology::Type res = EPrimitiveTopology::UNKNOWNPRIMITIVETYPE;
+
+  switch(pt)
+  {
+  case D3DPT_TRIANGLELIST:
+  {
+    res = EPrimitiveTopology::TRIANGLELIST;
+    break;
+  }
+
+  case D3DPT_TRIANGLESTRIP:
+  {
+    res = EPrimitiveTopology::TRIANGLESTRIP;
+    break;
+  }
+
+  case D3DPT_POINTLIST:
+  {
+    res = EPrimitiveTopology::POINTLIST;
+    break;
+  }
+
+  case D3DPT_LINELIST:
+  {
+    res = EPrimitiveTopology::LINELIST;
+    break;
+  }
+
+  case D3DPT_LINESTRIP:
+  {
+    res = EPrimitiveTopology::LINESTRIP;
+    break;
+  }
+
+  case  D3DPT_TRIANGLEFAN:
+  {
+    res = EPrimitiveTopology::TRIANGLEFAN;
+    break;
+  }
+  } // switch
+
+  return res;
+}
+
+
+HRESULT KRipper6::helper_IDirect3D3_CreateVertexBuffer(
+                                KHook* h,
+                                IDirect3D3* d3d,
+                                LPD3DVERTEXBUFFERDESC lpVBDesc,
+                                LPDIRECT3DVERTEXBUFFER* lpD3DVertexBuffer,
+                                DWORD dwFlags,
+                                LPUNKNOWN pUnkOuter
+                                )
+{
+  PFN_IDirect3D3_CreateVertexBuffer e = 
+                    (PFN_IDirect3D3_CreateVertexBuffer)h->getOriginalAddress();
+
+  lpVBDesc->dwCaps = lpVBDesc->dwCaps & (~D3DVBCAPS_WRITEONLY);
+
+  HRESULT hr = e(d3d, lpVBDesc, lpD3DVertexBuffer, dwFlags, pUnkOuter);
+  return hr;
+}
+
+
+
+HRESULT KRipper6::helper_IDirect3D3_CreateDevice(
+                                         KHook* h,
+                                         IDirect3D3* d3d,
+                                         REFCLSID rclsid,
+                                         LPDIRECTDRAWSURFACE4 lpDDS,
+                                         LPDIRECT3DDEVICE3 *  lplpD3DDevice,
+                                         LPUNKNOWN pUnkOuter
+                                         )
+{
+  PFN_IDirect3D3_CreateDevice e = (PFN_IDirect3D3_CreateDevice)
+                                                       h->getOriginalAddress();
+
+  std::string devname = guidToName(rclsid);
+  g_pLog->log("IDirect3D3_CreateDevice(%s)\n", devname.c_str());
+  
+  HRESULT hr = e(d3d, rclsid, lpDDS, lplpD3DDevice, pUnkOuter);
+
+  if (SUCCEEDED(hr))
+  {
+    hook_IDirect3DDevice3(*lplpD3DDevice);
+
+    // Frame handler
+    g_pDdraw->hook_IDirectDrawSurface(lpDDS);
+  }
+  return hr;
+}
+
+
+void KRipper6::addTextureSurface(LPDIRECT3DTEXTURE2 tex, void* surface)
+{
+  TextureToSurfaceDb::iterator it = textureToSurfaceDb.find(tex);
+  if (it == textureToSurfaceDb.end())
+  {
+    // New texture
+    textureToSurfaceDb.insert(std::pair<LPDIRECT3DTEXTURE2, void*>(tex, surface));
+  }
+  else
+  {
+    // Update existing texture
+    it->second = surface;
+  }
+}
+
+KRipper6* create_KRipper6()
+{
+  return new KRipper6;
+}
+
+
+void delete_KRipper6(KRipper6* & p)
+{
+  delete p;
+}
+
+extern KIntruder* g_pIntruder;
+extern KLog*      g_pLog;
+
+
+void KRipper6::ripDrawPrimitive(IDirect3DDevice3* pDev,
+                                D3DPRIMITIVETYPE dptPrimitiveType,
+                                DWORD  dwVertexTypeDesc,
+                                LPVOID lpvVertices,
+                                DWORD  dwVertexCount,
+                                DWORD  dwFlags
+                                )
+{
+  do
+  {
+    // Primitive topology
+    EPrimitiveTopology::Type primitiveTopology =
+                      D3DPRIMITIVETYPE_to_EPrimitiveTopology(dptPrimitiveType);
+
+    if (!::isPrimitiveTopologySupported(primitiveTopology))
+    {
+      g_pLog->logError("Input primitive topology not supported\n\n");
+      break;
+    }
+
+
+    // Vertex declaration
+    KInputVertexDeclaration  inputVertDecl;
+    KOutputVertexDeclaration outputVertDecl;
+
+    fvfToInputVertexDeclaration(dwVertexTypeDesc, &inputVertDecl);
+
+    HRESULT hr = ::createKOutputVertexDeclaration(inputVertDecl,
+                                                  outputVertDecl
+                                                  );
+    ::dumpInputVertexDeclaration2Log(inputVertDecl);
+    ::dumpOutputVertexDeclaration2Log(outputVertDecl);
+
+
+    // Indexes
+    KFACES faces;
+    OptimizedIndexToMeshIndex optimizedIdxToMeshIdx;
+    generateIndexes_VertexCount(primitiveTopology, 
+                                dwVertexCount,
+                                &faces,
+                                &optimizedIdxToMeshIdx
+                                );
+
+    // Vertices
+    DWORD vertSize = outputVertDecl.getVertexSize(); // Output vertex size
+    DWORD vertCnt = (DWORD)optimizedIdxToMeshIdx.size();
+    g_pLog->log("PrimitivesCount=%d\nVertexCnt=%d\nOutVertexSize=%d\n",
+                faces.getPrimitivesCount(),
+                vertCnt,
+                vertSize
+                );
+
+    KVERTICES vertices(vertCnt, vertSize);
+
+    dumpVbUP(inputVertDecl,
+             outputVertDecl, 
+             optimizedIdxToMeshIdx, 
+             &vertices, 
+             lpvVertices,
+             inputVertDecl.getStreamVertexSize(0)
+             );
+
+    KMeshTextures meshTextures;
+    saveMeshTextures(pDev, &meshTextures);
+
+    // No shaders in dx6. Empty
+    KMeshShaders meshShaders;
+
+
+    // Save RIP file
+    std::wstring ripFilePath = g_pIntruder->getFrameMeshSavePath();
+    std::string utf8str = wideStringToMultiByte(ripFilePath.c_str());
+
+    hr = ::saveRipFile(ripFilePath.c_str(),
+                       inputVertDecl,
+                       outputVertDecl,
+                       meshTextures,
+                       meshShaders,
+                       faces, 
+                       vertices
+                       );
+    if (SUCCEEDED(hr))
+    {
+      g_pLog->log("Mesh saved as: %s\n\n\n", utf8str.c_str());
+    }
+    else
+    {
+      g_pLog->logError("Mesh save error: %s\n\n\n", utf8str.c_str());
+    }
+
+    g_pIntruder->incFrameMeshIdx();
+  }
+  while (false);
+}
+
+
+HRESULT KRipper6::helper_IDirect3DDevice3_DrawPrimitive(
+                                             KHook* h,
+                                             IDirect3DDevice3* pDev,
+                                             D3DPRIMITIVETYPE dptPrimitiveType,
+                                             DWORD  dwVertexTypeDesc,
+                                             LPVOID lpvVertices,
+                                             DWORD  dwVertexCount,
+                                             DWORD  dwFlags
+                                             )
+{
+  PFN_IDirect3DDevice3_DrawPrimitive e = 
+                    (PFN_IDirect3DDevice3_DrawPrimitive)h->getOriginalAddress();
+  
+  
+  g_pIntruder->keyHandler(this);
+
+  DWORD ripEnabled     = g_pIntruder->isMeshRipEnabled();
+  DWORD minVertexCount = g_pIntruder->getSettings()->dwMinVertexCount;
+
+  if (ripEnabled)
+  {
+    if (dwVertexCount >= minVertexCount)
+    {
+      g_pLog->log("IDirect3DDevice3_DrawPrimitive(\
+0x%p, %d, 0x%08X, 0x%p, %d, 0x%08X)\n",
+                  pDev, 
+                  dptPrimitiveType, 
+                  dwVertexTypeDesc,
+                  lpvVertices,
+                  dwVertexCount,
+                  dwFlags
+                  );
+      __try
+      {
+        ripDrawPrimitive(pDev,
+                         dptPrimitiveType, 
+                         dwVertexTypeDesc, 
+                         lpvVertices, 
+                         dwVertexCount, 
+                         dwFlags
+                         );
+      }
+      __except (EXCEPTION_EXECUTE_HANDLER)
+      {
+        g_pLog->logError("IDirect3DDevice3_DrawPrimitive() exception\n\n\n");
+      }
+    }
+    else
+    {
+      g_pLog->logWarning("IDirect3DDevice3_DrawPrimitive() rip skipped\n");
+    }
+  }
+  HRESULT res = e(pDev, 
+                  dptPrimitiveType, 
+                  dwVertexTypeDesc, 
+                  lpvVertices, 
+                  dwVertexCount, 
+                  dwFlags
+                  );
+  return res;
+}
+
+extern KIntruder* g_pIntruder;
+extern KLog*      g_pLog;
+
+
+void KRipper6::ripDrawPrimitiveStrided(
+                                   IDirect3DDevice3* pDev,
+                                   D3DPRIMITIVETYPE dptPrimitiveType,
+                                   DWORD  dwVertexTypeDesc,
+                                   LPD3DDRAWPRIMITIVESTRIDEDDATA lpVertexArray,
+                                   DWORD  dwVertexCount,
+                                   DWORD  dwFlags
+                                   )
+{
+  do
+  {
+    // Primitive topology
+    EPrimitiveTopology::Type primitiveTopology =
+                      D3DPRIMITIVETYPE_to_EPrimitiveTopology(dptPrimitiveType);
+
+    if (!::isPrimitiveTopologySupported(primitiveTopology))
+    {
+      g_pLog->logError("Input primitive topology not supported\n\n");
+      break;
+    }
+
+
+    // Vertex declaration
+    KInputVertexDeclaration  inputVertDecl;
+    KOutputVertexDeclaration outputVertDecl;
+
+    fvfToInputVertexDeclaration(dwVertexTypeDesc, &inputVertDecl);
+
+    HRESULT hr = ::createKOutputVertexDeclaration(inputVertDecl,
+                                                  outputVertDecl
+                                                  );
+    ::dumpInputVertexDeclaration2Log(inputVertDecl);
+    ::dumpOutputVertexDeclaration2Log(outputVertDecl);
+
+
+    // Indexes
+    KFACES faces;
+    OptimizedIndexToMeshIndex optimizedIdxToMeshIdx;
+    generateIndexes_VertexCount(primitiveTopology, 
+                                dwVertexCount,
+                                &faces,
+                                &optimizedIdxToMeshIdx
+                                );
+
+    // Vertices
+    DWORD vertSize = outputVertDecl.getVertexSize(); // Output vertex size
+    DWORD vertCnt = (DWORD)optimizedIdxToMeshIdx.size();
+    g_pLog->log("PrimitivesCount=%d\nVertexCnt=%d\nOutVertexSize=%d\n",
+                faces.getPrimitivesCount(),
+                vertCnt,
+                vertSize
+                );
+
+    KVERTICES vertices(vertCnt, vertSize);
+    dumpVertexesStrided(lpVertexArray, 
+                        inputVertDecl, 
+                        outputVertDecl, 
+                        optimizedIdxToMeshIdx, 
+                        &vertices
+                        );
+
+
+    KMeshTextures meshTextures;
+    saveMeshTextures(pDev, &meshTextures);
+
+    // No shaders in dx6. Empty
+    KMeshShaders meshShaders;
+
+
+    // Save RIP file
+    std::wstring ripFilePath = g_pIntruder->getFrameMeshSavePath();
+    std::string utf8str = wideStringToMultiByte(ripFilePath.c_str());
+
+    hr = ::saveRipFile(ripFilePath.c_str(),
+                       inputVertDecl,
+                       outputVertDecl,
+                       meshTextures,
+                       meshShaders,
+                       faces, 
+                       vertices
+                       );
+    if (SUCCEEDED(hr))
+    {
+      g_pLog->log("Mesh saved as: %s\n\n\n", utf8str.c_str());
+    }
+    else
+    {
+      g_pLog->logError("Mesh save error: %s\n\n\n", utf8str.c_str());
+    }
+
+    g_pIntruder->incFrameMeshIdx();
+  }
+  while (false);
+}
+
+
+HRESULT KRipper6::helper_IDirect3DDevice3_DrawPrimitiveStrided(
+                                   KHook* h,
+                                   IDirect3DDevice3* pDev,
+                                   D3DPRIMITIVETYPE dptPrimitiveType,
+                                   DWORD  dwVertexTypeDesc,
+                                   LPD3DDRAWPRIMITIVESTRIDEDDATA lpVertexArray,
+                                   DWORD  dwVertexCount,
+                                   DWORD  dwFlags
+                                   )
+{
+    PFN_IDirect3DDevice3_DrawPrimitiveStrided e =
+             (PFN_IDirect3DDevice3_DrawPrimitiveStrided)h->getOriginalAddress();
+  
+  
+  g_pIntruder->keyHandler(this);
+
+  DWORD ripEnabled     = g_pIntruder->isMeshRipEnabled();
+  DWORD minVertexCount = g_pIntruder->getSettings()->dwMinVertexCount;
+
+  if (ripEnabled)
+  {
+    if (dwVertexCount >= minVertexCount)
+    {
+      g_pLog->log("IDirect3DDevice3_DrawPrimitiveStrided(\
+0x%p, %d, 0x%08X, 0x%p, %d, 0x%08X)\n",
+                  pDev,
+                  dptPrimitiveType,
+                  dwVertexTypeDesc,
+                  lpVertexArray,
+                  dwVertexCount,
+                  dwFlags
+                  );
+      __try
+      {
+        ripDrawPrimitiveStrided(pDev,
+                                dptPrimitiveType,
+                                dwVertexTypeDesc,
+                                lpVertexArray,
+                                dwVertexCount,
+                                dwFlags
+                                );
+      }
+      __except (EXCEPTION_EXECUTE_HANDLER)
+      {
+        g_pLog->logError("IDirect3DDevice3_DrawPrimitiveStrided() exception\n\n\n");
+      }
+    }
+    else
+    {
+      g_pLog->logWarning("IDirect3DDevice3_DrawPrimitiveStrided() rip skipped\n");
+    }
+  }
+  HRESULT res = e(pDev,
+                  dptPrimitiveType,
+                  dwVertexTypeDesc,
+                  lpVertexArray,
+                  dwVertexCount,
+                  dwFlags
+                  );
+  return res;
+}
+
+extern KIntruder* g_pIntruder;
+extern KLog*      g_pLog;
+
+
+void KRipper6::ripDrawPrimitiveVB(
+                                  IDirect3DDevice3* pDev,
+                                  D3DPRIMITIVETYPE d3dptPrimitiveType,
+                                  LPDIRECT3DVERTEXBUFFER lpd3dVertexBuffer,
+                                  DWORD dwStartVertex,
+                                  DWORD dwNumVertices,
+                                  DWORD dwFlags
+                                  )
+{
+  do
+  {
+    // Primitive topology
+    EPrimitiveTopology::Type primitiveTopology =
+                    D3DPRIMITIVETYPE_to_EPrimitiveTopology(d3dptPrimitiveType);
+
+    if (!::isPrimitiveTopologySupported(primitiveTopology))
+    {
+      g_pLog->logError("Input primitive topology not supported\n\n");
+      break;
+    }
+
+
+    // Vertex declaration
+    KInputVertexDeclaration  inputVertDecl;
+    KOutputVertexDeclaration outputVertDecl;
+
+    D3DVERTEXBUFFERDESC vbDesc;
+    vbDesc.dwSize = sizeof(vbDesc);
+    HRESULT hr = lpd3dVertexBuffer->GetVertexBufferDesc(&vbDesc);
+    if (FAILED(hr))
+    {
+      g_pLog->logError("IDirect3DVertexBuffer::GetVertexBufferDesc(). \
+HRESULT: 0x%08X\n\n\n", hr);
+      break;
+    }
+
+    DWORD dwVertexTypeDesc = vbDesc.dwFVF;
+    fvfToInputVertexDeclaration(dwVertexTypeDesc, &inputVertDecl);
+
+    hr = ::createKOutputVertexDeclaration(inputVertDecl, outputVertDecl);
+    ::dumpInputVertexDeclaration2Log(inputVertDecl);
+    ::dumpOutputVertexDeclaration2Log(outputVertDecl);
+
+
+    DWORD primitiveCount = primitiveCountFromVertexCount(dwNumVertices,
+                                                          primitiveTopology
+                                                          );
+    // Indexes
+    KFACES faces;
+    OptimizedIndexToMeshIndex optimizedIdxToMeshIdx;
+    generateIndexes_PrimitiveCount(primitiveTopology, 
+                                   primitiveCount,
+                                   &faces,
+                                   &optimizedIdxToMeshIdx
+                                   );
+
+
+
+    // Vertices
+    DWORD vertSize = outputVertDecl.getVertexSize(); // Output vertex size
+    DWORD vertCnt = (DWORD)optimizedIdxToMeshIdx.size();
+    g_pLog->log("PrimitivesCount=%d\nVertexCnt=%d\nOutVertexSize=%d\n",
+                faces.getPrimitivesCount(),
+                vertCnt,
+                vertSize
+                );
+
+    KVERTICES vertices(vertCnt, vertSize);
+
+    LPVOID vbData = 0;
+    hr = lpd3dVertexBuffer->Lock(DDLOCK_READONLY, &vbData, NULL);
+    if (FAILED(hr))
+    {
+      g_pLog->logError("lpd3dVertexBuffer->Lock(). HRESULT: 0x%08X\n\n", hr);
+      break;
+    }
+
+
+    DWORD stride = inputVertDecl.getStreamVertexSize(0);
+    dumpVbUP(inputVertDecl,
+             outputVertDecl,
+             optimizedIdxToMeshIdx,
+             &vertices,
+             (BYTE*)vbData + dwStartVertex * stride,
+             stride
+             );
+
+    hr = lpd3dVertexBuffer->Unlock();
+    if (FAILED(hr))
+    {
+        g_pLog->logError("lpd3dVertexBuffer->Unlock(). HRESULT: 0x%08X\n\n", hr);
+        break;
+    }
+
+    KMeshTextures meshTextures;
+    saveMeshTextures(pDev, &meshTextures);
+
+    // No shaders in dx6. Empty
+    KMeshShaders meshShaders;
+
+
+    // Save RIP file
+    std::wstring ripFilePath = g_pIntruder->getFrameMeshSavePath();
+    std::string utf8str = wideStringToMultiByte(ripFilePath.c_str());
+
+    hr = ::saveRipFile(ripFilePath.c_str(),
+                       inputVertDecl,
+                       outputVertDecl,
+                       meshTextures,
+                       meshShaders,
+                       faces, 
+                       vertices
+                       );
+    if (SUCCEEDED(hr))
+    {
+      g_pLog->log("Mesh saved as: %s\n\n\n", utf8str.c_str());
+    }
+    else
+    {
+      g_pLog->logError("Mesh save error: %s\n\n\n", utf8str.c_str());
+    }
+
+    g_pIntruder->incFrameMeshIdx();
+  }
+  while (false);
+
+}
+
+
+HRESULT KRipper6::helper_IDirect3DDevice3_DrawPrimitiveVB(
+                                      KHook* h,
+                                      IDirect3DDevice3* pDev,
+                                      D3DPRIMITIVETYPE d3dptPrimitiveType,
+                                      LPDIRECT3DVERTEXBUFFER lpd3dVertexBuffer,
+                                      DWORD dwStartVertex,
+                                      DWORD dwNumVertices,
+                                      DWORD dwFlags
+                                      )
+{
+  PFN_IDirect3DDevice3_DrawPrimitiveVB e =
+                  (PFN_IDirect3DDevice3_DrawPrimitiveVB)h->getOriginalAddress();
+  
+  
+  g_pIntruder->keyHandler(this);
+
+  DWORD ripEnabled     = g_pIntruder->isMeshRipEnabled();
+  DWORD minVertexCount = g_pIntruder->getSettings()->dwMinVertexCount;
+
+  if (ripEnabled)
+  {
+    if (dwNumVertices >= minVertexCount)
+    {
+      g_pLog->log("IDirect3DDevice3_DrawPrimitiveVB(\
+0x%p, %d, 0x%p, %d, %d, 0x%08X)\n",
+                pDev,
+                d3dptPrimitiveType,
+                lpd3dVertexBuffer,
+                dwStartVertex,
+                dwNumVertices,
+                dwFlags
+                );
+      __try
+      {
+        ripDrawPrimitiveVB(pDev,
+                           d3dptPrimitiveType,
+                           lpd3dVertexBuffer,
+                           dwStartVertex,
+                           dwNumVertices,
+                           dwFlags
+                           );
+      }
+      __except (EXCEPTION_EXECUTE_HANDLER)
+      {
+        g_pLog->logError("IDirect3DDevice3_DrawPrimitiveVB() exception\n\n\n");
+      }
+    }
+    else
+    {
+      g_pLog->logWarning("IDirect3DDevice3_DrawPrimitiveVB() rip skipped\n");
+    }
+  }
+  HRESULT res = e(pDev,
+                  d3dptPrimitiveType,
+                  lpd3dVertexBuffer,
+                  dwStartVertex,
+                  dwNumVertices,
+                  dwFlags
+                  );
+  return res;
+}
+
+extern KIntruder* g_pIntruder;
+extern KLog*      g_pLog;
+
+
+void KRipper6::ripDrawIndexedPrimitive(IDirect3DDevice3* pDev,
+                                        D3DPRIMITIVETYPE d3dptPrimitiveType,
+                                        DWORD  dwVertexTypeDesc,
+                                        LPVOID lpvVertices,
+                                        DWORD  dwVertexCount,
+                                        LPWORD lpwIndices,
+                                        DWORD  dwIndexCount,
+                                        DWORD  dwFlags
+                                       )
+{
+  do
+  {
+    // Primitive topology
+    EPrimitiveTopology::Type primitiveTopology =
+                     D3DPRIMITIVETYPE_to_EPrimitiveTopology(d3dptPrimitiveType);
+
+    if (!::isPrimitiveTopologySupported(primitiveTopology))
+    {
+      g_pLog->logError("Input primitive topology not supported\n\n");
+      break;
+    }
+
+
+    // Vertex declaration
+    KInputVertexDeclaration  inputVertDecl;
+    KOutputVertexDeclaration outputVertDecl;
+
+    fvfToInputVertexDeclaration(dwVertexTypeDesc, &inputVertDecl);
+
+    HRESULT hr = ::createKOutputVertexDeclaration(inputVertDecl,
+                                                  outputVertDecl
+                                                  );
+    ::dumpInputVertexDeclaration2Log(inputVertDecl);
+    ::dumpOutputVertexDeclaration2Log(outputVertDecl);
+
+
+    DWORD primitivesCount = primitiveCountFromIndexCount(dwIndexCount, 
+                                                         primitiveTopology
+                                                         );
+    // Indexes
+    KFACES faces;
+    OptimizedIndexToMeshIndex optimizedIdxToMeshIdx;
+    hr = dumpIndexesUP(primitiveTopology, 
+                       primitivesCount,
+                       &faces, 
+                       &optimizedIdxToMeshIdx,
+                       lpwIndices,
+                       EIndexFormat::INDEX_16
+                       );
+    if (FAILED(hr))
+    {
+      g_pLog->logError("dumpIndexesUP(). HRESULT: 0x%08X\n\n", hr);
+      break;
+    }
+
+    // Vertices
+    DWORD vertSize = outputVertDecl.getVertexSize(); // Output vertex size
+    DWORD vertCnt = (DWORD)optimizedIdxToMeshIdx.size();
+    g_pLog->log("PrimitivesCount=%d\nVertexCnt=%d\nOutVertexSize=%d\n",
+                faces.getPrimitivesCount(),
+                vertCnt,
+                vertSize
+                );
+
+    KVERTICES vertices(vertCnt, vertSize);
+
+    dumpVbUP(inputVertDecl,
+             outputVertDecl, 
+             optimizedIdxToMeshIdx, 
+             &vertices, 
+             lpvVertices,
+             inputVertDecl.getStreamVertexSize(0)
+             );
+
+    KMeshTextures meshTextures;
+    saveMeshTextures(pDev, &meshTextures);
+
+    // No shaders in dx6. Empty
+    KMeshShaders meshShaders;
+
+
+    // Save RIP file
+    std::wstring ripFilePath = g_pIntruder->getFrameMeshSavePath();
+    std::string utf8str = wideStringToMultiByte(ripFilePath.c_str());
+
+    hr = ::saveRipFile(ripFilePath.c_str(),
+                       inputVertDecl,
+                       outputVertDecl,
+                       meshTextures,
+                       meshShaders,
+                       faces, 
+                       vertices
+                       );
+    if (SUCCEEDED(hr))
+    {
+      g_pLog->log("Mesh saved as: %s\n\n\n", utf8str.c_str());
+    }
+    else
+    {
+      g_pLog->logError("Mesh save error: %s\n\n\n", utf8str.c_str());
+    }
+
+    g_pIntruder->incFrameMeshIdx();
+  }
+  while (false);
+}
+
+
+HRESULT KRipper6::helper_IDirect3DDevice3_DrawIndexedPrimitive(
+                                        KHook* h,
+                                        IDirect3DDevice3* pDev,
+                                        D3DPRIMITIVETYPE d3dptPrimitiveType,
+                                        DWORD  dwVertexTypeDesc,
+                                        LPVOID lpvVertices,
+                                        DWORD  dwVertexCount,
+                                        LPWORD lpwIndices,
+                                        DWORD  dwIndexCount,
+                                        DWORD  dwFlags
+                                        )
+{
+    PFN_IDirect3DDevice3_DrawIndexedPrimitive e =
+        (PFN_IDirect3DDevice3_DrawIndexedPrimitive)h->getOriginalAddress();
+  
+  
+  g_pIntruder->keyHandler(this);
+
+  DWORD ripEnabled     = g_pIntruder->isMeshRipEnabled();
+  DWORD minVertexCount = g_pIntruder->getSettings()->dwMinVertexCount;
+
+  if (ripEnabled)
+  {
+    if (dwVertexCount >= minVertexCount)
+    {
+      g_pLog->log("IDirect3DDevice3_DrawIndexedPrimitive(0x%p, %d, 0x%08X, \
+0x%p, %d, 0x%p, %d, 0x%08X)\n", 
+                  pDev,
+                  d3dptPrimitiveType,
+                  dwVertexTypeDesc,
+                  lpvVertices,
+                  dwVertexCount,
+                  lpwIndices,
+                  dwIndexCount,
+                  dwFlags
+                  );
+      __try
+      {
+        ripDrawIndexedPrimitive(pDev,
+                                d3dptPrimitiveType,
+                                dwVertexTypeDesc,
+                                lpvVertices,
+                                dwVertexCount,
+                                lpwIndices,
+                                dwIndexCount,
+                                dwFlags
+                                );
+
+      }
+      __except (EXCEPTION_EXECUTE_HANDLER)
+      {
+        g_pLog->logError("IDirect3DDevice3_DrawIndexedPrimitive() exception\n\n\n");
+      }
+    }
+    else
+    {
+      g_pLog->logWarning("IDirect3DDevice3_DrawIndexedPrimitive() rip skipped\n");
+    }
+  }
+  HRESULT res = e(pDev,
+                  d3dptPrimitiveType,
+                  dwVertexTypeDesc,
+                  lpvVertices,
+                  dwVertexCount,
+                  lpwIndices,
+                  dwIndexCount,
+                  dwFlags
+                  );
+  return res;
+}
+
+extern KIntruder* g_pIntruder;
+extern KLog*      g_pLog;
+
+
+
+void KRipper6::ripDrawIndexedPrimitiveStrided(
+                                   IDirect3DDevice3* pDev,
+                                   D3DPRIMITIVETYPE d3dptPrimitiveType,
+                                   DWORD  dwVertexTypeDesc,
+                                   LPD3DDRAWPRIMITIVESTRIDEDDATA lpVertexArray,
+                                   DWORD  dwVertexCount,
+                                   LPWORD lpwIndices,
+                                   DWORD  dwIndexCount,
+                                   DWORD  dwFlags
+                                   )
+{
+  do
+  {
+    // Primitive topology
+    EPrimitiveTopology::Type primitiveTopology =
+                     D3DPRIMITIVETYPE_to_EPrimitiveTopology(d3dptPrimitiveType);
+
+    if (!::isPrimitiveTopologySupported(primitiveTopology))
+    {
+      g_pLog->logError("Input primitive topology not supported\n\n");
+      break;
+    }
+
+
+    // Vertex declaration
+    KInputVertexDeclaration  inputVertDecl;
+    KOutputVertexDeclaration outputVertDecl;
+
+    fvfToInputVertexDeclaration(dwVertexTypeDesc, &inputVertDecl);
+
+    HRESULT hr = ::createKOutputVertexDeclaration(inputVertDecl,
+                                                  outputVertDecl
+                                                  );
+    ::dumpInputVertexDeclaration2Log(inputVertDecl);
+    ::dumpOutputVertexDeclaration2Log(outputVertDecl);
+
+
+    DWORD primitivesCount = primitiveCountFromIndexCount(dwIndexCount, 
+                                                         primitiveTopology
+                                                         );
+    // Indexes
+    KFACES faces;
+    OptimizedIndexToMeshIndex optimizedIdxToMeshIdx;
+    hr = dumpIndexesUP(primitiveTopology, 
+                       primitivesCount,
+                       &faces, 
+                       &optimizedIdxToMeshIdx,
+                       lpwIndices,
+                       EIndexFormat::INDEX_16
+                       );
+    if (FAILED(hr))
+    {
+      g_pLog->logError("dumpIndexesUP(). HRESULT: 0x%08X\n\n", hr);
+      break;
+    }
+
+    // Vertices
+    DWORD vertSize = outputVertDecl.getVertexSize(); // Output vertex size
+    DWORD vertCnt = (DWORD)optimizedIdxToMeshIdx.size();
+    g_pLog->log("PrimitivesCount=%d\nVertexCnt=%d\nOutVertexSize=%d\n",
+                faces.getPrimitivesCount(),
+                vertCnt,
+                vertSize
+                );
+
+    KVERTICES vertices(vertCnt, vertSize);
+    dumpVertexesStrided(lpVertexArray, 
+                        inputVertDecl, 
+                        outputVertDecl, 
+                        optimizedIdxToMeshIdx, 
+                        &vertices
+                        );
+
+    KMeshTextures meshTextures;
+    saveMeshTextures(pDev, &meshTextures);
+
+    // No shaders in dx6. Empty
+    KMeshShaders meshShaders;
+
+
+    // Save RIP file
+    std::wstring ripFilePath = g_pIntruder->getFrameMeshSavePath();
+    std::string utf8str = wideStringToMultiByte(ripFilePath.c_str());
+
+    hr = ::saveRipFile(ripFilePath.c_str(),
+                       inputVertDecl,
+                       outputVertDecl,
+                       meshTextures,
+                       meshShaders,
+                       faces, 
+                       vertices
+                       );
+    if (SUCCEEDED(hr))
+    {
+      g_pLog->log("Mesh saved as: %s\n\n\n", utf8str.c_str());
+    }
+    else
+    {
+      g_pLog->logError("Mesh save error: %s\n\n\n", utf8str.c_str());
+    }
+
+    g_pIntruder->incFrameMeshIdx();
+  }
+  while (false);
+}
+
+
+HRESULT KRipper6::helper_IDirect3DDevice3_DrawIndexedPrimitiveStrided(
+                                        KHook* h,
+                                        IDirect3DDevice3* pDev,
+                                        D3DPRIMITIVETYPE d3dptPrimitiveType,
+                                        DWORD  dwVertexTypeDesc,
+                                        LPD3DDRAWPRIMITIVESTRIDEDDATA lpVertexArray,
+                                        DWORD  dwVertexCount,
+                                        LPWORD lpwIndices,
+                                        DWORD  dwIndexCount,
+                                        DWORD  dwFlags
+                                        )
+{
+  PFN_IDirect3DDevice3_DrawIndexedPrimitiveStrided e =
+    (PFN_IDirect3DDevice3_DrawIndexedPrimitiveStrided)h->getOriginalAddress();
+  
+  
+  g_pIntruder->keyHandler(this);
+
+  DWORD ripEnabled     = g_pIntruder->isMeshRipEnabled();
+  DWORD minVertexCount = g_pIntruder->getSettings()->dwMinVertexCount;
+
+  if (ripEnabled)
+  {
+    if (dwVertexCount >= minVertexCount)
+    {
+      g_pLog->log("IDirect3DDevice3_DrawIndexedPrimitiveStrided(\
+0x%p, %d, 0x%08X, 0x%p, %d, 0x%p, %d, 0x%08X)\n",
+                  pDev,
+                  d3dptPrimitiveType,
+                  dwVertexTypeDesc,
+                  lpVertexArray,
+                  dwVertexCount,
+                  lpwIndices,
+                  dwIndexCount,
+                  dwFlags
+                  );
+      __try
+      {
+        ripDrawIndexedPrimitiveStrided(pDev,
+                                       d3dptPrimitiveType,
+                                       dwVertexTypeDesc,
+                                       lpVertexArray,
+                                       dwVertexCount,
+                                       lpwIndices,
+                                       dwIndexCount,
+                                       dwFlags
+                                       );
+      }
+      __except (EXCEPTION_EXECUTE_HANDLER)
+      {
+        g_pLog->logError("IDirect3DDevice3_DrawIndexedPrimitiveStrided() exception\n\n\n");
+      }
+    }
+    else
+    {
+      g_pLog->logWarning("IDirect3DDevice3_DrawIndexedPrimitiveStrided() rip skipped\n");
+    }
+  }
+  HRESULT res = e(pDev,
+                  d3dptPrimitiveType,
+                  dwVertexTypeDesc,
+                  lpVertexArray,
+                  dwVertexCount,
+                  lpwIndices,
+                  dwIndexCount,
+                  dwFlags
+                  );
+  return res;
+}
+
+extern KIntruder* g_pIntruder;
+extern KLog*      g_pLog;
+
+
+void KRipper6::ripDrawIndexedPrimitiveVB(
+                                  IDirect3DDevice3* pDev,
+                                  D3DPRIMITIVETYPE d3dptPrimitiveType,
+                                  LPDIRECT3DVERTEXBUFFER lpd3dVertexBuffer,
+                                  LPWORD lpwIndices,
+                                  DWORD  dwIndexCount,
+                                  DWORD  dwFlags
+                                  )
+{
+  do
+  {
+    // Primitive topology
+    EPrimitiveTopology::Type primitiveTopology =
+                    D3DPRIMITIVETYPE_to_EPrimitiveTopology(d3dptPrimitiveType);
+
+    if (!::isPrimitiveTopologySupported(primitiveTopology))
+    {
+      g_pLog->logError("Input primitive topology not supported\n\n");
+      break;
+    }
+
+
+    // Vertex declaration
+    KInputVertexDeclaration  inputVertDecl;
+    KOutputVertexDeclaration outputVertDecl;
+
+    D3DVERTEXBUFFERDESC vbDesc;
+    vbDesc.dwSize = sizeof(vbDesc);
+    HRESULT hr = lpd3dVertexBuffer->GetVertexBufferDesc(&vbDesc);
+    if (FAILED(hr))
+    {
+      g_pLog->logError("IDirect3DVertexBuffer::GetVertexBufferDesc(). \
+HRESULT: 0x%08X\n\n\n", hr);
+      break;
+    }
+
+    DWORD dwVertexTypeDesc = vbDesc.dwFVF;
+    fvfToInputVertexDeclaration(dwVertexTypeDesc, &inputVertDecl);
+
+    hr = ::createKOutputVertexDeclaration(inputVertDecl, outputVertDecl);
+
+    g_pLog->log("FVF: 0x%08X\n", dwVertexTypeDesc);
+    ::dumpInputVertexDeclaration2Log(inputVertDecl);
+    ::dumpOutputVertexDeclaration2Log(outputVertDecl);
+
+
+    DWORD primitivesCount = primitiveCountFromIndexCount(dwIndexCount, 
+                                                         primitiveTopology
+                                                         );
+    // Indexes
+    KFACES faces;
+    OptimizedIndexToMeshIndex optimizedIdxToMeshIdx;
+    hr = dumpIndexesUP(primitiveTopology, 
+                       primitivesCount,
+                       &faces, 
+                       &optimizedIdxToMeshIdx,
+                       lpwIndices,
+                       EIndexFormat::INDEX_16
+                       );
+    if (FAILED(hr))
+    {
+      g_pLog->logError("dumpIndexesUP(). HRESULT: 0x%08X\n\n", hr);
+      break;
+    }
+
+
+
+    // Vertices
+    DWORD vertSize = outputVertDecl.getVertexSize(); // Output vertex size
+    DWORD vertCnt = (DWORD)optimizedIdxToMeshIdx.size();
+    g_pLog->log("PrimitivesCount=%d\nVertexCnt=%d\nOutVertexSize=%d\n",
+                faces.getPrimitivesCount(),
+                vertCnt,
+                vertSize
+                );
+
+    KVERTICES vertices(vertCnt, vertSize);
+
+    LPVOID vbData = 0;
+    hr = lpd3dVertexBuffer->Lock(DDLOCK_READONLY, &vbData, NULL);
+    if (FAILED(hr))
+    {
+      g_pLog->logError("lpd3dVertexBuffer->Lock(). HRESULT: 0x%08X\n\n", hr);
+      break;
+    }
+
+
+    DWORD stride = inputVertDecl.getStreamVertexSize(0);
+    dumpVbUP(inputVertDecl,
+             outputVertDecl,
+             optimizedIdxToMeshIdx,
+             &vertices,
+             (BYTE*)vbData,
+             stride
+             );
+
+    hr = lpd3dVertexBuffer->Unlock();
+    if (FAILED(hr))
+    {
+        g_pLog->logError("lpd3dVertexBuffer->Unlock(). HRESULT: 0x%08X\n\n", hr);
+        break;
+    }
+
+    KMeshTextures meshTextures;
+    saveMeshTextures(pDev, &meshTextures);
+
+    // No shaders in dx6. Empty
+    KMeshShaders meshShaders;
+
+
+    // Save RIP file
+    std::wstring ripFilePath = g_pIntruder->getFrameMeshSavePath();
+    std::string utf8str = wideStringToMultiByte(ripFilePath.c_str());
+
+    hr = ::saveRipFile(ripFilePath.c_str(),
+                       inputVertDecl,
+                       outputVertDecl,
+                       meshTextures,
+                       meshShaders,
+                       faces, 
+                       vertices
+                       );
+    if (SUCCEEDED(hr))
+    {
+      g_pLog->log("Mesh saved as: %s\n\n\n", utf8str.c_str());
+    }
+    else
+    {
+      g_pLog->logError("Mesh save error: %s\n\n\n", utf8str.c_str());
+    }
+
+    g_pIntruder->incFrameMeshIdx();
+  }
+  while (false);
+
+}
+
+
+HRESULT KRipper6::helper_IDirect3DDevice3_DrawIndexedPrimitiveVB(
+                                    KHook* h,
+                                    IDirect3DDevice3* pDev,
+                                    D3DPRIMITIVETYPE d3dptPrimitiveType,
+                                    LPDIRECT3DVERTEXBUFFER lpd3dVertexBuffer,
+                                    LPWORD lpwIndices,
+                                    DWORD  dwIndexCount,
+                                    DWORD  dwFlags
+                                    )
+{
+  PFN_IDirect3DDevice3_DrawIndexedPrimitiveVB e =
+           (PFN_IDirect3DDevice3_DrawIndexedPrimitiveVB)h->getOriginalAddress();
+  
+  
+  g_pIntruder->keyHandler(this);
+
+  DWORD ripEnabled     = g_pIntruder->isMeshRipEnabled();
+  DWORD minIndexCount  = g_pIntruder->getSettings()->dwMinIndicies;
+
+  if (ripEnabled)
+  {
+    if (dwIndexCount >= minIndexCount)
+    {
+      g_pLog->log("IDirect3DDevice3_DrawIndexedPrimitiveVB(\
+0x%p, %d, 0x%p, 0x%p, %d, 0x%08X)\n",
+                                      pDev,
+                                      d3dptPrimitiveType,
+                                      lpd3dVertexBuffer,
+                                      lpwIndices,
+                                      dwIndexCount,
+                                      dwFlags
+                                      );
+      __try
+      {
+          ripDrawIndexedPrimitiveVB(
+                                    pDev,
+                                    d3dptPrimitiveType,
+                                    lpd3dVertexBuffer,
+                                    lpwIndices,
+                                    dwIndexCount,
+                                    dwFlags
+                                    );
+      }
+      __except (EXCEPTION_EXECUTE_HANDLER)
+      {
+        g_pLog->logError("IDirect3DDevice3_DrawIndexedPrimitiveVB() exception\n\n\n");
+      }
+    }
+    else
+    {
+      g_pLog->logWarning("IDirect3DDevice3_DrawIndexedPrimitiveVB() rip skipped\n");
+    }
+  }
+  HRESULT res = e(pDev,
+                  d3dptPrimitiveType,
+                  lpd3dVertexBuffer,
+                  lpwIndices,
+                  dwIndexCount,
+                  dwFlags
+                  );
+  return res;
+}
+
+extern KIntruder* g_pIntruder;
+extern KLog*      g_pLog;
+
+
+void KRipper6::addMeshTexture(const KTexture& t)
+{
+  meshTexturesDb.push_back(t);
+}
+
+
+bool KRipper6::isMeshTextureSaved(LPDIRECT3DTEXTURE2 pTexture,
+                                  KTexture* out
+                                  )
+{
+  bool res = false;
+
+  for (size_t i = 0; i < meshTexturesDb.size(); i++)
+  {
+    if (meshTexturesDb[i].pTexture == pTexture)
+    {
+      *out = meshTexturesDb[i];
+      res = true;
+      break;
+    }
+  }
+
+  return res;
+}
+
+
+void KRipper6::saveMeshTextures(IDirect3DDevice3* pDev, 
+                                KMeshTextures* meshTextures
+                                )
+{
+  for (DWORD i = 0; i < 8; ++i)
+  {
+
+    TDXRef < IDirect3DTexture2 > pTexture;
+
+    HRESULT hr = pDev->GetTexture(i, &pTexture);
+    if (FAILED(hr))
+    {
+      g_pLog->logError("IDirect3DDevice3::GetTexture(%d). HRESULT: 0x%08X\n", 
+                       i, 
+                       hr
+                       );
+    }
+    else if (pTexture.get())
+    {
+      KTexture savedTex;
+      if (isMeshTextureSaved(pTexture.get(), &savedTex))
+      {
+        std::string utf8str = wideStringToMultiByte(savedTex.fullPath.c_str());
+
+        // Already Saved Texture. Copy Texture Name To Header
+        meshTextures->textures.push_back(savedTex.name);
+
+        g_pLog->log("Texture stage #%d already saved as: %s\n", 
+                    i, 
+                    utf8str.c_str()
+                    );
+      }
+      else
+      {
+        std::string  textureFileA;
+        std::wstring textureFilePath = 
+                        g_pIntruder->getFrameTextureSavePath(textureFileA, i);
+
+        //----------------------
+        // New Texture In Model. Copy Texture Name To Header
+        //----------------------
+        hr = saveTexture2File(textureFilePath.c_str(), pTexture.get());
+        if (SUCCEEDED(hr))
+        {
+          KTexture ft;
+          ft.pTexture = pTexture.get();
+          ft.name     = textureFileA;
+          ft.fullPath = textureFilePath;
+          addMeshTexture(ft);
+
+          meshTextures->textures.push_back(textureFileA);
+
+          std::string utf8str = wideStringToMultiByte(textureFilePath.c_str());
+          g_pLog->log("Texture stage #%d saved as: %s\n", 
+                      i, 
+                      utf8str.c_str()
+                      );
+        }
+        else
+        {
+          g_pLog->logError("Texture save. HRESULT: 0x%08X\n", hr);
+        }
+
+        g_pIntruder->incFrameTextureIdx();
+      }
+    }
+    else
+    {
+//      g_pLog->log("Texture stage #%d not exist\n", i);
+    }
+  }
+}
+
+extern KIntruder* g_pIntruder;
+extern KHookMgr*  g_pHookMgr;
+extern KLog*      g_pLog;
+extern KDdraw*    g_pDdraw;
+
+
+HRESULT KRipper6::saveTexture2File(const wchar_t* fileName, 
+                                   LPDIRECT3DTEXTURE2 tex
+                                   )
+{
+  TextureToSurfaceDb::iterator it = textureToSurfaceDb.find(tex);
+  HRESULT res = E_FAIL;
+  if (it == textureToSurfaceDb.end())
+  {
+    g_pLog->logError("D3D6 ripper: Texture surface not found in db. Search texture in surfaces dir\n");
+  }
+  else
+  {
+    void* surface = it->second;
+    res = g_pDdraw->save_IDirectDrawSurface(fileName, surface);
+  }
+  return res;
+}
+
+extern KIntruder* g_pIntruder;
+extern KHookMgr*  g_pHookMgr;
+extern KLog*      g_pLog;
+
+
+DWORD KRipper6::isTextureSaved(LPDIRECT3DTEXTURE2 pTex)
+{
+  if (!pTex)//Texture unset
+    return 1;
+
+  for (size_t i = 0; i < forcedTexturesDb.size(); i++)
+  {
+    if (forcedTexturesDb[i] == pTex)
+    {
+      return 1;
+    }
+  }
+  return 0;
+}
+
+
+void KRipper6::handleTextureSave(IDirect3DDevice3* pDev,
+                                 DWORD Stage,
+                                 LPDIRECT3DTEXTURE2 pTexture
+                                 )
+{
+  g_pIntruder->keyHandler(this);
+  DWORD RipFlag = g_pIntruder->isTexturesRipKeyPressed();
+  if (RipFlag)
+  {
+    if (!isTextureSaved(pTexture))
+    {
+      std::wstring TextureFile = g_pIntruder->getTextureSavePath();
+      std::string utf8str = wideStringToMultiByte(TextureFile.c_str());
+
+      HRESULT hr = saveTexture2File(TextureFile.c_str(), pTexture);
+      
+      if (SUCCEEDED(hr))
+      {
+        // Saving success
+        g_pIntruder->incTextureIdx();
+        g_pLog->log("Texture saved: %s\n", utf8str.c_str());
+      }
+      else
+      {
+        // Texture save error
+        g_pLog->logError("Texture save. HRESULT: 0x%08X\n", hr);
+      }
+
+      // Mark as processed
+      this_->forcedTexturesDb.push_back(pTexture);
+    }
+  }
+}
+
+
+HRESULT KRipper6::helper_IDirect3DDevice3_SetTexture(
+                                                KHook* h,
+                                                IDirect3DDevice3* pDev,
+                                                DWORD dwStage,
+                                                LPDIRECT3DTEXTURE2 lpTexture
+                                                )
+{
+  // HACK. D3D changes VTBL. Need rehook
+  hook_IDirect3DDevice3(pDev);
+
+
+  PFN_IDirect3DDevice3_SetTexture e = 
+                       (PFN_IDirect3DDevice3_SetTexture)h->getOriginalAddress();
+
+  EnterCriticalSection(&cs);
+  __try
+  {
+    handleTextureSave(pDev, dwStage, lpTexture);
+  }
+  __except (EXCEPTION_EXECUTE_HANDLER)
+  {
+    g_pLog->logError("Exception in KRipper6::handleTextureSave()\n");
+  }
+  LeaveCriticalSection(&cs);
+
+  return e(pDev, dwStage, lpTexture);
+}
+
+#endif // defined(__DDRAW_INCLUDED__) && defined(__D3D_H__)
