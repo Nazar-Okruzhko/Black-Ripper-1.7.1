@@ -1,8 +1,10 @@
 // =============================================================================
-//  InjHelperCS.cs  –  Cross-arch APC injection helper
+//  injhelper.cs  â€“  C# .NET Cross-arch APC injection helper
 //
-//  Usage (called by BlackExploit_171.exe for cross-arch targets):
-//    injhelper.exe <pid> <tid> <dllpath>
+//  Requirments:
+//    intruder.dll is pre-compiled and placed alongside this launcher.
+//    d3dwrap.dll is pre-compiled and placed alongside this launcher.
+//    injhelper.exe is pre-compiled and placed alongside this launcher.
 //
 //  Exit codes:
 //    0  = success
@@ -12,25 +14,30 @@
 //    4  = QueueUserAPC failed
 //    5  = OpenProcess failed
 //
-//  Build x86 (inject into 32-bit target from 64-bit launcher):
-//    csc /nologo /optimize /target:exe /platform:x86
-//        InjHelperCS.cs /out:x86\injhelper.exe
+//  Build x64 (.NET 4-8):
+//    dotnet build injhelper.csproj -c Release -p:PlatformTarget=x64
+//    dotnet build BlackRipper_171.csproj -c Release -p:PlatformTarget=x64
 //
-//  Build x64 (inject into 64-bit target from 32-bit launcher):
-//    csc /nologo /optimize /target:exe /platform:x64
-//        InjHelperCS.cs /out:x64\injhelper.exe
+//  Build x86 (.NET 4-8):
+//    dotnet build injhelper.csproj -c Release -p:PlatformTarget=x86
+//    dotnet build BlackRipper_171.csproj -c Release -p:PlatformTarget=x86
 //
-//  Or via SDK project (InjHelperCS.csproj):
-//    dotnet build InjHelperCS.csproj -c Release
+//  The helper: 
+//    1. Gets called by the Launcher (BlackExploit_171.exe) for cross-arch targets:
+//    -  injhelper.exe <pid> <tid> <dllpath>
+//    Consists of 1 class: InjHelper.
+//
 // =============================================================================
  
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
  
+// ===========================================================================
+// P/Invoke
+// ===========================================================================
 static class InjHelper
 {
-    // -- P/Invoke --------------------------------------------------------------
     const uint PROCESS_ALL_ACCESS = 0x001FFFFF;
     const uint MEM_COMMIT         = 0x1000;
     const uint MEM_RESERVE        = 0x2000;
@@ -69,7 +76,7 @@ static class InjHelper
     // THREAD_SET_CONTEXT = 0x0010
     const uint THREAD_SET_CONTEXT = 0x0010;
  
-    // -- Entry point -----------------------------------------------------------
+    // 1. Entry point -----------------------------------------------------------
     static int Main(string[] args)
     {
         if (args.Length < 3)
@@ -87,7 +94,7 @@ static class InjHelper
  
         string dllPath = args[2].Trim('"');
  
-        // -- Open target process & thread -------------------------------------
+        // 2. Open target process & thread -------------------------------------
         IntPtr hProc = OpenProcess(PROCESS_ALL_ACCESS, false, pid);
         if (hProc == IntPtr.Zero)
         {
@@ -112,7 +119,7 @@ static class InjHelper
         return result;
     }
  
-    // -- APC injection (same logic as KInject.InjectApc in the main launcher) --
+    // 3. APC injection (same logic as KInject.InjectApc in the main launcher) --
     static int InjectApc(IntPtr hProc, IntPtr hThread, string dllPath)
     {
         byte[] pathBytes = Encoding.Unicode.GetBytes(dllPath + "\0");
@@ -146,7 +153,7 @@ static class InjHelper
             return 4;
         }
  
-        return 0;   // success – memory intentionally NOT freed (LoadLibraryW will read it)
+        return 0;   // success â€“ memory intentionally NOT freed (LoadLibraryW will read it)
     }
 }
  
