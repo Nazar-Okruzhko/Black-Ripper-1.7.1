@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
  
   <PropertyGroup>
-    <AssemblyName>BlackExploit_171</AssemblyName>
-    <RootNamespace>BlackExploit</RootNamespace>
+    <AssemblyName>BlackRipper_171</AssemblyName>
+    <RootNamespace>BlackRipper</RootNamespace>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net48</TargetFramework>
     <ApplicationIcon>1.ico</ApplicationIcon>
