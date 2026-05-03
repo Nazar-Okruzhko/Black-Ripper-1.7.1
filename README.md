@@ -427,7 +427,7 @@
           │       ├── vertexprocess.h
           │       ├── vert_indx_dump.cpp
           │       └── vert_indx_dump.h
-          └── DXSDK/
+          └── DXSDK/ [OPTIONAL]
               ├── DXSDK9/
               │   ├── Include/
               │   │   ├── comdecl.h
@@ -940,20 +940,96 @@
                           ├── XAPOFX.lib
                           └── XInput.lib
     
-# History
-I've took a look once again on what made the Original NinjaRipper 1.7.1 so good. I've tried analyzing it, inspecting it step by step and even decompiling, eventually I've got very lucky and got the Original Source Code from the Author I've started analyzing it hardly and with help and soon became recreating my own Open Source Version of the NinjaRipper 1.7.1 called Black Exploit.\
+# Overview & History
+<img width="456" height="282" alt="Screenshot (3434)" src="https://github.com/user-attachments/assets/39cc6793-9788-41c0-8820-4cba3791529d" />
 
-# Why not C# or Python?
-C# cannot do APC injection, vtable hooks, or LdrLoadDll interception at the native level. So Both intruder.dll & d3dwrap.dll must be in C++\
-And intruder.dll is loaded by LoadLibraryW from inside the game process via APC. That means it must be a native Win32 DLL — a .NET assembly simply cannot be loaded this way.\
-[Despite being my most beloved languages there was this one major problem, so I decided to only Make launcher and helper on C#]\
+I've took a look once again on what made the Original NinjaRipper 1.7.1 Great. I've tried analyzing it, inspecting it step by step behaviourally, tried to understand the injection mechanism, and even decompiling, and eventually... I've got very lucky! I've got the Original Source Code! From Black Ninja (The Original Author)! I've started analyzing it hardly and with some additional help soon I was able to start recreating it, it was so extreamly familiar to the Original that I've decided to Open Source this Version of the NinjaRipper 1.7.1 called Black Exploit, now Black Ripper. My goal was to have minimal files as possible, with good documented structure and extreamly easy to compile for everyone by a few commands....\
 
-# How does the Ripper works?
-[W.I.P.]
-
-# The Files:
+### The Files:
 • NinjaRipper.exe (C++ or C#) = thin launcher. It just shows UI, calls CreateProcess(target, suspended) and injects intruder.dll via APC.C#.\
 • injhelper.exe is a tiny ~150-line (C++ or C#) EXE. Its only job: receive pid tid dllpath on the command line, open the target process, and do the APC injection. It exists solely to handle the cross-arch case (64-bit launcher injecting into 32-bit game or vice versa). It's essentially just the KInject.InjectApc() method from BlackRipper.cs wrapped in a Main(). Could be written in any language like C#.\
 • intruder.dll = the entire ripping engine. Compiled separately, runs inside the target game process. Completely self-contained. Never needs to talk back to the launcher. That one is native C++ only.\
 • d3dwrap.dll = is a full DX wrapper — it exports d3d9.dll's actual API (Direct3DCreate9 etc.), forwards calls to the real system DLL, and loads intruder.dll via LoadLibrary from its own DllMain. It's an alternative injection path for games that can't be APC-injected. That one is native C++ only.
 [Supports all the important DirectX Versions: DirectX 6, 7, 8, 9, 11....]
+
+### I want especially thank Black Ninja (The Original Athor) for making this Project possible. Without him I would **NEVER** be able to get anywhere close to where I am now, remember he is the actual Author of NinjaRipper 1.7.1 I am just the guy who Ported it and Open Sourced. Please support Black Ninja through Patreon / Boosty (if possible) for creating this insane Program!
+https://www.patreon.com/ninjaripper
+https://boosty.to/ninjaripper
+
+# Why not C# or Python?
+Going fully on C# / Python is a very bad idea, C# and Python cannot do APC injection, vtable hooks, or LdrLoadDll interception at the native level. So Both intruder.dll & d3dwrap.dll must be in C++\
+And intruder.dll is loaded by LoadLibraryW from inside the game process via APC. That means it must be a native Win32 DLL — a .NET assembly simply cannot be loaded this way.\
+[Despite being my most beloved languages there was this one major problem, so I decided to only Make launcher and helper on C#]\
+
+# How does the Ripper works? (Intruder injection)
+It's essentially a DirexctX Geometry/Texture dumper (VRAM Exploit), for capturing runtime game's 3D/2D asset data.\
+Mode 1 — Intruder Inject (APC)\
+You launch the game frozen, shove the DLL path into its memory, tell it "load this when you wake up", then unfreeze it. The game never knows. Works on most games, fails on games with anti-cheat that monitors suspended-process launches.\
+\
+Mode 2 — d3dwrap.dll (Wrapper)\
+Instead of injecting, you impersonate DirectX itself. You copy d3dwrap.dll into the game's folder and rename it d3d9.dll. When the game starts normally and calls Direct3DCreate9, Windows loads YOUR fake d3d9.dll instead of the real one. Your fake DLL does two things: loads the real system d3d9.dll and forwards the call to it, AND loads intruder.dll as a side effect. The game is completely unaware — it got the real DirectX back, just with a hitchhiker. Works on games that block APC injection but can't stop DLL loading from their own folder.\
+\
+What intruder.dll actually does once inside:\
+It watches every DLL the game loads. The moment it sees d3d9.dll appear, it reaches into DirectX's internal function table (the COM vtable) and replaces the pointers for DrawPrimitive, DrawIndexedPrimitive, Present, SetTexture with its own functions. From that point forward, every time the game draws anything, intruder.dll's code runs first, reads the vertex and index buffers, unpacks them into floats, saves them as .rip files, renders each texture to an offscreen surface and saves it as .dds — then hands control back to the real DirectX so the game continues normally. The player presses F10, that flag flips on, one frame worth of geometry is captured, flag flips off. That's the entire thing.\
+
+### Intruder Mode - Full Guide:
+    BlackRipper.exe & InjHelper.exe:
+        │
+        ├─ 1. GetBinaryType(game.exe)                    → is it 32 or 64-bit?
+        ├─ 2. CreateProcess(game, SUSPENDED)             → game thread frozen at ntdll init
+        ├─ 3. VirtualAllocEx + WriteProcessMemory        → writes "intruder.dll" path into game RAM
+        ├─ 4. QueueUserAPC(LoadLibraryW, thread, path)   → schedules DLL load
+        └─ 5. ResumeThread                               → game thread wakes, processes the APC first
+                                                         → Windows calls LoadLibraryW("intruder.dll")
+                                                         → DllMain(DLL_PROCESS_ATTACH) fires
+                                                         → install() runs inside the GAME process
+    
+    intruder.dll (inside the game process):
+        │
+        ├─ 1. Hooks ntdll.LdrLoadDll          → watches every DLL the game loads
+        ├─ 2. Hooks CreateProcess*            → propagates to child processes
+        │
+        ├─ 3. Game loads d3d9.dll             → LdrLoadDll hook fires
+        │     └─ create_KRipper9()            → hooks DrawPrimitive, DrawIndexedPrimitive,
+        │                                       SetTexture, Present, CreateVertexBuffer...
+        │
+        ├─ 4. Every frame: game calls Present()
+        │     └─ KIntruder::frameHandler()    → polls F10/F9/F12 hotkeys
+        │
+        ├─ 5. Player presses F10 (RipKey)
+        │     └─ fRipEnabled = 1               → next Draw* calls start capturing
+        │
+        ├─ 6. Game calls DrawIndexedPrimitive()
+        │     ├─ Lock vertex buffer           → read raw vertices
+        │     ├─ Lock index buffer            → read raw indices
+        │     ├─ processIndexes*()            → convert to triangle list
+        │     ├─ dumpVertSemantic()           → unpack POSITION/NORMAL/TEXCOORD to floats
+        │     ├─ GetTexture(0..7)             → render-to-texture trick → save as .dds
+        │     └─ saveRipFile()                → write .rip file (header + faces + vertices)
+        │
+        └─ Player presses F10 again         → fRipEnabled = 0, frameEnd()
+    [W.I.P.]
+
+
+# Instructions
+    Instructions:
+    Requirments: .NET 4.8, MSVC 1.4
+    //  Build X86:
+    //  1. Build X86 Intruuder.dll (MSVC x86 Developer Command Prompt):
+    //    cl /nologo /W3 /O2 /EHsc /LD /DUNICODE /D_UNICODE /D_WIN32_WINNT=0x0502
+    //       intruder.cpp /Fe:intruder.dll
+    //       /link /DLL d3d9.lib dxguid.lib kernel32.lib user32.lib
+    //
+    //  2. Build X64 BlackRipper.exe & InjHelper.exe (.NET 4-8):
+    //    dotnet build injhelper.csproj -c Release -p:PlatformTarget=x86
+    //    dotnet build BlackRipper_171.csproj -c Release -p:PlatformTarget=x86
+    //
+    //  Build X64:\
+    //  1. Build X64 Intruder.dll (MSVC x64 Developer Command Prompt):
+    //    cl /nologo /W3 /O2 /EHsc /LD /DUNICODE /D_UNICODE /D_WIN32_WINNT=0x0502
+    //       /D_WIN64 intruder.cpp /Fe:intruder.dll
+    //       /link /DLL d3d9.lib dxguid.lib kernel32.lib user32.lib
+    //
+    //  2. Build X64 BlackRipper.exe & InjHelper.exe (.NET 4-8):
+    //    dotnet build injhelper.csproj -c Release -p:PlatformTarget=x64
+    //    dotnet build BlackRipper_171.csproj -c Release -p:PlatformTarget=x64
