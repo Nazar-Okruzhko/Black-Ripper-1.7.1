@@ -1,0 +1,42 @@
+﻿{
+  "name": "Black Ripper",
+  "description": "Rip 3D models and textures from any WebGL applet. Press INSERT while a scene is rendering.",
+  "author": "Rilshrink",
+  "version": "0.6",
+  "manifest_version": 3,
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "webglripper.js"
+      ],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "webglripper.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ],
+  "icons": {
+    "16": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
+  },
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "rilshrink@blackripper"
+    }
+  }
+}
