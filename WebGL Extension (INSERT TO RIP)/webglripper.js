@@ -1,182 +1,448 @@
-﻿/* ============================================================================
-   Black Ripper — webglripper.js  (dual-purpose: content script + page script)
-   MODE 1  content script  → reads localStorage settings, injects settings
-           panel UI, then re-injects this file into the page's main world.
-   MODE 2  page script     → JSZip + patched WebGL hooking core.
+/* ============================================================================
+   Black Ripper — webglripper.js
+   MODE 1: panel (Home key shortcut), reload-based buttons, postMessage bridge.
+   MODE 2: Grabber (captures blobs at intercept time) + JSZip + ripper core.
 ============================================================================ */
 (function () {
  
 var DEFAULTS = {
-  default_texture_res:  '2048x2048',
-  do_shader_calc:       true,
-  is_debug_mode:        true,
-  unflip_textures:      true,
-  should_download_zip:  true,
-  do_model_view_matrix: true,
-  minimum_clears:       1
+  default_texture_res:"4096x4096", do_shader_calc:false, is_debug_mode:true,
+  unflip_textures:true, should_download_zip:false, do_model_view_matrix:true,
+  minimum_clears:1, rip_delay_ms:3000
 };
-var LS_KEY = 'black_ripper_cfg';
+var LS_KEY="black_ripper_cfg", SS_CATCH="__br_catch", SS_RIP="__br_rip";
  
-var _rt = null;
+var _rt=null;
 try {
-  if (typeof chrome  !== 'undefined' && chrome.runtime  && chrome.runtime.getURL)  _rt = chrome;
-  if (typeof browser !== 'undefined' && browser.runtime && browser.runtime.getURL) _rt = browser;
+  if(typeof chrome!=="undefined"&&chrome.runtime&&chrome.runtime.getURL) _rt=chrome;
+  if(typeof browser!=="undefined"&&browser.runtime&&browser.runtime.getURL) _rt=browser;
 } catch(e) {}
  
-if (!_rt) { /* skip to MODE 2 */ }
-else {
+if(!_rt){/*jump to MODE 2*/}else{
  
 /* ════ MODE 1 — CONTENT SCRIPT ════════════════════════════════════════════ */
-function loadCfg() {
-  try { var s = localStorage.getItem(LS_KEY); if (s) return Object.assign({}, DEFAULTS, JSON.parse(s)); }
-  catch(e) {}
-  return Object.assign({}, DEFAULTS);
-}
-function saveCfg(cfg) {
-  try { localStorage.setItem(LS_KEY, JSON.stringify(cfg)); } catch(e) {}
-}
+function loadCfg(){try{var s=localStorage.getItem(LS_KEY);if(s)return Object.assign({},DEFAULTS,JSON.parse(s));}catch(e){}return Object.assign({},DEFAULTS);}
+function saveCfg(c){try{localStorage.setItem(LS_KEY,JSON.stringify(c));}catch(e){}}
  
-var _cfg = loadCfg();
+var _cfg=loadCfg();
+var _catchOnLoad=false, _ripOnLoad=false;
+try{
+  if(sessionStorage.getItem(SS_CATCH)==="1"){_catchOnLoad=true;sessionStorage.removeItem(SS_CATCH);}
+  if(sessionStorage.getItem(SS_RIP)==="1"){_ripOnLoad=true;sessionStorage.removeItem(SS_RIP);}
+}catch(e){}
  
-var _div = document.createElement('div');
-_div.id = 'webgl_ripper_settings';
-_div.textContent = JSON.stringify(_cfg);
-_div.hidden = true;
-(document.head || document.documentElement).appendChild(_div);
+var _div=document.createElement("div");
+_div.id="webgl_ripper_settings"; _div.textContent=JSON.stringify(_cfg); _div.hidden=true;
+(document.head||document.documentElement).appendChild(_div);
  
-var _s = document.createElement('script');
-_s.src = _rt.runtime.getURL('webglripper.js');
-_s.onload = function() { this.remove(); };
-(document.head || document.documentElement).appendChild(_s);
+var _inj=document.createElement("script");
+_inj.src=_rt.runtime.getURL("webglripper.js");
+_inj.onload=function(){this.remove();};
+(document.head||document.documentElement).appendChild(_inj);
  
-function applyLive(cfg) {
-  _div.textContent = JSON.stringify(cfg);
-  var patch = document.createElement('script');
-  patch.textContent = [
-    '(function(){',
-    '  var W=window.WEBGLRipperSettings; if(!W) return;',
-    '  var s=JSON.parse(document.getElementById("webgl_ripper_settings").textContent);',
-    '  W.defaultTexWidth  = parseInt(s.default_texture_res)||4096;',
-    '  W.defaultTexHeight = parseInt(s.default_texture_res.split("x")[1])||4096;',
-    '  W.isDoShaderCalc   = s.do_shader_calc;',
-    '  W.isDebug          = s.is_debug_mode;',
-    '  W.shouldUnFlipTex  = s.unflip_textures;',
-    '  W.doModelViewMatrix= s.do_model_view_matrix;',
-    '  W.shouldDownloadZip= s.should_download_zip;',
-    '  W.minimumClears    = parseInt(s.minimum_clears)||1;',
-    '  W.hasLoadedSettings= true;',
-    '})();'
-  ].join('\n');
-  document.documentElement.appendChild(patch);
-  patch.remove();
+function send(cmd,extra){window.postMessage(Object.assign({__brCmd:cmd},extra||{}),"*");}
+ 
+var _catching=_catchOnLoad, _grabCount=0, _ripTimer=null, _ripSec=0;
+ 
+window.addEventListener("message",function(e){
+  if(!e.data||!e.data.__br)return;
+  if(e.data.__br==="ready"){
+    if(_catchOnLoad){send("grabEnable");refreshCatch();}
+    if(_ripOnLoad){startCountdown(_cfg.rip_delay_ms||3000);}
+  }
+  if(e.data.__br==="grabbed"){_grabCount=e.data.count;refreshCatch();}
+  if(e.data.__br==="cleared"){_grabCount=0;refreshCatch();}
+});
+ 
+function startCountdown(ms){
+  _ripSec=Math.ceil(ms/1000); refreshRip();
+  _ripTimer=setInterval(function(){
+    _ripSec--; refreshRip();
+    if(_ripSec<=0){clearInterval(_ripTimer);_ripTimer=null;send("rip");refreshRip();}
+  },1000);
 }
  
-function buildPanel() {
-  if (document.getElementById('__br_btn')) return;
-  var host = document.createElement('div');
-  host.id = '__br_host';
-  var shadow = host.attachShadow({mode:'open'});
+/* ── Panel ──────────────────────────────────────────────────────────────── */
+var _panelOpen=false;
+ 
+function buildPanel(){
+  if(document.getElementById("__br_host"))return;
+  var host=document.createElement("div"); host.id="__br_host";
+  var sh=host.attachShadow({mode:"open"});
   document.documentElement.appendChild(host);
  
-  shadow.innerHTML = '<style>\
-  *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,sans-serif}\
-  #btn{position:fixed;bottom:14px;right:14px;z-index:2147483647;width:38px;height:38px;border-radius:50%;\
-    background:#12122a;color:#aaf;border:2px solid #44c;font-size:19px;cursor:pointer;\
-    display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px #0008;transition:transform .15s}\
-  #btn:hover{transform:scale(1.12)}\
-  #overlay{display:none;position:fixed;inset:0;z-index:2147483646;background:#0006;align-items:center;justify-content:center}\
-  #overlay.open{display:flex}\
-  #panel{background:#12122a;border:2px solid #44c;border-radius:12px;padding:20px 24px 18px;width:310px;\
-    box-shadow:0 8px 32px #000a;color:#dde}\
-  h3{color:#99f;font-size:15px;margin-bottom:14px}\
-  .row{display:flex;align-items:center;gap:8px;margin:9px 0;font-size:13px;cursor:pointer}\
-  .row input[type=checkbox]{accent-color:#55f;width:15px;height:15px;flex-shrink:0;cursor:pointer}\
-  .row input[type=range]{accent-color:#55f;flex:1;cursor:pointer}\
-  select{background:#0d0d22;color:#dde;border:1px solid #44c;border-radius:4px;padding:3px 6px;font-size:13px;flex:1;cursor:pointer}\
-  .lbl{flex:1}.val{color:#99f;font-size:12px;width:28px;text-align:right}\
-  #status{min-height:16px;color:#5f5;font-size:12px;margin:10px 0 6px}\
-  .btns{display:flex;justify-content:flex-end;gap:8px;margin-top:4px}\
-  button.save{background:#334bb5;color:#fff;border:none;border-radius:5px;padding:6px 18px;font-size:13px;cursor:pointer}\
-  button.save:hover{background:#4459d0}\
-  button.cancel{background:none;color:#888;border:1px solid #445;border-radius:5px;padding:6px 12px;font-size:13px;cursor:pointer}\
-  </style>\
-  <button id="btn" title="Black Ripper Settings">\u2699</button>\
-  <div id="overlay">\
-    <div id="panel">\
-      <h3>\ud83c\udfae Black Ripper Settings</h3>\
-      <div class="row"><span class="lbl">Default Texture Size</span>\
-        <select id="res">\
-          <option value="16x16">16\xd716</option><option value="32x32">32\xd732</option>\
-          <option value="64x64">64\xd764</option><option value="128x128">128\xd7128</option>\
-          <option value="512x512">512\xd7512</option><option value="1024x1024">1024\xd71024</option>\
-          <option value="2048x2048">2048\xd72048</option><option value="4096x4096">4096\xd74096</option>\
-          <option value="8192x8192">8192\xd78192</option><option value="16384x16384">16384\xd716384</option>\
-        </select></div>\
-      <label class="row"><input type="range" id="clears" min="1" max="10"><span class="lbl">Min Clears</span><span class="val" id="clears_v">1</span></label>\
-      <label class="row"><input type="checkbox" id="flip"><span class="lbl">Unflip Textures</span></label>\
-      <label class="row"><input type="checkbox" id="mvm"><span class="lbl">Use Model View Matrix</span></label>\
-      <label class="row"><input type="checkbox" id="zip"><span class="lbl">Download as ZIP (WIP)</span></label>\
-      <label class="row"><input type="checkbox" id="shader"><span class="lbl">Shader Calc (WIP)</span></label>\
-      <label class="row"><input type="checkbox" id="debug"><span class="lbl">Debug Mode</span></label>\
-      <div id="status"></div>\
-      <div class="btns"><button class="cancel" id="cancel">Cancel</button><button class="save" id="saveBtn">Save &amp; Apply</button></div>\
-    </div>\
-  </div>';
+  sh.innerHTML=`<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,sans-serif}
+#fab{position:fixed;bottom:14px;right:14px;z-index:2147483647;width:40px;height:40px;
+  border-radius:50%;background:#12122a;color:#aaf;border:2px solid #44c;font-size:20px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 12px #000a;transition:transform .15s;user-select:none}
+#fab:hover{transform:scale(1.1)}
+#ov{display:none;position:fixed;inset:0;z-index:2147483646;background:#0007;
+  align-items:center;justify-content:center}
+#ov.open{display:flex}
+#win{background:#12122a;border:2px solid #44c;border-radius:12px;padding:18px 22px 16px;
+  width:320px;box-shadow:0 8px 32px #000c;color:#dde}
+h3{color:#99f;font-size:15px;margin-bottom:14px}
+.row{display:flex;align-items:center;gap:8px;margin:9px 0;font-size:13px;cursor:pointer}
+.row input[type=checkbox]{accent-color:#55f;width:15px;height:15px;flex-shrink:0}
+.row input[type=range]{accent-color:#55f;flex:1}
+select{background:#0d0d22;color:#dde;border:1px solid #44c;border-radius:4px;
+  padding:3px 6px;font-size:13px;flex:1;cursor:pointer}
+.lbl{flex:1}.val{color:#99f;font-size:12px;width:32px;text-align:right}
+hr{border:none;border-top:1px solid #2a2a5a;margin:12px 0}
+.hint{font-size:11px;color:#556;margin:-4px 0 10px;line-height:1.5}
+.act{display:flex;gap:8px;margin-bottom:8px}
+.act button{flex:1;padding:9px 6px;font-size:13px;font-weight:700;border-radius:6px;
+  cursor:pointer;border:1px solid transparent;transition:all .15s;line-height:1.3}
+#bcatch{background:#0d220d;color:#6d6;border-color:#2a6a2a}
+#bcatch:hover{background:#122a12}
+#bcatch.on{background:#1a4a0a;color:#afa;border-color:#4a9a1a;animation:pulse 1.3s infinite}
+#brip{background:#3a0808;color:#faa;border-color:#8a2222}
+#brip:hover{background:#4a1010}
+#brip.cd{background:#5a1010;color:#fcc;border-color:#aa3333;animation:pulse 1.3s infinite}
+.gbar{display:none;align-items:center;gap:8px;background:#0a1a0a;
+  border:1px solid #2a6a2a;border-radius:7px;padding:8px 10px;margin-bottom:8px;font-size:12px}
+.gbar.show{display:flex}
+.dot{color:#5f5;font-size:15px;animation:pulse 1.3s infinite;flex-shrink:0}
+.gcnt{flex:1;color:#afa}
+.gbar button{padding:4px 10px;font-size:11px;font-weight:600;border-radius:4px;border:none;cursor:pointer}
+#gdl{background:#1a3a1a;color:#afa}
+#gdl:hover{background:#224422}
+#gstop{background:#3a1212;color:#faa}
+#gstop:hover{background:#4a1818}
+.st{min-height:16px;color:#5f5;font-size:12px;margin:5px 0 4px}
+.btns{display:flex;justify-content:flex-end;gap:8px;margin-top:6px}
+button.ok{background:#334bb5;color:#fff;border:none;border-radius:5px;padding:7px 18px;font-size:13px;cursor:pointer}
+button.ok:hover{background:#4459d0}
+button.cl{background:none;color:#888;border:1px solid #445;border-radius:5px;padding:7px 12px;font-size:13px;cursor:pointer}
+.hotkey{font-size:10px;color:#446;margin-top:2px;text-align:center}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+</style>
+<button id="fab" title="Black Ripper (Home)">⚙</button>
+<div id="ov">
+ <div id="win">
+  <h3>🎮 Black Ripper</h3>
+  <div class="row">
+   <span class="lbl">Default Texture Size</span>
+   <select id="res">
+    <option value="16x16">16×16</option><option value="32x32">32×32</option>
+    <option value="64x64">64×64</option><option value="128x128">128×128</option>
+    <option value="512x512">512×512</option><option value="1024x1024">1024×1024</option>
+    <option value="2048x2048">2048×2048</option><option value="4096x4096">4096×4096</option>
+    <option value="8192x8192">8192×8192</option><option value="16384x16384">16384×16384</option>
+   </select>
+  </div>
+  <label class="row"><input type="range" id="clears" min="1" max="10"><span class="lbl">Min Clears</span><span class="val" id="cv">1</span></label>
+  <label class="row"><input type="checkbox" id="flip">  <span class="lbl">Unflip Textures</span></label>
+  <label class="row"><input type="checkbox" id="mvm">   <span class="lbl">Use Model View Matrix</span></label>
+  <label class="row"><input type="checkbox" id="zip">   <span class="lbl">Download as ZIP</span></label>
+  <label class="row"><input type="checkbox" id="shader"><span class="lbl">Shader Calc (WIP)</span></label>
+  <label class="row"><input type="checkbox" id="debug"> <span class="lbl">Debug Mode</span></label>
+  <label class="row"><input type="range" id="ripdelay" min="1" max="15"><span class="lbl">Auto-rip delay (s)</span><span class="val" id="rdv">3</span></label>
+  <hr>
+  <p class="hint">Both buttons reload the page so hooks run from the very first frame.</p>
+  <div class="act">
+   <button id="bcatch">1. Catch Resources</button>
+   <button id="brip">2. Start Ripping</button>
+  </div>
+  <div class="gbar" id="gbar">
+   <span class="dot">●</span>
+   <span class="gcnt" id="gcnt">0 assets</span>
+   <button id="gdl">⬇ Download ZIP</button>
+   <button id="gstop">■ Stop</button>
+  </div>
+  <div class="st" id="rst"></div>
+  <div class="btns">
+   <button class="cl" id="rcancel">Cancel</button>
+   <button class="ok" id="rsave">Save &amp; Apply</button>
+  </div>
+  <div class="hotkey">Press <b>Home</b> to open / close this panel</div>
+ </div>
+</div>`;
  
-  var $ = function(id){ return shadow.getElementById(id); };
+  var $=id=>sh.getElementById(id);
  
-  function populate(cfg) {
-    $('res').value = cfg.default_texture_res;
-    $('clears').value = cfg.minimum_clears;
-    $('clears_v').textContent = cfg.minimum_clears;
-    $('flip').checked   = cfg.unflip_textures;
-    $('mvm').checked    = cfg.do_model_view_matrix;
-    $('zip').checked    = cfg.should_download_zip;
-    $('shader').checked = cfg.do_shader_calc;
-    $('debug').checked  = cfg.is_debug_mode;
+  function populate(cfg){
+    $("res").value=cfg.default_texture_res;
+    $("clears").value=cfg.minimum_clears;       $("cv").textContent=cfg.minimum_clears;
+    $("ripdelay").value=Math.round((cfg.rip_delay_ms||3000)/1000);
+    $("rdv").textContent=Math.round((cfg.rip_delay_ms||3000)/1000);
+    $("flip").checked=cfg.unflip_textures;      $("mvm").checked=cfg.do_model_view_matrix;
+    $("zip").checked=cfg.should_download_zip;   $("shader").checked=cfg.do_shader_calc;
+    $("debug").checked=cfg.is_debug_mode;
   }
  
-  $('clears').addEventListener('input', function(){ $('clears_v').textContent = this.value; });
+  window.refreshCatch=function(){
+    if(_catching){
+      $("bcatch").textContent="📡 Catching ("+_grabCount+")";
+      $("bcatch").classList.add("on");
+      $("gbar").classList.add("show");
+      $("gcnt").textContent=_grabCount+" asset"+(_grabCount!==1?"s":"");
+    } else {
+      $("bcatch").textContent="📡 Catch Resources";
+      $("bcatch").classList.remove("on");
+      $("gbar").classList.remove("show");
+    }
+  };
+  window.refreshRip=function(){
+    if(_ripTimer||_ripSec>0){
+      $("brip").textContent="🔫 Ripping in "+_ripSec+"s…";
+      $("brip").classList.add("cd");
+    } else {
+      $("brip").textContent="🔫 Start Ripping";
+      $("brip").classList.remove("cd");
+    }
+  };
  
-  $('btn').addEventListener('click', function(){
-    populate(_cfg);
-    $('status').textContent = '';
-    $('overlay').classList.add('open');
-  });
+  function openPanel(){populate(_cfg);$("rst").textContent="";refreshCatch();refreshRip();$("ov").classList.add("open");_panelOpen=true;}
+  function closePanel(){$("ov").classList.remove("open");_panelOpen=false;}
+  function togglePanel(){if(_panelOpen)closePanel();else openPanel();}
  
-  function close(){ $('overlay').classList.remove('open'); }
-  $('cancel').addEventListener('click', close);
-  $('overlay').addEventListener('click', function(e){ if(e.target===$('overlay')) close(); });
+  $("fab").addEventListener("click",openPanel);
+  $("rcancel").addEventListener("click",closePanel);
+  $("ov").addEventListener("click",function(e){if(e.target===$("ov"))closePanel();});
  
-  $('saveBtn').addEventListener('click', function(){
-    _cfg = {
-      default_texture_res:  $('res').value,
-      minimum_clears:       parseInt($('clears').value),
-      unflip_textures:      $('flip').checked,
-      do_model_view_matrix: $('mvm').checked,
-      should_download_zip:  $('zip').checked,
-      do_shader_calc:       $('shader').checked,
-      is_debug_mode:        $('debug').checked
+  $("clears").addEventListener("input",function(){$("cv").textContent=this.value;});
+  $("ripdelay").addEventListener("input",function(){$("rdv").textContent=this.value;});
+ 
+  $("rsave").addEventListener("click",function(){
+    _cfg={
+      default_texture_res:$("res").value, minimum_clears:parseInt($("clears").value),
+      rip_delay_ms:parseInt($("ripdelay").value)*1000,
+      unflip_textures:$("flip").checked, do_model_view_matrix:$("mvm").checked,
+      should_download_zip:$("zip").checked, do_shader_calc:$("shader").checked,
+      is_debug_mode:$("debug").checked
     };
-    saveCfg(_cfg);
-    applyLive(_cfg);
-    $('status').textContent = 'Applied \u2713';
-    setTimeout(function(){ $('status').textContent=''; }, 1200);
+    saveCfg(_cfg); _div.textContent=JSON.stringify(_cfg);
+    send("applySettings",{settings:_cfg});
+    $("rst").textContent="Saved ✓";
+    setTimeout(function(){$("rst").textContent="";},1400);
   });
+ 
+  $("bcatch").addEventListener("click",function(){
+    if(_catching){_catching=false;_grabCount=0;send("grabDisable");send("grabClear");refreshCatch();}
+    else{try{sessionStorage.setItem(SS_CATCH,"1");}catch(ex){}window.location.reload();}
+  });
+  $("brip").addEventListener("click",function(){
+    if(_ripTimer)return;
+    try{sessionStorage.setItem(SS_RIP,"1");}catch(ex){}
+    window.location.reload();
+  });
+  $("gdl").addEventListener("click",function(){send("grabDownload");});
+  $("gstop").addEventListener("click",function(){
+    _catching=false;_grabCount=0;send("grabDisable");send("grabClear");refreshCatch();
+  });
+ 
+  /* Home key shortcut — content script listens on document */
+  document.addEventListener("keydown",function(e){
+    if(e.key==="Home"||e.keyCode===36){
+      e.preventDefault(); e.stopPropagation(); togglePanel();
+    }
+  },true);
+ 
+  refreshCatch(); refreshRip();
 }
  
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', buildPanel);
-} else {
-  buildPanel();
-}
+window.refreshCatch=function(){};
+window.refreshRip=function(){};
  
-return; /* end MODE 1 */
-} /* closes else block */
+if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",buildPanel);}
+else{buildPanel();}
+ 
+return;/*end MODE 1*/
+}/*closes else*/
  
 /* ════ MODE 2 — PAGE SCRIPT ════════════════════════════════════════════════ */
-/* ── JSZip (inlined) ── */
-if (typeof JSZip === "undefined") {
+/* ── Grabber — captures blobs AT intercept time, not on re-fetch ────────── */
+(function(){
+  var _active=false, _grabbed=[], _count=0;
+  var MODEL=/\.(obj|fbx|glb|gltf|dae|3ds|ply|stl|usdz?|wrl|abc)(\?|#|$)/i;
+  var IMG=/\.(png|jpe?g|bmp|gif|webp|tga|dds|ktx2?|basis|hdr|exr|svgz?|tiff?)(\?|#|$)/i;
+ 
+  function resolve(url){
+    if(!url)return null;
+    try{url=new URL(url,location.href).href;}catch(e){return null;}
+    if(url.startsWith("data:")||url.startsWith("blob:"))return null;
+    return url;
+  }
+  function fname(url){
+    try{return new URL(url).pathname.split("/").filter(Boolean).pop().split("?")[0]||"asset";}
+    catch(e){return"asset";}
+  }
+  function gtype(url){
+    if(MODEL.test(url))return"model";
+    if(IMG.test(url))return"image";
+    return null;
+  }
+ 
+  /* Store item; update blob if we previously only had the URL */
+  function store(url,blob,type){
+    var ex=_grabbed.find(function(g){return g.url===url;});
+    if(ex){if(!ex.blob&&blob)ex.blob=blob;return;}
+    _grabbed.push({name:fname(url),url:url,type:type,blob:blob||null});
+    _count++;
+    window.postMessage({__br:"grabbed",count:_count},"*");
+  }
+  function recordURL(url){
+    var u=resolve(url);if(!u)return;
+    var t=gtype(u);if(!t)return;
+    store(u,null,t);
+  }
+ 
+  /* XHR — capture response blob from the original request */
+  var _oxOpen=XMLHttpRequest.prototype.open;
+  var _oxSend=XMLHttpRequest.prototype.send;
+  XMLHttpRequest.prototype.open=function(m,url){
+    this.__brURL=url;
+    return _oxOpen.apply(this,arguments);
+  };
+  XMLHttpRequest.prototype.send=function(){
+    if(_active&&this.__brURL){
+      var rawUrl=this.__brURL, t=gtype(rawUrl);
+      if(t){
+        var xhr=this;
+        this.addEventListener("loadend",function(){
+          var url=resolve(rawUrl);if(!url)return;
+          try{
+            if(xhr.status>=200&&xhr.status<400){
+              var blob=null;
+              if(xhr.responseType==="arraybuffer"&&xhr.response)blob=new Blob([xhr.response]);
+              else if(xhr.responseType==="blob"&&xhr.response)blob=xhr.response;
+              store(url,blob,t);
+            }
+          }catch(e){store(resolve(rawUrl),null,t);}
+        });
+      }
+    }
+    return _oxSend.apply(this,arguments);
+  };
+ 
+  /* Fetch — clone response to capture blob before page consumes it */
+  var _oFetch=window.fetch;
+  window.fetch=function(resource,init){
+    var rawUrl=typeof resource==="string"?resource:(resource&&resource.url)||"";
+    var p=_oFetch.apply(this,arguments);
+    if(_active&&rawUrl){
+      var t=gtype(rawUrl);
+      if(t){
+        p.then(function(resp){
+          if(resp&&resp.ok){
+            resp.clone().blob().then(function(blob){
+              var url=resolve(rawUrl);if(url)store(url,blob,t);
+            }).catch(function(){
+              var url=resolve(rawUrl);if(url)store(url,null,t);
+            });
+          }
+        }).catch(function(){});
+      }
+    }
+    return p;
+  };
+ 
+  /* HTMLImageElement.src — record URL; blob captured via texImage2D hook */
+  var _origImgProto=HTMLImageElement.prototype;
+  var _imgSrcDesc=Object.getOwnPropertyDescriptor(_origImgProto,"src")||
+                  Object.getOwnPropertyDescriptor(HTMLElement.prototype,"src");
+  if(_imgSrcDesc&&_imgSrcDesc.set){
+    Object.defineProperty(_origImgProto,"src",{
+      get:_imgSrcDesc.get,
+      set:function(url){
+        try{if(_active)recordURL(String(url));}catch(e){}
+        _imgSrcDesc.set.call(this,url);
+      },
+      configurable:true
+    });
+  }
+ 
+  /* HTMLVideoElement.src */
+  var _vidSrcDesc=Object.getOwnPropertyDescriptor(HTMLVideoElement.prototype,"src")||
+                  Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype,"src");
+  if(_vidSrcDesc&&_vidSrcDesc.set){
+    Object.defineProperty(HTMLVideoElement.prototype,"src",{
+      get:_vidSrcDesc.get,
+      set:function(url){
+        try{if(_active)recordURL(String(url));}catch(e){}
+        _vidSrcDesc.set.call(this,url);
+      },
+      configurable:true
+    });
+  }
+ 
+  /* Download all — always ZIP, single download = no confirmation popup */
+  function fetchBlob(item){
+    /* Already captured blob at intercept time */
+    if(item.blob)return Promise.resolve(item.blob);
+    /* Try direct re-fetch (works for same-origin + CORS-enabled) */
+    return fetch(item.url,{credentials:"include"})
+      .then(function(r){return r.ok?r.blob():Promise.reject(r.status);})
+      .catch(function(){return fetch(item.url);})
+      .then(function(r){return r.ok?r.blob():Promise.reject();})
+      /* For images: canvas fallback (works for same-origin + crossOrigin=anonymous CDNs) */
+      .catch(function(){
+        if(item.type!=="image")return null;
+        return new Promise(function(res){
+          var img=new Image();
+          img.crossOrigin="anonymous";
+          img.onload=function(){
+            var c=document.createElement("canvas");
+            c.width=img.width;c.height=img.height;
+            c.getContext("2d").drawImage(img,0,0);
+            c.toBlob(res);
+          };
+          img.onerror=function(){res(null);};
+          img.src=item.url;
+        });
+      })
+      .catch(function(){return null;});
+  }
+ 
+  window.__brGrabber={
+    setActive:function(v){_active=!!v;},
+    clear:function(){_grabbed=[];_count=0;},
+    recordURL:recordURL,
+    downloadAll:function(){
+      var items=_grabbed.slice();
+      if(!items.length)return;
+      if(typeof JSZip==="undefined"){
+        /* Staggered fallback */
+        items.forEach(function(it,i){
+          setTimeout(function(){
+            var a=document.createElement("a");a.href=it.url;a.download=it.name;
+            document.body.appendChild(a);a.click();
+            setTimeout(function(){document.body.removeChild(a);},800);
+          },i*400);
+        });
+        return;
+      }
+      var zip=new JSZip();
+      var seen={};
+      function uname(name){
+        if(!seen[name]){seen[name]=1;return name;}
+        var ext=name.lastIndexOf(".")>0?name.slice(name.lastIndexOf("")):"";
+        var base=name.slice(0,name.length-ext.length);
+        return base+"_"+(++seen[name])+ext;
+      }
+      Promise.all(items.map(function(it){
+        return fetchBlob(it).then(function(blob){
+          if(blob)zip.file(uname(it.name),blob);
+          else console.warn("[BlackRipper] Skipped (CORS/unavailable):",it.url);
+        });
+      })).then(function(){
+        return zip.generateAsync({type:"blob",compression:"DEFLATE",compressionOptions:{level:6}});
+      }).then(function(blob){
+        var a=document.createElement("a");
+        a.href=URL.createObjectURL(blob);
+        a.download="black-ripper-"+Date.now()+".zip";
+        document.body.appendChild(a);a.click();
+        setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(a.href);},3000);
+      });
+    }
+  };
+})();
+ 
+/* ── JSZip ── */
+if(typeof JSZip==="undefined"){
 /*!
 
 JSZip v3.10.1 - A JavaScript class for generating and reading zip files
@@ -946,8 +1212,10 @@ class WebGLRipperWrapper {
 				});
 			});
 	
-			textures.forEach(async function (texture) {
-				zip.file(`${texture._FILENAME}.png`, texture._URL.replace("data:image/png;base64,", ""), {base64: true});
+			textures.forEach(function (texture) {
+				if (!texture._URL) return;
+				var _b64 = texture._URL.split(",")[1];
+				if (_b64) zip.file(`${texture._FILENAME}.png`, _b64, {base64: true});
 			});
  
 			zip.generateAsync({type:"blob"}).then(function(content) {
@@ -1038,55 +1306,36 @@ class WebGLRipperWrapper {
 		self._GLActiveTextureIndex = args[0] - gl.TEXTURE0;
 	}
  
-	hooked_texImage2D(self, gl, args, oFunc) { // https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texImage2D
+	hooked_texImage2D(self, gl, args, oFunc) {
 		let target = args[0];
-		if (target != gl.TEXTURE_2D || !self._GLCurrentBoundTexture)
-			return;
-		self._GLAllTextures.forEach(glTex => {
-			if(glTex == self._GLCurrentBoundTexture)
-				glTex.is2DTexture = true;
-		});
- 
-		// 9-arg form: texImage2D(target, level, internalformat, width, height, border, format, type, pixels)
-		// width and height are ALWAYS explicit here — capture them regardless of pixel data type.
+		if (target != gl.TEXTURE_2D || !self._GLCurrentBoundTexture) return;
+		self._GLAllTextures.forEach(g => { if (g == self._GLCurrentBoundTexture) g.is2DTexture = true; });
 		if (args.length === 9) {
-			if (args[3] > 0 && args[4] > 0) {
-				self._GLCurrentBoundTexture.width  = args[3];
-				self._GLCurrentBoundTexture.height = args[4];
-			}
+			if (args[3] > 0 && args[4] > 0) { self._GLCurrentBoundTexture.width = args[3]; self._GLCurrentBoundTexture.height = args[4]; }
 			return;
 		}
- 
-		// 6-arg form: texImage2D(target, level, internalformat, format, type, source)
-		// Size must come from the source object.
-		let pixels = args[5];
-		if (!pixels) return;
- 
-		let _ArrayBufferView = (new Uint16Array()).constructor.prototype.__proto__.constructor;
-		if (pixels instanceof _ArrayBufferView) return;
- 
-		if (pixels instanceof ImageData ||
-			pixels instanceof HTMLImageElement ||
-			pixels instanceof HTMLCanvasElement ||
-			pixels instanceof HTMLVideoElement ||
-			pixels instanceof ImageBitmap) {
-			let w = pixels.width  || pixels.videoWidth;
-			let h = pixels.height || pixels.videoHeight;
-			if (w > 0 && h > 0) {
-				self._GLCurrentBoundTexture.width  = w;
-				self._GLCurrentBoundTexture.height = h;
-			}
+		let px = args[5]; if (!px) return;
+		let _ABV = (new Uint16Array()).constructor.prototype.__proto__.constructor;
+		if (px instanceof _ABV) return;
+		if (px instanceof HTMLImageElement || px instanceof HTMLVideoElement) {
+			let _u = px.currentSrc || px.src;
+			if (_u && window.__brGrabber) try { window.__brGrabber.recordURL(_u); } catch(e) {}
+		}
+		if (px instanceof ImageData || px instanceof HTMLImageElement ||
+			px instanceof HTMLCanvasElement || px instanceof HTMLVideoElement || px instanceof ImageBitmap) {
+			let w = px.width || px.videoWidth, h = px.height || px.videoHeight;
+			if (w > 0 && h > 0) { self._GLCurrentBoundTexture.width = w; self._GLCurrentBoundTexture.height = h; }
 		}
 	}
- 
-	hooked_texStorage2D(self, gl, args, oFunc) { // https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/texStorage2D
-		// texStorage2D(target, levels, internalformat, width, height)
+	hooked_texStorage2D(self, gl, args, oFunc) {
 		if (args[0] !== gl.TEXTURE_2D || !self._GLCurrentBoundTexture) return;
-		if (args[3] > 0 && args[4] > 0) {
-			self._GLCurrentBoundTexture.width  = args[3];
-			self._GLCurrentBoundTexture.height = args[4];
-			self._GLCurrentBoundTexture.is2DTexture = true;
-		}
+		if (args[3] > 0 && args[4] > 0) { self._GLCurrentBoundTexture.width = args[3]; self._GLCurrentBoundTexture.height = args[4]; self._GLCurrentBoundTexture.is2DTexture = true; }
+	}
+	hooked_framebufferTexture2D(self, gl, args, oFunc) {
+		if (args[1] !== gl.COLOR_ATTACHMENT0 || args[2] !== gl.TEXTURE_2D || !args[3]) return;
+		let t = args[3]; if (t.width && t.height) return;
+		let vp = gl.getParameter(gl.VIEWPORT);
+		if (vp && vp[2] > 0) { t.width = vp[2]; t.height = vp[3]; t.is2DTexture = true; }
 	}
  
 	hooked_shaderSource(self, gl, args, oFunc) { // https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/shaderSource
@@ -1642,6 +1891,7 @@ window.HTMLCanvasElement.prototype.getContext = function () {
 		RegisterGLFunction(gl, glRipper, "bindTexture");
 		RegisterGLFunction(gl, glRipper, "texImage2D");
 		RegisterGLFunction(gl, glRipper, "texStorage2D");
+		RegisterGLFunction(gl, glRipper, "framebufferTexture2D");
 		RegisterGLFunction(gl, glRipper, "createTexture");
 		RegisterGLFunction(gl, glRipper, "getExtension");
  
@@ -1670,5 +1920,27 @@ window.HTMLCanvasElement.prototype.getContext = function () {
 }; /* Got from 'WebGL-Inspector' https://github.com/benvanik/WebGL-Inspector/blob/master/core/extensions/chrome/contentscript.js#L178 */
  
 hideHook(_window.HTMLCanvasElement.prototype.getContext, oGetContext);
-})(); // end Black Ripper
+window.addEventListener("message", function(e) {
+	if (!e.data || !e.data.__brCmd) return;
+	var W = _window.WEBGLRipperSettings;
+	switch (e.data.__brCmd) {
+		case "applySettings":
+			if (!W) break;
+			var s = e.data.settings;
+			W.defaultTexWidth=parseInt(s.default_texture_res)||4096;
+			W.defaultTexHeight=parseInt((s.default_texture_res||"x4096").split("x")[1])||4096;
+			W.isDoShaderCalc=s.do_shader_calc; W.isDebug=s.is_debug_mode;
+			W.shouldUnFlipTex=s.unflip_textures; W.doModelViewMatrix=s.do_model_view_matrix;
+			W.shouldDownloadZip=s.should_download_zip; W.minimumClears=parseInt(s.minimum_clears)||1;
+			break;
+		case "rip": (_window.RIPPERS||[]).forEach(function(r){r._StartCapturing=true;}); break;
+		case "grabEnable":  if(window.__brGrabber) window.__brGrabber.setActive(true);  break;
+		case "grabDisable": if(window.__brGrabber) window.__brGrabber.setActive(false); break;
+		case "grabDownload":if(window.__brGrabber) window.__brGrabber.downloadAll();    break;
+		case "grabClear":   if(window.__brGrabber) window.__brGrabber.clear(); window.postMessage({__br:"cleared"},"*"); break;
+	}
+});
+window.postMessage({__br:"ready"},"*");
+ 
+})();
  
